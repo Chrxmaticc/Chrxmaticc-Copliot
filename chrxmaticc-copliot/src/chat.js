@@ -1,13 +1,17 @@
 // Chrxmaticc Copilot v1.0.0
-// Stripped down — personality.js handles everything
+// Dual AI Provider — Pollinations + Groq failover
 // Author: Chrxmee-Midnightt
 
 var readline = require('readline');
 var chalk = require('chalk');
-var https = require('https');
 var PERSONALITY = require('./personality');
+var pollinations = require('./apis/pollinations');
+var groq = require('./apis/groq');
 
 var conversationHistory = [];
+var currentProvider = 'pollinations';
+var groqRateLimited = false;
+var rateLimitResetTime = 0;
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -30,7 +34,7 @@ function getOfflineResponse(input) {
     return pickRandom(responses.greeting);
   }
   if (lower.indexOf('help') !== -1 || lower.indexOf('what can you do') !== -1) {
-    return 'i can talk about: code, shaders, ideas, audio, video, animation. try saying "give me a shader idea" or "explain ray marching". type "exit" to leave.';
+    return 'i can talk about: code, shaders, ideas, audio, video, animation. try saying "give me a shader idea" or "explain ray marching". type "exit" to leave. powered by Pollinations AI + Groq fallback.';
   }
   if (lower.indexOf('who are you') !== -1 || lower.indexOf('what are you') !== -1) {
     return pickRandom(responses.whoami);
@@ -42,54 +46,49 @@ function getOfflineResponse(input) {
   return pickRandom(responses.fallback);
 }
 
-function askLLM(userInput) {
-  return new Promise(function(resolve) {
-    var messages = [{ role: 'system', content: PERSONALITY.systemPrompt }];
+async function askAI(userInput) {
+  if (groqRateLimited && Date.now() > rateLimitResetTime) {
+    groqRateLimited = false;
+  }
+  
+  var result = await pollinations.ask(userInput, conversationHistory, PERSONALITY.systemPrompt);
+  
+  if (result.success) {
+    currentProvider = 'pollinations';
+    return result;
+  }
+  
+  if (!groqRateLimited) {
+    result = await groq.ask(userInput, conversationHistory, PERSONALITY.systemPrompt);
     
-    for (var i = 0; i < conversationHistory.length; i++) {
-      messages.push(conversationHistory[i]);
+    if (result.success) {
+      currentProvider = 'groq';
+      return result;
     }
-    messages.push({ role: 'user', content: userInput });
-
-    var data = JSON.stringify({
-      messages: messages,
-      max_tokens: 250,
-      temperature: 0.85
-    });
-
-    var options = {
-      hostname: 'pollinations.ai',
-      path: '/api/generate',
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 15000
-    };
-
-    var req = https.request(options, function(res) {
-      var body = '';
-      res.on('data', function(chunk) { body = body + chunk; });
-      res.on('end', function() {
-        try {
-          var json = JSON.parse(body);
-          var text = json.text || json.response || json.content || '';
-          resolve(text || null);
-        } catch (e) {
-          resolve(null);
-        }
-      });
-    });
-
-    req.on('error', function() { resolve(null); });
-    req.on('timeout', function() { req.destroy(); resolve(null); });
-    req.write(data);
-    req.end();
-  });
+    
+    if (result.error === 'rate_limited') {
+      groqRateLimited = true;
+      rateLimitResetTime = Date.now() + 60000;
+    }
+  }
+  
+  result = await pollinations.ask(userInput, conversationHistory, PERSONALITY.systemPrompt);
+  if (result.success) {
+    currentProvider = 'pollinations';
+    return result;
+  }
+  
+  return { success: false, error: 'all providers down', provider: 'offline' };
 }
 
 async function getResponse(input) {
-  var llmResponse = await askLLM(input);
-  if (llmResponse) return llmResponse;
-  return getOfflineResponse(input);
+  var aiResult = await askAI(input);
+  
+  if (aiResult.success) {
+    return { text: aiResult.text, provider: aiResult.provider };
+  }
+  
+  return { text: getOfflineResponse(input), provider: 'offline' };
 }
 
 function typeText(text, callback) {
@@ -122,7 +121,9 @@ function chat() {
   console.log('  ' + chalk.magenta('║   ' + PERSONALITY.tagline + '  ║'));
   console.log('  ' + chalk.magenta('╚══════════════════════════════════════╝'));
   console.log('');
-  console.log('  ' + chalk.green('●') + ' Connected to Pollinations AI');
+  console.log('  ' + chalk.green('●') + ' Primary: Pollinations AI (free, no key)');
+  console.log('  ' + chalk.cyan('●') + ' Fallback: Groq (Llama 3 8B, your key)');
+  console.log('  ' + chalk.yellow('●') + ' Offline: personality.js (if both down)');
   console.log('  ' + chalk.gray('Memory: ' + PERSONALITY.maxHistory + ' messages'));
   console.log('');
   console.log('  ' + chalk.gray('Type "help" to see what I can do, "exit" to quit'));
@@ -143,6 +144,7 @@ function chat() {
     var response = await getResponse(trimmed);
     var text = typeof response === 'string' ? response : response.text;
     var exit = typeof response === 'object' && response.exit;
+    var provider = response.provider || 'offline';
 
     conversationHistory.push({ role: 'user', content: trimmed });
     conversationHistory.push({ role: 'assistant', content: text });
@@ -151,8 +153,13 @@ function chat() {
       conversationHistory = conversationHistory.slice(-PERSONALITY.maxHistory);
     }
 
+    var providerBadge = '';
+    if (provider === 'pollinations') providerBadge = chalk.green(' [Pollinations]');
+    if (provider === 'groq') providerBadge = chalk.cyan(' [Groq]');
+    if (provider === 'offline') providerBadge = chalk.yellow(' [Offline]');
+
     process.stdout.write('  ' + chalk.magenta('chrxmaticc > '));
-    typeText(text, function() {
+    typeText(text + providerBadge, function() {
       if (exit) {
         console.log('  ' + chalk.gray(PERSONALITY.name + ' offline. Come back soon.'));
         console.log('');
