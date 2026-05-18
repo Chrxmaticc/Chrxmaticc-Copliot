@@ -1,5 +1,6 @@
 // Chrxmaticc Copilot v1.0.0
-// Dual AI + TTS + Offline Fallback
+// Single-User Chat Engine
+// Dual AI + TTS + Voice + Commands
 // Author: Chrxmee-Midnightt
 
 var readline = require('readline');
@@ -35,10 +36,10 @@ function getOfflineResponse(input) {
   if (lower.indexOf('hello') !== -1 || lower.indexOf('hey') !== -1 || lower.indexOf('hi') !== -1 || lower.indexOf('yo') !== -1) {
     return pickRandom(responses.greeting);
   }
-  if (lower.indexOf('help') !== -1 || lower.indexOf('what can you do') !== -1) {
-    return 'i can talk about: code, shaders, ideas, audio, video, animation. commands: /speak <text>, /mute, /unmute, /save, /clear, /provider, /exit. powered by Pollinations AI + Groq fallback.';
+  if (lower.indexOf('help') !== -1) {
+    return 'commands: /voice, /speak, /run, /roll, /8ball, /save, /clear, /provider, /exit. powered by Pollinations AI + Groq.';
   }
-  if (lower.indexOf('who are you') !== -1 || lower.indexOf('what are you') !== -1) {
+  if (lower.indexOf('who are you') !== -1) {
     return pickRandom(responses.whoami);
   }
   if (lower.indexOf('exit') !== -1 || lower.indexOf('quit') !== -1 || lower.indexOf('bye') !== -1) {
@@ -113,6 +114,14 @@ function typeText(text, callback) {
 function handleCommand(trimmed, text, rl) {
   var lower = trimmed.toLowerCase();
   
+  if (lower === '/voice' || lower === '/v') {
+    var voice = require('./voice');
+    voice.voiceChat(rl, function() {
+      rl.prompt();
+    });
+    return chalk.magenta('🎤 Listening...');
+  }
+  
   if (lower.indexOf('/speak') === 0) {
     var speakText = trimmed.replace('/speak', '').trim() || text;
     if (ttsEnabled) {
@@ -151,7 +160,25 @@ function handleCommand(trimmed, text, rl) {
   }
   
   if (lower === '/provider') {
-    return chalk.gray('Current: ' + currentProvider + ' | TTS: ' + (ttsEnabled ? 'on' : 'off') + ' | History: ' + conversationHistory.length + '/' + PERSONALITY.maxHistory);
+    return chalk.gray('Provider: ' + currentProvider + ' | TTS: ' + (ttsEnabled ? 'on' : 'off') + ' | Memory: ' + conversationHistory.length + '/' + PERSONALITY.maxHistory);
+  }
+  
+  if (lower.indexOf('/roll') === 0) {
+    var dice = lower.replace('/roll', '').trim() || '1d6';
+    var parts = dice.split('d');
+    var count = parseInt(parts[0]) || 1;
+    var sides = parseInt(parts[1]) || 6;
+    var results = [];
+    for (var i = 0; i < count; i++) {
+      results.push(Math.floor(Math.random() * sides) + 1);
+    }
+    var total = results.reduce(function(a, b) { return a + b; }, 0);
+    return chalk.yellow('🎲 ' + dice + ': ') + results.join(', ') + chalk.green(' = ' + total);
+  }
+  
+  if (lower.indexOf('/8ball') === 0) {
+    var ballResponses = ['It is certain.', 'Without a doubt.', 'Yes definitely.', 'Ask again later.', 'Cannot predict now.', 'Don\'t count on it.', 'Very doubtful.'];
+    return chalk.magenta('🎱 ') + pickRandom(ballResponses);
   }
   
   if (lower === '/exit' || lower === '/quit') {
@@ -174,13 +201,11 @@ function chat() {
   console.log('  ' + chalk.magenta('║   ' + PERSONALITY.tagline + '  ║'));
   console.log('  ' + chalk.magenta('╚══════════════════════════════════════╝'));
   console.log('');
-  console.log('  ' + chalk.green('●') + ' Primary: Pollinations AI (free, no key)');
+  console.log('  ' + chalk.green('●') + ' Primary: Pollinations AI');
   console.log('  ' + chalk.cyan('●') + ' Fallback: Groq (Llama 3 8B)');
-  console.log('  ' + chalk.yellow('●') + ' Offline: personality.js');
-  console.log('  ' + chalk.magenta('●') + ' TTS: Google TTS (free, no key)');
+  console.log('  ' + chalk.magenta('●') + ' Voice: /voice');
+  console.log('  ' + chalk.yellow('●') + ' TTS: /speak');
   console.log('  ' + chalk.gray('Memory: ' + PERSONALITY.maxHistory + ' messages'));
-  console.log('');
-  console.log('  ' + chalk.gray('Commands: /speak, /mute, /unmute, /save, /clear, /provider, /exit'));
   console.log('');
 
   var greeting = pickRandom(PERSONALITY.greetings);
@@ -229,7 +254,7 @@ function chat() {
     process.stdout.write('  ' + chalk.magenta('chrxmaticc > '));
     typeText(text + providerBadge, function() {
       if (exit) {
-        console.log('  ' + chalk.gray(PERSONALITY.name + ' offline. Come back soon.'));
+        console.log('  ' + chalk.gray(PERSONALITY.name + ' offline.'));
         console.log('');
         rl.close();
         return;
