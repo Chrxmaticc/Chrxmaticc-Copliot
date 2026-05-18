@@ -1,51 +1,31 @@
-// Chrxmaticc Copilot — HTTP API Server (Secure)
+// Chrxmaticc Copilot — HTTP API Server
+// Single-user + Multi-user + Voice routes
 // Author: Chrxmee-Midnightt
 
 var http = require('http');
 var chat = require('../chat');
+var multiChat = require('../multi-user-chat');
+var voice = require('../voice');
 
 var PORT = process.env.CHRXMATICC_PORT || 3000;
 
-// Public key — safe to be in source code
 var API_KEYS = {
-  'chrxmaticc_public': {
-    tier: 'public',
-    maxRequestsPerMinute: 10,
-    allowedCommands: ['chat'],
-    maxTokens: 100
-  }
+  'chrxmaticc_public': { tier: 'public', maxRequestsPerMinute: 10, maxTokens: 100 }
 };
 
-// Master key — NEVER in source code. Set via environment variable.
 var MASTER_KEY = process.env.CHRXMATICC_MASTER_KEY || '';
 if (MASTER_KEY) {
-  API_KEYS[MASTER_KEY] = {
-    tier: 'master',
-    maxRequestsPerMinute: 100,
-    allowedCommands: ['chat', 'run', 'speak', 'save', 'clear'],
-    maxTokens: 500
-  };
+  API_KEYS[MASTER_KEY] = { tier: 'master', maxRequestsPerMinute: 100, maxTokens: 500 };
 }
-
-var MODELS = {
-  default: 'You are Chrxmaticc Copilot, a hyper-intelligent and offbrand terminal AI...',
-  creative: 'You are Chrxmaticc Copilot in creative mode...',
-  technical: 'You are Chrxmaticc Copilot in technical mode...',
-  midnight: 'You are Chrxmaticc Copilot in midnight mode...'
-};
 
 var requestLog = {};
 
 function checkRateLimit(key) {
   var now = Date.now();
-  var windowStart = now - 60000;
-  
   if (!requestLog[key]) requestLog[key] = [];
-  requestLog[key] = requestLog[key].filter(function(t) { return t > windowStart; });
-  
+  requestLog[key] = requestLog[key].filter(function(t) { return t > now - 60000; });
   var tier = API_KEYS[key] || API_KEYS['chrxmaticc_public'];
   if (requestLog[key].length >= tier.maxRequestsPerMinute) return false;
-  
   requestLog[key].push(now);
   return true;
 }
@@ -60,8 +40,8 @@ function parseBody(req) {
   });
 }
 
-function sendJSON(res, statusCode, data) {
-  res.writeHead(statusCode, {
+function sendJSON(res, code, data) {
+  res.writeHead(code, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
@@ -71,60 +51,74 @@ function sendJSON(res, statusCode, data) {
 }
 
 var server = http.createServer(async function(req, res) {
-  if (req.method === 'OPTIONS') { sendJSON(res, 200, { status: 'ok' }); return; }
+  if (req.method === 'OPTIONS') { sendJSON(res, 200, {}); return; }
 
   if (req.url === '/health' && req.method === 'GET') {
-    sendJSON(res, 200, {
-      status: 'online',
-      name: 'Chrxmaticc Copilot',
-      version: '1.0.0',
-      models: Object.keys(MODELS),
-      publicKey: 'chrxmaticc_public',
-      masterKeySet: !!MASTER_KEY
+    sendJSON(res, 200, { status: 'online', name: 'Chrxmaticc Copilot', version: '1.0.0' });
+    return;
+  }
+
+  // Single-user chat
+  if (req.url === '/chat' && req.method === 'POST') {
+    var auth = req.headers['authorization'] || '';
+    var key = auth.replace('Bearer ', '');
+    if (!API_KEYS[key]) { sendJSON(res, 401, { error: 'Invalid API key' }); return; }
+    if (!checkRateLimit(key)) { sendJSON(res, 429, { error: 'Rate limited' }); return; }
+
+    var body = await parseBody(req);
+    var message = body.message || '';
+    if (!message) { sendJSON(res, 400, { error: 'Missing message' }); return; }
+
+    var response = await chat.getResponse(message);
+    sendJSON(res, 200, { response: typeof response === 'string' ? response : response.text, provider: response.provider });
+    return;
+  }
+
+  // Multi-user chat
+  if (req.url === '/multi-chat' && req.method === 'POST') {
+    var auth = req.headers['authorization'] || '';
+    var key = auth.replace('Bearer ', '');
+    if (!API_KEYS[key]) { sendJSON(res, 401, { error: 'Invalid API key' }); return; }
+
+    var body = await parseBody(req);
+    var message = body.message || '';
+    var userId = body.userId || 'anonymous';
+    if (!message) { sendJSON(res, 400, { error: 'Missing message' }); return; }
+
+    var response = await multiChat.getResponse(message, userId);
+    sendJSON(res, 200, { response: response.text, userId: userId, memorySize: multiChat.getUserMemory(userId).history.length, provider: response.provider });
+    return;
+  }
+
+  // Voice processing
+  if (req.url === '/voice' && req.method === 'POST') {
+    var auth = req.headers['authorization'] || '';
+    var key = auth.replace('Bearer ', '');
+    if (!API_KEYS[key]) { sendJSON(res, 401, { error: 'Invalid API key' }); return; }
+
+    var body = await parseBody(req);
+    var userId = body.userId || 'anonymous';
+    var audioBase64 = body.audio || '';
+    if (!audioBase64) { sendJSON(res, 400, { error: 'Missing audio' }); return; }
+
+    var audioBuffer = Buffer.from(audioBase64, 'base64');
+    voice.processVoiceMessage(audioBuffer, userId, function(err, result) {
+      if (err) { sendJSON(res, 400, { error: 'Voice failed' }); return; }
+      sendJSON(res, 200, { response: result.text, userText: result.userText, userId: userId });
     });
     return;
   }
 
-  if (req.url === '/chat' && req.method === 'POST') {
-    var auth = req.headers['authorization'] || '';
-    var key = auth.replace('Bearer ', '');
-    
-    if (!API_KEYS[key]) {
-      sendJSON(res, 401, { error: 'Invalid API key.' });
-      return;
-    }
-
-    if (!checkRateLimit(key)) {
-      sendJSON(res, 429, { error: 'Rate limit exceeded.' });
-      return;
-    }
-
-    var tier = API_KEYS[key].tier;
-    var body = await parseBody(req);
-    var message = body.message || '';
-
-    if (!message) { sendJSON(res, 400, { error: 'Missing "message" field' }); return; }
-
-    var response = await chat.getResponse(message);
-    var text = typeof response === 'string' ? response : response.text;
-
-    sendJSON(res, 200, { response: text, tier: tier, provider: response.provider || 'offline' });
-    return;
-  }
-
-  sendJSON(res, 404, { error: 'Not found. Try POST /chat' });
+  sendJSON(res, 404, { error: 'Not found' });
 });
 
 function startServer() {
   server.listen(PORT, function() {
-    console.log('  🧠 Chrxmaticc Copilot API Server');
+    console.log('  🧠 Chrxmaticc Copilot API');
     console.log('  Port: ' + PORT);
-    console.log('  Public key: chrxmaticc_public');
-    if (MASTER_KEY) {
-      console.log('  Master key: [set]');
-    } else {
-      console.log('  Master key: [not set — run: export CHRXMATICC_MASTER_KEY=your-key]');
-    }
+    console.log('  /chat — single-user');
+    console.log('  /multi-chat — multi-user');
+    console.log('  /voice — voice processing');
     console.log('');
   });
 }
