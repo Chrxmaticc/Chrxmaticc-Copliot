@@ -8,13 +8,16 @@
   },
   "scripts": {
     "test": "echo \"offbrand copilot doesn't need tests\" && exit 0",
-    "chat": "node bin/copilot.js"
+    "chat": "node bin/copilot.js",
+    "server": "node bin/server.js",
+    "build": "pkg bin/copilot.js --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --output executables/chrxmaticc-copilot"
   },
-  "keywords": ["copilot", "ai", "chat", "terminal", "offbrand", "code", "tts"],
+  "keywords": ["copilot", "ai", "chat", "terminal", "offbrand", "code", "tts", "spotify", "clipboard"],
   "author": "Chrxmee-Midnightt",
   "license": "MIT",
   "dependencies": {
     "chalk": "4.1.2",
-    "@sefinek/google-tts-api": "^2.1.8"
+    "@sefinek/google-tts-api": "^2.1.8",
+    "clipboardy": "^5.3.1"
   }
 }
