@@ -1,5 +1,5 @@
 // Chrxmaticc Copilot v1.0.0
-// Dual AI Provider — Pollinations + Groq failover
+// Dual AI + TTS + Offline Fallback
 // Author: Chrxmee-Midnightt
 
 var readline = require('readline');
@@ -7,11 +7,13 @@ var chalk = require('chalk');
 var PERSONALITY = require('./personality');
 var pollinations = require('./apis/pollinations');
 var groq = require('./apis/groq');
+var tts = require('./tts');
 
 var conversationHistory = [];
 var currentProvider = 'pollinations';
 var groqRateLimited = false;
 var rateLimitResetTime = 0;
+var ttsEnabled = true;
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -34,7 +36,7 @@ function getOfflineResponse(input) {
     return pickRandom(responses.greeting);
   }
   if (lower.indexOf('help') !== -1 || lower.indexOf('what can you do') !== -1) {
-    return 'i can talk about: code, shaders, ideas, audio, video, animation. try saying "give me a shader idea" or "explain ray marching". type "exit" to leave. powered by Pollinations AI + Groq fallback.';
+    return 'i can talk about: code, shaders, ideas, audio, video, animation. commands: /speak <text>, /mute, /unmute, /save, /clear, /provider, /exit. powered by Pollinations AI + Groq fallback.';
   }
   if (lower.indexOf('who are you') !== -1 || lower.indexOf('what are you') !== -1) {
     return pickRandom(responses.whoami);
@@ -108,6 +110,57 @@ function typeText(text, callback) {
   type();
 }
 
+function handleCommand(trimmed, text, rl) {
+  var lower = trimmed.toLowerCase();
+  
+  if (lower.indexOf('/speak') === 0) {
+    var speakText = trimmed.replace('/speak', '').trim() || text;
+    if (ttsEnabled) {
+      tts.speak(speakText, 'en', function(err) {
+        if (err) console.log('  ' + chalk.red('TTS Error: ' + err.message));
+      });
+      return '🗣️ ' + speakText;
+    } else {
+      return chalk.gray('TTS is muted. Type /unmute to enable.');
+    }
+  }
+  
+  if (lower === '/mute') {
+    ttsEnabled = false;
+    return chalk.yellow('🔇 TTS muted.');
+  }
+  
+  if (lower === '/unmute') {
+    ttsEnabled = true;
+    return chalk.green('🔊 TTS unmuted.');
+  }
+  
+  if (lower === '/save') {
+    var fs = require('fs');
+    var log = '';
+    for (var i = 0; i < conversationHistory.length; i++) {
+      log = log + conversationHistory[i].role + ': ' + conversationHistory[i].content + '\n';
+    }
+    fs.writeFileSync('chrxmaticc-chat.log', log);
+    return chalk.green('💾 Chat saved to chrxmaticc-chat.log');
+  }
+  
+  if (lower === '/clear') {
+    conversationHistory = [];
+    return chalk.yellow('🧹 Conversation cleared.');
+  }
+  
+  if (lower === '/provider') {
+    return chalk.gray('Current: ' + currentProvider + ' | TTS: ' + (ttsEnabled ? 'on' : 'off') + ' | History: ' + conversationHistory.length + '/' + PERSONALITY.maxHistory);
+  }
+  
+  if (lower === '/exit' || lower === '/quit') {
+    return { text: pickRandom(PERSONALITY.goodbyes), exit: true };
+  }
+  
+  return null;
+}
+
 function chat() {
   var rl = readline.createInterface({
     input: process.stdin,
@@ -122,11 +175,12 @@ function chat() {
   console.log('  ' + chalk.magenta('╚══════════════════════════════════════╝'));
   console.log('');
   console.log('  ' + chalk.green('●') + ' Primary: Pollinations AI (free, no key)');
-  console.log('  ' + chalk.cyan('●') + ' Fallback: Groq (Llama 3 8B, your key)');
-  console.log('  ' + chalk.yellow('●') + ' Offline: personality.js (if both down)');
+  console.log('  ' + chalk.cyan('●') + ' Fallback: Groq (Llama 3 8B)');
+  console.log('  ' + chalk.yellow('●') + ' Offline: personality.js');
+  console.log('  ' + chalk.magenta('●') + ' TTS: Google TTS (free, no key)');
   console.log('  ' + chalk.gray('Memory: ' + PERSONALITY.maxHistory + ' messages'));
   console.log('');
-  console.log('  ' + chalk.gray('Type "help" to see what I can do, "exit" to quit'));
+  console.log('  ' + chalk.gray('Commands: /speak, /mute, /unmute, /save, /clear, /provider, /exit'));
   console.log('');
 
   var greeting = pickRandom(PERSONALITY.greetings);
@@ -146,8 +200,21 @@ function chat() {
     var exit = typeof response === 'object' && response.exit;
     var provider = response.provider || 'offline';
 
-    conversationHistory.push({ role: 'user', content: trimmed });
-    conversationHistory.push({ role: 'assistant', content: text });
+    var commandResult = handleCommand(trimmed, text, rl);
+    if (commandResult) {
+      if (typeof commandResult === 'object' && commandResult.exit) {
+        text = commandResult.text;
+        exit = true;
+      } else {
+        text = commandResult;
+        provider = 'system';
+      }
+    }
+
+    if (provider !== 'system') {
+      conversationHistory.push({ role: 'user', content: trimmed });
+      conversationHistory.push({ role: 'assistant', content: text });
+    }
 
     if (conversationHistory.length > PERSONALITY.maxHistory) {
       conversationHistory = conversationHistory.slice(-PERSONALITY.maxHistory);
@@ -157,6 +224,7 @@ function chat() {
     if (provider === 'pollinations') providerBadge = chalk.green(' [Pollinations]');
     if (provider === 'groq') providerBadge = chalk.cyan(' [Groq]');
     if (provider === 'offline') providerBadge = chalk.yellow(' [Offline]');
+    if (provider === 'system') providerBadge = chalk.magenta(' [System]');
 
     process.stdout.write('  ' + chalk.magenta('chrxmaticc > '));
     typeText(text + providerBadge, function() {
