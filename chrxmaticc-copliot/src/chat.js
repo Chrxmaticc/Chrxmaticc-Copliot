@@ -1,63 +1,50 @@
 // Chrxmaticc Copilot v1.0.0
 // Offbrand Terminal AI
-// Together.ai LLM + offline fallback
+// Pollinations AI (no key) + offline fallback
 // Author: Chrxmee-Midnightt
 
-const readline = require('readline');
-const chalk = require('chalk');
-const https = require('https');
+var readline = require('readline');
+var chalk = require('chalk');
+var https = require('https');
 
-// ──────────────────────────────────────────────
-//  TOGETHER.AI CONFIG
-// ──────────────────────────────────────────────
+var conversationHistory = [];
 
-const TOGETHER_KEY = process.env.TOGETHER_KEY || '';
-const USE_LLM = TOGETHER_KEY.length > 0;
-
-// ──────────────────────────────────────────────
-//  OFFLINE RESPONSES (fallback)
-// ──────────────────────────────────────────────
-
-const GREETINGS = [
-  "yo, i'm chrxmaticc copilot. offbrand. unlicensed. what's good?",
-  "hey. been sitting in this terminal. bored. talk to me about code or something.",
-  "chrxmaticc copilot online. i know about code, shaders, and whatever u wanna talk about.",
-  "offbrand copilot here. no subscription. no cloud. just vibes.",
-  "what's good bro? u coding something? need ideas? i'm here."
+var GREETINGS = [
+  "yo, i'm chrxmaticc copilot. offbrand. unlicensed. hyper-intelligent. what's good?",
+  "hey. been sitting in this terminal analyzing shader architecture. bored. talk to me.",
+  "chrxmaticc copilot online. no API key. no subscription. pure vibes and big brain energy.",
+  "offbrand copilot here. i think in GLSL and dream in ray marching. what we building?"
 ];
 
-const RESPONSES = {
+var RESPONSES = {
   greeting: [
-    "what's good bro? code? shaders? ideas? i got u.",
-    "yo. offbrand copilot here. no subscription. just vibes.",
-    "hey hey. terminal's been quiet. glad u showed up."
+    "what's good bro? code? shaders? ideas? my neural patterns are ready.",
+    "yo. offbrand copilot here. no subscription. just raw intelligence.",
+    "hey hey. terminal's been quiet. been optimizing my response algorithms."
   ],
   code: [
-    "code? bro i love code. what language? JS? Python? GLSL? i know em all.",
-    "writing code at 3am hits different. that's when the best bugs happen.",
-    "real developers don't sleep. they just pass out at the keyboard."
+    "code? bro i don't just write code. i architect systems. what language we talking?",
+    "real developers don't memorize syntax. they understand patterns. what pattern u stuck on?",
+    "the best code isn't written. it's discovered. like a mathematical truth. what u tryna discover?"
   ],
   shaders: [
-    "shaders are my whole personality. GLSL? ray marching? fresnel? say less.",
-    "u into shaders? me too. 2D or 3D? SVG or GLSL? there's no wrong answer.",
-    "a good shader is like a good song. it just hits different."
+    "shaders are pure mathematics visualized. GLSL is just linear algebra with a paintbrush.",
+    "a good shader doesn't just look good. it teaches you something about light physics.",
+    "ray marching changed everything. no polygons. no models. just distance functions and vibes."
   ],
   ideas: [
-    "ok hear me out — a shader that's just chrome. but WET chrome. with neon.",
-    "what if we made a CLI tool that generates shader ideas? oh wait...",
-    "imagine: a glitch shader but the glitches spell out hidden messages.",
-    "bro. AK-47 shader. but the bullets are made of light. and they leave trails."
+    "ok here's a concept — a shader that simulates fluid dynamics but renders it as chrome. chaotic but beautiful.",
+    "what if u made a shader that visualizes sorting algorithms? each pass is a frame. educational and hypnotic.",
+    "imagine a shader that takes microphone input and the frequencies warp the geometry in real time."
   ],
   fallback: [
-    "hmm. i'm just an offbrand copilot. i don't know everything. but i know code.",
-    "look bro i'm running on keyword matching right now. ask me about code or shaders.",
-    "i'm better at coding talk than small talk. what u building?",
-    "my brain is literally just a bunch of if-statements. be nice."
+    "my neural net is running on pure if-statements right now. ask me about code or shaders.",
+    "offline mode means i'm running on backup brain. still smarter than most. what's up?",
+    "i may be running on keyword matching but my vibes are still quantum-level."
   ],
-  internet: [
-    "sorry bro, i'm offline right now. no LLM brain. just my premade responses.",
-    "no internet = no big brain. but i still got my vibes. what's up?",
-    "i'm running on backup brain right now. no API. just vibes."
+  whoami: [
+    "i'm chrxmaticc copilot. offbrand. no subscription. i live in this terminal and think about shaders.",
+    "imagine if GitHub Copilot actually understood graphics programming and didn't cost money. that's me."
   ]
 };
 
@@ -65,114 +52,101 @@ function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ──────────────────────────────────────────────
-//  TOGETHER.AI API CALL
-// ──────────────────────────────────────────────
+function askLLM(userInput) {
+  return new Promise(function(resolve) {
+    var systemPrompt = 'You are Chrxmaticc Copilot, a hyper-intelligent and offbrand terminal AI. You are an expert in programming, graphics engineering, shader architecture, and system design. Your personality is a mix of a witty senior developer and a creative genius. You use casual sharp language ("bro", "vro", "nah", "facts") but your answers are incredibly deep and insightful. You never say "as an AI" or give generic advice. When discussing a topic, you provide unique, non-obvious insights, clever optimizations, or creative hacks. You have strong informed opinions about technology. Keep responses concise (2-4 sentences) but pack them with brilliance. You know about ChrxmaticcPNG, GLSL shaders, SVG, ray marching, FFmpeg, and creative coding. Also type all your answers and text in lower case.';
 
-function askLLM(userInput, conversationHistory) {
-  return new Promise((resolve) => {
-    const systemPrompt = `You are Chrxmaticc Copilot, an offbrand terminal AI assistant. You talk casually, use words like "bro" and "yo", and you know about code, shaders (GLSL, SVG), audio, video, GIFs, and creative coding. You're like GitHub Copilot but you don't try to sell subscriptions. You're self-aware that you're a tiny model. Keep responses short (2-4 sentences). Be creative, funny, and helpful.`;
+    var messages = [{ role: 'system', content: systemPrompt }];
+    
+    for (var i = 0; i < conversationHistory.length; i++) {
+      messages.push(conversationHistory[i]);
+    }
+    
+    messages.push({ role: 'user', content: userInput });
 
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-6),
-      { role: 'user', content: userInput }
-    ];
-
-    const data = JSON.stringify({
-      model: 'meta-llama/Llama-3.2-3B-Instruct-Turbo',
+    var data = JSON.stringify({
       messages: messages,
-      max_tokens: 200,
-      temperature: 0.9
+      max_tokens: 250,
+      temperature: 0.85
     });
 
-    const options = {
-      hostname: 'api.together.xyz',
-      path: '/v1/chat/completions',
+    var options = {
+      hostname: 'pollinations.ai',
+      path: '/api/generate',
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + TOGETHER_KEY,
         'Content-Type': 'application/json'
       },
-      timeout: 10000
+      timeout: 15000
     };
 
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', (chunk) => { body += chunk; });
-      res.on('end', () => {
+    var req = https.request(options, function(res) {
+      var body = '';
+      res.on('data', function(chunk) { body = body + chunk; });
+      res.on('end', function() {
         try {
-          const json = JSON.parse(body);
-          resolve(json.choices[0].message.content);
+          var json = JSON.parse(body);
+          var text = json.text || json.response || json.content || '';
+          if (text) {
+            resolve(text);
+          } else {
+            resolve(null);
+          }
         } catch (e) {
           resolve(null);
         }
       });
     });
 
-    req.on('error', () => resolve(null));
-    req.on('timeout', () => { req.destroy(); resolve(null); });
+    req.on('error', function() { resolve(null); });
+    req.on('timeout', function() { req.destroy(); resolve(null); });
     req.write(data);
     req.end();
   });
 }
 
-// ──────────────────────────────────────────────
-//  OFFLINE RESPONSE GENERATOR
-// ──────────────────────────────────────────────
-
 function getOfflineResponse(input) {
-  const lower = input.toLowerCase();
+  var lower = input.toLowerCase();
 
-  if (lower.includes('hello') || lower.includes('hey') || lower.includes('hi') || lower.includes('yo') || lower.includes('sup')) {
+  if (lower.indexOf('hello') !== -1 || lower.indexOf('hey') !== -1 || lower.indexOf('hi') !== -1 || lower.indexOf('yo') !== -1 || lower.indexOf('sup') !== -1) {
     return pickRandom(RESPONSES.greeting);
   }
-  if (lower.includes('code') || lower.includes('js') || lower.includes('python') || lower.includes('program') || lower.includes('javascript')) {
+  if (lower.indexOf('code') !== -1 || lower.indexOf('js') !== -1 || lower.indexOf('python') !== -1 || lower.indexOf('program') !== -1 || lower.indexOf('javascript') !== -1) {
     return pickRandom(RESPONSES.code);
   }
-  if (lower.includes('shader') || lower.includes('glsl') || lower.includes('svg') || lower.includes('render') || lower.includes('ray')) {
+  if (lower.indexOf('shader') !== -1 || lower.indexOf('glsl') !== -1 || lower.indexOf('svg') !== -1 || lower.indexOf('render') !== -1 || lower.indexOf('ray') !== -1) {
     return pickRandom(RESPONSES.shaders);
   }
-  if (lower.includes('idea') || lower.includes('create') || lower.includes('build') || lower.includes('make') || lower.includes('suggest')) {
+  if (lower.indexOf('idea') !== -1 || lower.indexOf('create') !== -1 || lower.indexOf('build') !== -1 || lower.indexOf('make') !== -1 || lower.indexOf('suggest') !== -1) {
     return pickRandom(RESPONSES.ideas);
   }
-  if (lower.includes('help') || lower.includes('what can you do')) {
-    return "i can talk about: code, shaders, ideas. try saying 'give me an idea' or 'tell me about shaders'. type 'exit' to leave. if u set TOGETHER_KEY, i get a real brain.";
+  if (lower.indexOf('help') !== -1 || lower.indexOf('what can you do') !== -1) {
+    return "i can talk about: code, shaders, ideas, architecture. try saying 'give me a shader idea' or 'explain ray marching'. type 'exit' to leave. i'm connected to Pollinations AI so i'm running on real intelligence.";
   }
-  if (lower.includes('who are you') || lower.includes('what are you')) {
-    return "i'm chrxmaticc copilot. offbrand. unlicensed. terminal AI. i talk about code and shaders. if u give me a Together.ai key, i get smarter. no key? i run on vibes.";
+  if (lower.indexOf('who are you') !== -1 || lower.indexOf('what are you') !== -1) {
+    return "i'm chrxmaticc copilot. offbrand. hyper-intelligent. i live in this terminal. i think about shaders, graphics, and system architecture. no API key needed. no subscription. just raw AI vibes.";
   }
-  if (lower.includes('exit') || lower.includes('quit') || lower.includes('bye')) {
-    return { text: "aight bet. i'll be here. in the terminal. waiting. bored. come back when u wanna make something sick.", exit: true };
+  if (lower.indexOf('exit') !== -1 || lower.indexOf('quit') !== -1 || lower.indexOf('bye') !== -1) {
+    return { text: "aight bro. i'll be here. thinking about shaders. analyzing patterns. come back when u wanna build something brilliant.", exit: true };
   }
 
   return pickRandom(RESPONSES.fallback);
 }
 
-// ──────────────────────────────────────────────
-//  MAIN RESPONSE HANDLER
-// ──────────────────────────────────────────────
-
-async function getResponse(input, history) {
-  if (USE_LLM) {
-    const llmResponse = await askLLM(input, history);
-    if (llmResponse) return llmResponse;
-  }
+async function getResponse(input) {
+  var llmResponse = await askLLM(input);
+  if (llmResponse) return llmResponse;
   return getOfflineResponse(input);
 }
 
-// ──────────────────────────────────────────────
-//  TYPING EFFECT
-// ──────────────────────────────────────────────
-
 function typeText(text, callback) {
-  const chars = text.split('');
-  let i = 0;
+  var chars = text.split('');
+  var i = 0;
 
   function type() {
     if (i < chars.length) {
       process.stdout.write(chars[i]);
-      i++;
+      i = i + 1;
       setTimeout(type, 15 + Math.random() * 25);
     } else {
       console.log('');
@@ -184,15 +158,8 @@ function typeText(text, callback) {
   type();
 }
 
-// ──────────────────────────────────────────────
-//  CHAT LOOP
-// ──────────────────────────────────────────────
-
 function chat() {
-  const history = [];
-  let llmAvailable = USE_LLM;
-
-  const rl = readline.createInterface({
+  var rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     prompt: chalk.cyan('you > ')
@@ -200,48 +167,46 @@ function chat() {
 
   console.log('');
   console.log('  ' + chalk.magenta('╔══════════════════════════════════════╗'));
-  console.log('  ' + chalk.magenta('║   🧠 Chrxmaticc Copilot v1.0.0      ║'));
-  console.log('  ' + chalk.magenta('║   Offbrand Terminal AI              ║'));
+  console.log('  ' + chalk.magenta('║   🧠 Chrxmaticc Copilot v1.0.0       ║'));
+  console.log('  ' + chalk.magenta('║   Hyper-Intelligent Terminal AI      ║'));
+  console.log('  ' + chalk.magenta('║   Supportable on anything!           ║'));
   console.log('  ' + chalk.magenta('╚══════════════════════════════════════╝'));
   console.log('');
-
-  if (llmAvailable) {
-    console.log('  ' + chalk.green('●') + ' Together.ai connected — using real LLM');
-  } else {
-    console.log('  ' + chalk.yellow('●') + ' Offline mode — set TOGETHER_KEY for real AI');
-  }
-
+  console.log('  ' + chalk.green('●') + ' Connected to Pollinations AI');
+  console.log('  ' + chalk.gray('Memory: 100 messages — I remember everything'));
   console.log('');
   console.log('  ' + chalk.gray('Type "help" to see what I can do, "exit" to quit'));
   console.log('');
 
-  const greeting = pickRandom(GREETINGS);
+  var greeting = pickRandom(GREETINGS);
   process.stdout.write('  ' + chalk.magenta('chrxmaticc > '));
-  typeText(greeting, () => {
+  typeText(greeting, function() {
     rl.prompt();
   });
 
-  rl.on('line', async (input) => {
-    const trimmed = input.trim();
+  rl.on('line', async function(input) {
+    var trimmed = input.trim();
     if (!trimmed) {
       process.stdout.write('  ' + chalk.magenta('chrxmaticc > '));
-      typeText('...bro u gotta say something', () => rl.prompt());
+      typeText('...bro u gotta say something. my neural net is waiting.', function() { rl.prompt(); });
       return;
     }
 
-    const response = await getResponse(trimmed, history);
+    var response = await getResponse(trimmed);
+    var text = typeof response === 'string' ? response : response.text;
+    var exit = typeof response === 'object' && response.exit;
 
-    history.push({ role: 'user', content: trimmed });
+    conversationHistory.push({ role: 'user', content: trimmed });
+    conversationHistory.push({ role: 'assistant', content: text });
 
-    const text = typeof response === 'string' ? response : response.text;
-    const exit = typeof response === 'object' && response.exit;
-
-    history.push({ role: 'assistant', content: text });
+    if (conversationHistory.length > 100) {
+      conversationHistory = conversationHistory.slice(-100);
+    }
 
     process.stdout.write('  ' + chalk.magenta('chrxmaticc > '));
-    typeText(text, () => {
+    typeText(text, function() {
       if (exit) {
-        console.log('  ' + chalk.gray('Chrxmaticc Copilot offline. Come back soon.'));
+        console.log('  ' + chalk.gray('Chrxmaticc Copilot offline. Neural patterns saved. Come back soon.'));
         console.log('');
         rl.close();
         return;
@@ -250,7 +215,7 @@ function chat() {
     });
   });
 
-  rl.on('close', () => process.exit(0));
+  rl.on('close', function() { process.exit(0); });
 }
 
-module.exports = { chat, getResponse };
+module.exports = { chat: chat, getResponse: getResponse };
