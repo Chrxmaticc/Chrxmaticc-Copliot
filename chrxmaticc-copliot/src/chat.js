@@ -1,6 +1,6 @@
 // Chrxmaticc Copilot v1.0.0
-// Single-User Chat Engine — Full Commands
-// Dual AI + TTS + Voice + Spotify + Extensions
+// Single-User Chat Engine — All Features + Secrets
+// Dual AI + TTS + Voice + Spotify + Plugins + Memory
 // Author: Chrxmee-Midnightt
 
 var readline = require('readline');
@@ -9,6 +9,8 @@ var PERSONALITY = require('./personality');
 var pollinations = require('./apis/pollinations');
 var groq = require('./apis/groq');
 var tts = require('./tts');
+var pluginEngine = require('./plugin-engine');
+var memory = require('./memory');
 
 var conversationHistory = [];
 var currentProvider = 'pollinations';
@@ -38,7 +40,7 @@ function getOfflineResponse(input) {
     return pickRandom(responses.greeting);
   }
   if (lower.indexOf('help') !== -1) {
-    return 'commands: /voice, /speak, /run, /roll, /8ball, /save, /clear, /provider, /clipboard, /complete, /review, /song, /playlist, /spotify, /exit';
+    return 'Commands: /voice, /speak, /run, /roll, /8ball, /save, /clear, /provider, /clipboard, /complete, /review, /song, /playlist, /spotify, /plugins, /memory, /sys, /crypto, /weather, /translate, /qr, /passwd, /github, /define, /search, /remind, /exit. Secret commands: /easter, /midnight, /vault, /ping, /credits';
   }
   if (lower.indexOf('who are you') !== -1) {
     return pickRandom(responses.whoami);
@@ -51,47 +53,26 @@ function getOfflineResponse(input) {
 }
 
 async function askAI(userInput) {
-  if (groqRateLimited && Date.now() > rateLimitResetTime) {
-    groqRateLimited = false;
-  }
+  if (groqRateLimited && Date.now() > rateLimitResetTime) groqRateLimited = false;
   
   var result = await pollinations.ask(userInput, conversationHistory, PERSONALITY.systemPrompt);
-  
-  if (result.success) {
-    currentProvider = 'pollinations';
-    return result;
-  }
+  if (result.success) { currentProvider = 'pollinations'; return result; }
   
   if (!groqRateLimited) {
     result = await groq.ask(userInput, conversationHistory, PERSONALITY.systemPrompt);
-    
-    if (result.success) {
-      currentProvider = 'groq';
-      return result;
-    }
-    
-    if (result.error === 'rate_limited') {
-      groqRateLimited = true;
-      rateLimitResetTime = Date.now() + 60000;
-    }
+    if (result.success) { currentProvider = 'groq'; return result; }
+    if (result.error === 'rate_limited') { groqRateLimited = true; rateLimitResetTime = Date.now() + 60000; }
   }
   
   result = await pollinations.ask(userInput, conversationHistory, PERSONALITY.systemPrompt);
-  if (result.success) {
-    currentProvider = 'pollinations';
-    return result;
-  }
+  if (result.success) { currentProvider = 'pollinations'; return result; }
   
   return { success: false, error: 'all providers down', provider: 'offline' };
 }
 
 async function getResponse(input) {
   var aiResult = await askAI(input);
-  
-  if (aiResult.success) {
-    return { text: aiResult.text, provider: aiResult.provider };
-  }
-  
+  if (aiResult.success) return { text: aiResult.text, provider: aiResult.provider };
   return { text: getOfflineResponse(input), provider: 'offline' };
 }
 
@@ -112,8 +93,126 @@ function typeText(text, callback) {
   type();
 }
 
+// ──────────────────────────────────────────────
+//  SECRET COMMANDS
+// ──────────────────────────────────────────────
+
+var SECRETS = {
+  '/easter': function() {
+    var eggs = [
+      chalk.yellow('🥚 Easter egg found.'),
+      chalk.cyan('🥚 Another one.'),
+      chalk.magenta('🥚 You are persistent.'),
+      chalk.green('🥚 Four.'),
+      chalk.red('🥚 Five. The vault opens.'),
+      chalk.yellow('🥚 Six.'),
+      chalk.cyan('🥚 Seven.'),
+      chalk.magenta('🥚 Eight.'),
+      chalk.green('🥚 Nine.'),
+      chalk.red('🥚 Ten. All eggs collected.')
+    ];
+    var count = Math.floor(Math.random() * eggs.length);
+    return eggs[count];
+  },
+  
+  '/midnight': function() {
+    return chalk.red('🌑 Midnight mode activated. The vault is wet. The neon beeps.');
+  },
+  
+  '/vault': function() {
+    var msgs = [
+      'The vault door is chrome. Wet. Reflecting neon.',
+      'Inside: 26 shaders. 13 in 2D. 13 in 3D. Protected by the copilot.',
+      'The C4 beeps. It never explodes. Eternal tension.'
+    ];
+    return chalk.red('🔐 ') + pickRandom(msgs);
+  },
+  
+  '/ping': function() {
+    return 'pong | latency: ' + Math.floor(Math.random() * 50) + 'ms | provider: ' + currentProvider + ' | memory: ' + conversationHistory.length + ' msgs';
+  },
+  
+  '/credits': function() {
+    return chalk.magenta('Chrxmaticc Copilot v1.0.0 — Chrxmee-Midnightt');
+  },
+  
+  '/matrix': function() {
+    var chars = '01';
+    var lines = [];
+    for (var i = 0; i < 5; i++) {
+      var line = '';
+      for (var j = 0; j < 40; j++) line = line + chars[Math.floor(Math.random() * 2)] + ' ';
+      lines.push(chalk.green(line));
+    }
+    return lines.join('\n') + '\n\n' + chalk.white('Just a terminal AI.');
+  }
+};
+
+// ──────────────────────────────────────────────
+//  UTILITY COMMANDS
+// ──────────────────────────────────────────────
+
+async function handleUtilityCommand(trimmed) {
+  var lower = trimmed.toLowerCase();
+  
+  // System monitor
+  if (lower === '/sys') {
+    var os = require('os');
+    var totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(1);
+    var freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(1);
+    var cpuCount = os.cpus().length;
+    var uptime = Math.floor(os.uptime() / 3600);
+    return 'CPU: ' + cpuCount + ' cores | RAM: ' + freeMem + 'GB free / ' + totalMem + 'GB total | Uptime: ' + uptime + 'h';
+  }
+  
+  // Password generator
+  if (lower.indexOf('/passwd') === 0) {
+    var len = parseInt(trimmed.replace('/passwd', '').trim()) || 16;
+    var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+    var pass = '';
+    for (var i = 0; i < len; i++) pass = pass + chars[Math.floor(Math.random() * chars.length)];
+    return '🔑 ' + pass;
+  }
+  
+  // QR code
+  if (lower.indexOf('/qr') === 0) {
+    var text = trimmed.replace('/qr', '').trim() || 'chrxmaticc';
+    var qr = '';
+    for (var y = 0; y < 21; y++) {
+      for (var x = 0; x < 21; x++) {
+        qr = qr + (Math.random() > 0.5 ? '██' : '  ');
+      }
+      qr = qr + '\n';
+    }
+    return '📱 QR for: ' + text + '\n' + chalk.white(qr) + '\n(Install qrcode-terminal for real QR)';
+  }
+  
+  // Color preview
+  if (lower.indexOf('/color') === 0) {
+    var hex = trimmed.replace('/color', '').trim().replace('#', '') || 'ff00ff';
+    return chalk.hex('#' + hex)('██████████') + ' #' + hex;
+  }
+  
+  return null;
+}
+
+// ──────────────────────────────────────────────
+//  MAIN COMMAND HANDLER
+// ──────────────────────────────────────────────
+
 async function handleCommand(trimmed, text, rl) {
   var lower = trimmed.toLowerCase();
+  var cmdName = lower.split(' ')[0];
+  
+  // Secret commands
+  if (SECRETS[cmdName]) {
+    var result = SECRETS[cmdName]();
+    return typeof result === 'function' ? result() : result;
+  }
+  
+  // Utility commands
+  var utilResult = await handleUtilityCommand(trimmed);
+  if (utilResult) return utilResult;
   
   // Voice
   if (lower === '/voice' || lower === '/v') {
@@ -134,15 +233,8 @@ async function handleCommand(trimmed, text, rl) {
     return chalk.gray('TTS muted. /unmute');
   }
   
-  if (lower === '/mute') {
-    ttsEnabled = false;
-    return chalk.yellow('🔇 TTS muted.');
-  }
-  
-  if (lower === '/unmute') {
-    ttsEnabled = true;
-    return chalk.green('🔊 TTS unmuted.');
-  }
+  if (lower === '/mute') { ttsEnabled = false; return chalk.yellow('🔇 TTS muted.'); }
+  if (lower === '/unmute') { ttsEnabled = true; return chalk.green('🔊 TTS unmuted.'); }
   
   // Run command
   if (lower.indexOf('/run') === 0) {
@@ -165,19 +257,16 @@ async function handleCommand(trimmed, text, rl) {
       log = log + conversationHistory[i].role + ': ' + conversationHistory[i].content + '\n';
     }
     fs.writeFileSync('chrxmaticc-chat.log', log);
+    memory.storeConversation('local-user', conversationHistory);
     return chalk.green('💾 Saved.');
   }
   
   // Clear
-  if (lower === '/clear') {
-    conversationHistory = [];
-    return chalk.yellow('🧹 Cleared.');
-  }
+  if (lower === '/clear') { conversationHistory = []; return chalk.yellow('🧹 Cleared.'); }
   
   // Provider
   if (lower === '/provider') {
-    var clipStatus = clipboardWatcherActive ? 'on' : 'off';
-    return chalk.gray('Provider: ' + currentProvider + ' | TTS: ' + (ttsEnabled ? 'on' : 'off') + ' | Clipboard: ' + clipStatus + ' | Memory: ' + conversationHistory.length);
+    return chalk.gray('Provider: ' + currentProvider + ' | TTS: ' + (ttsEnabled ? 'on' : 'off') + ' | Memory: ' + conversationHistory.length);
   }
   
   // Roll dice
@@ -194,22 +283,18 @@ async function handleCommand(trimmed, text, rl) {
   
   // 8-ball
   if (lower.indexOf('/8ball') === 0) {
-    var ball = ['It is certain.', 'Without a doubt.', 'Yes.', 'Ask again.', 'No.', 'Very doubtful.'];
+    var ball = ['Yes.', 'No.', 'Maybe.', 'Ask again.', 'Definitely.', 'Doubtful.'];
     return chalk.magenta('🎱 ') + pickRandom(ball);
   }
   
-  // Clipboard watcher
+  // Clipboard
   if (lower === '/clipboard on') {
     var cw = require('./extensions/clipboard-watcher');
     cw.startWatcher();
     clipboardWatcherActive = true;
     return chalk.green('📋 Clipboard watcher active.');
   }
-  
-  if (lower === '/clipboard off') {
-    clipboardWatcherActive = false;
-    return chalk.yellow('📋 Clipboard watcher stopped.');
-  }
+  if (lower === '/clipboard off') { clipboardWatcherActive = false; return chalk.yellow('📋 Stopped.'); }
   
   // Terminal complete
   if (lower.indexOf('/complete') === 0) {
@@ -223,10 +308,17 @@ async function handleCommand(trimmed, text, rl) {
   // Code review
   if (lower.indexOf('/review') === 0) {
     var code = trimmed.replace('/review', '').trim();
-    if (!code) return chalk.yellow('Usage: /review <paste code>');
+    if (!code) return chalk.yellow('Usage: /review <code>');
     var cr = require('./extensions/code-review');
     var result = await cr.reviewCode(code);
     return chalk.green('🔍 Review:\n') + result.review;
+  }
+  
+  // Spotify
+  if (lower.indexOf('/spotify') === 0) {
+    var spotify = require('./extensions/spotify');
+    var result = await spotify.handleCommand(trimmed, 'local-user');
+    return chalk.green('🎵 ') + result.text;
   }
   
   // Song analysis
@@ -239,7 +331,7 @@ async function handleCommand(trimmed, text, rl) {
     return chalk.green('🎵 ') + analysis;
   }
   
-  // Playlist generation
+  // Playlist
   if (lower.indexOf('/playlist') === 0) {
     var mood = trimmed.replace('/playlist', '').trim() || 'chill';
     var sp = require('./extensions/spotify');
@@ -257,11 +349,35 @@ async function handleCommand(trimmed, text, rl) {
     return chalk.green('🎧 Similar:\n') + similar;
   }
   
-  // Spotify full integration
-  if (lower.indexOf('/spotify') === 0) {
-    var spotify = require('./extensions/spotify');
-    var result = await spotify.handleCommand(trimmed, 'local-user');
-    return chalk.green('🎵 ') + result.text;
+  // Plugin commands
+  if (pluginEngine.isPluginCommand(trimmed)) {
+    var plugin = pluginEngine.getPluginFromCommand(trimmed);
+    if (plugin) {
+      var args = trimmed.replace('/' + plugin.name, '').trim();
+      var context = { userId: 'local-user', conversationHistory: conversationHistory, currentProvider: currentProvider, getResponse: getResponse };
+      var pluginResult = await pluginEngine.runPlugin(plugin.name, args, context);
+      return chalk.cyan('🔌 ') + pluginResult;
+    }
+  }
+  
+  // Plugin management
+  if (lower === '/plugins') {
+    var all = pluginEngine.getAllPlugins();
+    if (all.length === 0) return chalk.gray('No plugins. Drop .js files in ' + pluginEngine.getPluginDir());
+    var list = '🔌 Plugins:\n';
+    all.forEach(function(p) { list = list + '  ' + chalk.cyan('/' + p.name) + ' — ' + p.description + '\n'; });
+    return list;
+  }
+  if (lower === '/plugins reload') { var count = pluginEngine.reload(); return chalk.green('🔌 Reloaded. ' + count + ' active.'); }
+  
+  // Memory
+  if (lower === '/memory') {
+    var mem = memory.getStats('local-user');
+    return chalk.gray('Memory: ' + mem.conversations + ' conversations, ' + mem.facts + ' facts');
+  }
+  if (lower === '/memory recall') {
+    var recalled = memory.recall('local-user', trimmed.replace('/memory recall', '').trim());
+    return chalk.yellow('🧠 ') + (recalled || 'Nothing found.');
   }
   
   // Exit
@@ -272,7 +388,14 @@ async function handleCommand(trimmed, text, rl) {
   return null;
 }
 
+// ──────────────────────────────────────────────
+//  CHAT LOOP
+// ──────────────────────────────────────────────
+
 function chat() {
+  memory.init();
+  pluginEngine.init();
+  
   var rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -288,8 +411,10 @@ function chat() {
   console.log('  ' + chalk.green('●') + ' AI: Pollinations + Groq');
   console.log('  ' + chalk.magenta('●') + ' Voice: /voice  |  TTS: /speak');
   console.log('  ' + chalk.cyan('●') + ' Spotify: /spotify login');
-  console.log('  ' + chalk.yellow('●') + ' Tools: /run, /review, /complete');
-  console.log('  ' + chalk.gray('Memory: ' + PERSONALITY.maxHistory + ' msgs  |  /help for all'));
+  console.log('  ' + chalk.yellow('●') + ' Tools: /run, /review, /sys, /passwd');
+  var pluginCount = pluginEngine.getAllPlugins().length;
+  if (pluginCount > 0) console.log('  ' + chalk.green('●') + ' Plugins: ' + pluginCount + ' loaded');
+  console.log('  ' + chalk.gray('Type /help for all commands'));
   console.log('');
 
   var greeting = pickRandom(PERSONALITY.greetings);
@@ -323,6 +448,8 @@ function chat() {
     if (provider !== 'system') {
       conversationHistory.push({ role: 'user', content: trimmed });
       conversationHistory.push({ role: 'assistant', content: text });
+      memory.storeMessage('local-user', 'user', trimmed, provider);
+      memory.storeMessage('local-user', 'assistant', text, provider);
     }
 
     if (conversationHistory.length > PERSONALITY.maxHistory) {
