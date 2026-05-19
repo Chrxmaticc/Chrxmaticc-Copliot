@@ -12,12 +12,23 @@
     "server": "node bin/server.js",
     "build": "pkg bin/copilot.js --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --output executables/chrxmaticc-copilot"
   },
-  "keywords": ["copilot", "ai", "chat", "terminal", "offbrand", "code", "tts", "spotify", "clipboard"],
+  "keywords": [
+    "copilot",
+    "ai",
+    "chat",
+    "terminal",
+    "offbrand",
+    "code",
+    "tts",
+    "spotify",
+    "clipboard"
+  ],
   "author": "Chrxmee-Midnightt",
   "license": "MIT",
   "dependencies": {
-    "chalk": "4.1.2",
     "@sefinek/google-tts-api": "^2.1.8",
-    "clipboardy": "^5.3.1"
+    "chalk": "4.1.2",
+    "clipboardy": "^5.3.1",
+    "commander": "^14.0.3"
   }
 }
