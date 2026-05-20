@@ -1,4 +1,4 @@
-# Contributing to Chrxmaticc AI
+# Contributing to Chrxmaticc Copliot / AI
 
 ## How to Contribute
 
