@@ -9,7 +9,6 @@
 3. **No admin** — Runs in user space only.
 4. **No spyware** — Only connects to Pollinations AI and Groq APIs.
 5. **VirusTotal scanned** — See virustotal-report.png in this folder.
-6. **Checksum verified** — Verify with checksum.txt
 
 ## What it does
 
