@@ -4,7 +4,7 @@
 
 **Yes.** Here's why:
 
-1. **Open source** — All code at github.com/chrxmee/chrxmaticc-copilot
+1. **Open source** — All code at github.com/chrxmee-bits/chrxmaticc-copilot
 2. **No install** — Just a portable .exe. Delete it anytime.
 3. **No admin** — Runs in user space only.
 4. **No spyware** — Only connects to Pollinations AI and Groq APIs.
