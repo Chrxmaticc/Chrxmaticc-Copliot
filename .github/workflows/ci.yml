@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
     defaults:
       run:
         working-directory: chrxmaticc-copilot
@@ -27,4 +27,3 @@ jobs:
           cache-dependency-path: chrxmaticc-copilot/package-lock.json
       - run: npm ci
       - run: npm test
-      - run: node -e "const fs=require('fs'); const files=fs.readdirSync('src').filter(f=>f.endsWith('.js')||f.endsWith('.json')); console.log('Files:', files.length); files.forEach(f=>console.log('  ✓', f));"
