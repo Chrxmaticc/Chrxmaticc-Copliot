@@ -1,3 +1,4 @@
+var chalk = require('chalk');
 // Chrxmaticc Copilot — Clipboard Watcher
 // Watches clipboard for errors, auto-suggests fixes
 // Author: Chrxmee-Midnightt

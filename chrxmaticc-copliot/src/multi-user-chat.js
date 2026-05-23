@@ -1,3 +1,4 @@
+var chalk = require('chalk');
 // Chrxmaticc Copilot — Multi-User Chat Engine
 // Isolated memory per user. Shared AI providers.
 // Author: Chrxmee-Midnightt

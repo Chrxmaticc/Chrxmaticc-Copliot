@@ -1,3 +1,4 @@
+var chalk = require('chalk');
 // Chrxmaticc Copilot — Spotify Integration v2.0
 // Also, all Spotify Logins and Credentials are private. Please know this.
 // Full account login, playlist control, music analysis

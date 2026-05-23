@@ -1,3 +1,4 @@
+var chalk = require('chalk');
 // Chrxmaticc Copilot — Terminal Hook
 // Auto-completes commands in your terminal
 // Author: Chrxmee-Midnightt

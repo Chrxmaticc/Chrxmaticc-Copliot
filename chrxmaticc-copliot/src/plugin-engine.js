@@ -1,3 +1,4 @@
+var chalk = require('chalk');
 // Chrxmaticc Copilot — Plugin Engine
 // Drop .js files in plugins/ folder. They auto-load.
 // Author: Chrxmee-Midnightt

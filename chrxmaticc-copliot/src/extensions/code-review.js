@@ -1,3 +1,4 @@
+var chalk = require('chalk');
 // Chrxmaticc Copilot — Code Review Bot
 // Reviews GitHub PRs with AI suggestions
 // Author: Chrxmee-Midnightt

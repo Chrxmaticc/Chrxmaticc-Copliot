@@ -1,3 +1,4 @@
+var chalk = require('chalk');
 // Chrxmaticc Copilot — Voice Engine
 // Combines STT (input) + Chat (processing) + TTS (output)
 // Author: Chrxmee-Midnightt
