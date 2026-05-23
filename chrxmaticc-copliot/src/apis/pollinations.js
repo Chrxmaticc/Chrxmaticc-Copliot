@@ -14,13 +14,14 @@ function ask(userInput, history, systemPrompt) {
 
     var data = JSON.stringify({
       messages: messages,
+      model: 'openai',
       max_tokens: 250,
       temperature: 0.85
     });
 
     var options = {
-      hostname: 'pollinations.ai',
-      path: '/api/generate',
+      hostname: 'text.pollinations.ai',
+      path: '/openai',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       timeout: 15000
@@ -32,7 +33,7 @@ function ask(userInput, history, systemPrompt) {
       res.on('end', function() {
         try {
           var json = JSON.parse(body);
-          var text = json.text || json.response || json.content || '';
+          var text = json.text || json.response || json.content || json.choices?.[0]?.message?.content || '';
           if (text) {
             resolve({ success: true, text: text, provider: 'pollinations' });
           } else {
