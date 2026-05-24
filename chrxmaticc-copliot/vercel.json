@@ -1,8 +1,27 @@
 {
+  "functions": {
+    "api/chat.js": {
+      "runtime": "nodejs20.x",
+      "includeFiles": "src/personality.js"
+    },
+    "api/memory.js": {
+      "runtime": "nodejs20.x"
+    },
+    "api/auth.js": {
+      "runtime": "nodejs20.x"
+    },
+    "api/personal.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     { "source": "/api/chat", "destination": "/api/chat.js" },
     { "source": "/api/memory", "destination": "/api/memory.js" },
     { "source": "/api/auth", "destination": "/api/auth.js" },
+    { "source": "/api/personal", "destination": "/api/personal.js" },
+    { "source": "/forgot", "destination": "/public/forgot.html" },
+    { "source": "/accounts", "destination": "/public/accounts.html" },
+    { "source": "/settings", "destination": "/public/settings.html" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [
