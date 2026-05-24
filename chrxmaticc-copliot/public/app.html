@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <title>Chrxmaticc Copilot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-midnight">
+  <div id="app">
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-avatar" id="sidebarAvatar">🧠</div>
+        <div class="sidebar-title">Chats</div>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" placeholder="Search chats..." class="sidebar-search-input" id="chatSearch" oninput="filterChats()">
+      </div>
+      <div class="sidebar-chats" id="savedChatsList">
+        <div class="chat-item active" onclick="loadChat('main')">
+          <div class="chat-item-avatar">🧠</div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">Chrxmaticc Copilot</div>
+            <div class="chat-item-preview">Yo! I'm Chrxmaticc Copilot...</div>
+          </div>
+          <div class="chat-item-time">Now</div>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="sidebar-profile" onclick="location.href='settings.html'">
+          <div class="sidebar-profile-avatar" id="profileAvatar">👤</div>
+          <div class="sidebar-profile-info">
+            <div class="sidebar-profile-name" id="profileName">Guest</div>
+            <div class="sidebar-profile-status">Tap for settings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Chat -->
+    <div id="main" class="main">
+      <div class="topbar">
+        <button class="topbar-btn" onclick="toggleSidebar()">
+          <span class="topbar-back">‹</span>
+          <span class="topbar-avatar-sm" id="topbarAvatar">🧠</span>
+        </button>
+        <div class="topbar-center" onclick="showContactInfo()">
+          <div class="topbar-name">Chrxmaticc Copilot</div>
+          <div class="topbar-status">
+            <span id="statusDot" class="status-dot"></span>
+            <span id="statusText">Online</span>
+          </div>
+        </div>
+        <button class="topbar-btn" onclick="location.href='settings.html'">⚙️</button>
+        <button class="topbar-btn" id="ttsBtn" onclick="toggleTTS()">🔊</button>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="bubble-row ai">
+          <div class="bubble">Yo! I'm Chrxmaticc Copilot. Offbrand. Hyper-intelligent. No subscription.
+
+Type /help to see everything I can do, or just talk to me.</div>
+          <div class="timestamp">Now</div>
+        </div>
+        <div class="quick-commands">
+          <button class="quick-cmd" onclick="quickSend('/weather London')">🌤️</button>
+          <button class="quick-cmd" onclick="quickSend('/crypto bitcoin')">💰</button>
+          <button class="quick-cmd" onclick="quickSend('/roll 2d20')">🎲</button>
+          <button class="quick-cmd" onclick="quickSend('/joke')">😂</button>
+          <button class="quick-cmd" onclick="quickSend('/fact')">📚</button>
+          <button class="quick-cmd" onclick="quickSend('/speak hello')">🔊</button>
+          <button class="quick-cmd" onclick="quickSend('/8ball will I be rich?')">🎱</button>
+        </div>
+        <div class="typing-indicator" id="typing">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+
+      <div class="inputbar">
+        <button class="input-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+        <div class="input-wrap">
+          <textarea id="userInput" rows="1" placeholder="iMessage"></textarea>
+        </div>
+        <button class="input-btn" onclick="quickSend('/save')">💾</button>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div id="micStatus" class="mic-status"><span class="mic-pulse"></span> Listening...</div>
+    </div>
+
+    <!-- Contact Info Modal -->
+    <div id="contactModal" class="modal">
+      <div class="modal-content contact-card">
+        <div class="contact-card-avatar" id="contactAvatar">🧠</div>
+        <div class="contact-card-name">Chrxmaticc Copilot</div>
+        <div class="contact-card-status">
+          <span id="contactStatusDot" class="status-dot"></span>
+          <span id="contactStatusText">Online</span>
+        </div>
+        <div class="contact-card-actions">
+          <button class="contact-action" onclick="exportChat()">📤 Export Chat</button>
+          <button class="contact-action" onclick="clearChat()">🗑️ Clear Chat</button>
+          <button class="contact-action" onclick="newChat()">💬 New Chat</button>
+          <button class="contact-action" onclick="location.href='settings.html'">⚙️ Settings</button>
+        </div>
+        <button class="modal-close contact-close" onclick="hideContactInfo()">✕</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
