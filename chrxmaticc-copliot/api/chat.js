@@ -1,4 +1,5 @@
 var https = require('https');
+var PERSONALITY = require('../src/personality');
 
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,9 +18,11 @@ module.exports = async function(req, res) {
 
 function getAIResponse(message) {
   return new Promise(function(resolve) {
+    var systemPrompt = PERSONALITY.systemPrompt || 'You are Chrxmaticc Copilot, a hyper-intelligent offbrand terminal AI. Keep responses short, casual, and brilliant.';
+
     var data = JSON.stringify({
       messages: [
-        { role: 'system', content: 'You are Chrxmaticc Copilot, a hyper-intelligent offbrand terminal AI. Keep responses short, casual, and brilliant. Use "bro" and casual language. Always speak in lower cases, always. and be helpful and chill.' },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: message }
       ],
       model: 'openai',
@@ -57,12 +60,33 @@ function getAIResponse(message) {
 
 function getFallback(input) {
   var lower = (input || '').toLowerCase();
-  if (lower.indexOf('hello') !== -1 || lower.indexOf('hey') !== -1) return 'Yo! What\'s good?';
-  if (lower.indexOf('help') !== -1) return 'Commands: /weather London, /crypto bitcoin, /roll 2d20, /speak hello, /joke, /fact';
-  if (lower.indexOf('/weather') === 0) return 'Weather needs a city. Try /weather London';
-  if (lower.indexOf('/crypto') === 0) return 'Crypto needs a coin. Try /crypto bitcoin';
-  if (lower.indexOf('/roll') === 0) return 'Try /roll 2d20 to roll two 20-sided dice';
-  if (lower.indexOf('/joke') === 0) return 'Why do programmers prefer dark mode? Because light attracts bugs.';
-  if (lower.indexOf('/fact') === 0) return 'The first computer bug was an actual moth found in a relay in 1947.';
-  return 'I\'m in offline mode. Limited responses but still here. Try /help for commands.';
+  var responses = PERSONALITY.offline || {};
+  var topics = PERSONALITY.topics || {};
+
+  for (var category in topics) {
+    for (var i = 0; i < topics[category].length; i++) {
+      if (lower.indexOf(topics[category][i]) !== -1) {
+        if (responses[category] && responses[category].length) {
+          return responses[category][Math.floor(Math.random() * responses[category].length)];
+        }
+      }
+    }
+  }
+
+  if (lower.indexOf('hello') !== -1 || lower.indexOf('hey') !== -1 || lower.indexOf('hi') !== -1) {
+    var greetings = responses.greeting || ['Yo! What\'s good?'];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
+
+  if (lower.indexOf('help') !== -1) {
+    return 'Commands: /weather London, /crypto bitcoin, /roll 2d20, /speak hello, /joke, /fact';
+  }
+
+  if (lower.indexOf('who are you') !== -1) {
+    var whoami = responses.whoami || ['I\'m Chrxmaticc Copilot. Offbrand. Hyper-intelligent.'];
+    return whoami[Math.floor(Math.random() * whoami.length)];
+  }
+
+  var fallback = responses.fallback || ['I\'m in offline mode. Limited responses but still here.'];
+  return fallback[Math.floor(Math.random() * fallback.length)];
 }
