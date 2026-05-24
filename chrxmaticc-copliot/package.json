@@ -3,6 +3,7 @@
   "version": "1.0.3",
   "description": "Offbrand terminal AI — talks about code, shaders, and whatever. TTS included.",
   "main": "src/chat.js",
+  "type": "commonjs",
   "bin": {
     "chrxmaticc-copilot": "./bin/copilot.js"
   },
