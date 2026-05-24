@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <title>Forgot Password — Chrxmaticc Copilot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-midnight">
+  <div class="landing-container">
+    <div class="landing-card">
+      <div class="landing-avatar">🔑</div>
+      <h1 class="landing-title">Forgot Password</h1>
+      <p class="landing-subtitle">Enter your email and security answer to reset.</p>
+
+      <input type="email" id="forgotEmail" placeholder="Email" class="landing-input">
+      <input type="text" id="forgotSecurityAnswer" placeholder="Security Answer" class="landing-input" style="display:none;">
+      <button class="landing-btn primary" onclick="handleForgot()">Send Reset Token</button>
+
+      <div id="resetSection" style="display:none; margin-top:16px;">
+        <p style="color:#30d158; font-size:13px; margin-bottom:8px;">✅ Security verified. Enter new password.</p>
+        <input type="text" id="resetToken" placeholder="Reset token" class="landing-input">
+        <input type="password" id="newPassword" placeholder="New password" class="landing-input">
+        <button class="landing-btn primary" onclick="handleReset()">Reset Password</button>
+      </div>
+
+      <div id="forgotError" class="auth-error"></div>
+
+      <button class="landing-btn text" onclick="location.href='index.html'" style="margin-top:12px;">← Back to login</button>
+    </div>
+  </div>
+
+  <script>
+    async function handleForgot() {
+      var email = document.getElementById('forgotEmail').value.trim();
+      var err = document.getElementById('forgotError');
+      if (!email) { err.textContent = 'Enter your email.'; return; }
+
+      try {
+        var res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'forgot', email: email })
+        });
+        var data = await res.json();
+
+        if (data.requiresSecurityAnswer) {
+          document.getElementById('forgotSecurityAnswer').style.display = 'block';
+          err.textContent = 'Answer your security question.';
+          return;
+        }
+
+        if (data.resetToken) {
+          document.getElementById('resetToken').value = data.resetToken;
+          document.getElementById('resetSection').style.display = 'block';
+          err.textContent = '';
+        } else {
+          err.textContent = data.error || 'Something went wrong.';
+        }
+      } catch (e) {
+        err.textContent = 'Connection error.';
+      }
+    }
+
+    async function handleReset() {
+      var token = document.getElementById('resetToken').value.trim();
+      var newPassword = document.getElementById('newPassword').value.trim();
+      var err = document.getElementById('forgotError');
+      if (!token || !newPassword) { err.textContent = 'Fill in both fields.'; return; }
+
+      try {
+        var res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'reset', token: token, newPassword: newPassword })
+        });
+        var data = await res.json();
+        if (data.reset) {
+          alert('Password reset! Go back to login.');
+          location.href = 'index.html';
+        } else {
+          err.textContent = data.error || 'Invalid or expired token.';
+        }
+      } catch (e) {
+        err.textContent = 'Connection error.';
+      }
+    }
+  </script>
+</body>
+</html>
