@@ -16,19 +16,39 @@
       <h1 class="settings-title">Settings</h1>
     </div>
 
-    <!-- Account -->
+    <!-- Profile -->
     <div class="settings-section">
-      <div class="settings-section-title">Account</div>
+      <div class="settings-section-title">Profile</div>
       <div class="settings-card">
         <div class="settings-row" onclick="document.getElementById('avatarPicker').scrollIntoView()">
-          <span>Profile Picture</span>
+          <span>Avatar</span>
           <span class="settings-value" id="settingsAvatar">🧠</span>
         </div>
         <div class="settings-row">
-          <span>Name</span>
-          <span class="settings-value" id="settingsName">Guest</span>
+          <span>Username</span>
+          <input class="settings-input" id="settingsUsername" placeholder="username" onchange="saveProfile()">
         </div>
-        <button class="settings-btn" onclick="location.href='index.html'">Switch Account</button>
+        <div class="settings-row">
+          <span>Display Name</span>
+          <input class="settings-input" id="settingsDisplayName" placeholder="What AI calls you" onchange="saveProfile()">
+        </div>
+        <div class="settings-row">
+          <span>Bio</span>
+          <input class="settings-input" id="settingsBio" placeholder="Short bio" onchange="saveProfile()">
+        </div>
+        <button class="settings-btn" onclick="location.href='accounts.html'">Account Settings</button>
+      </div>
+    </div>
+
+    <!-- Personal Info -->
+    <div class="settings-section">
+      <div class="settings-section-title">Personal Info</div>
+      <div class="settings-card">
+        <div class="settings-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+          <span>About You (shared with AI)</span>
+          <textarea class="settings-textarea" id="settingsPersonalInfo" placeholder="Tell the AI about yourself. It will remember this.&#10;&#10;Example: I'm a developer, I like dark themes, my favorite language is JavaScript..." onchange="saveProfile()"></textarea>
+          <div class="settings-disclaimer">⚠️ The AI will use this information. Don't put IPs, addresses, or passwords here.</div>
+        </div>
       </div>
     </div>
 
@@ -79,11 +99,11 @@
           <span class="settings-value">Paste image URL</span>
         </div>
         <div class="background-presets">
-          <button class="bg-preset" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e)" onclick="setBackground('')" title="Default Dark"></button>
-          <button class="bg-preset" style="background:linear-gradient(135deg,#1a1a2e,#16213e)" onclick="setBackground('')" title="Deep Blue"></button>
-          <button class="bg-preset" style="background:linear-gradient(135deg,#0f0f0f,#1a1a1a)" onclick="setBackground('')" title="Dark Gray"></button>
-          <button class="bg-preset" style="background:linear-gradient(135deg,#1a0a0a,#2e1a1a)" onclick="setBackground('')" title="Deep Red"></button>
-          <button class="bg-preset" style="background:linear-gradient(135deg,#0a1a0a,#1a2e1a)" onclick="setBackground('')" title="Deep Green"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e)" onclick="setBackgroundGradient('0a0a1a','1a0a2e')" title="Midnight"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#1a1a2e,#16213e)" onclick="setBackgroundGradient('1a1a2e','16213e')" title="Deep Blue"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#1a0a0a,#2e1a1a)" onclick="setBackgroundGradient('1a0a0a','2e1a1a')" title="Deep Red"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#0a1a0a,#1a2e1a)" onclick="setBackgroundGradient('0a1a0a','1a2e1a')" title="Deep Green"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#1a1a0a,#2e2e1a)" onclick="setBackgroundGradient('1a1a0a','2e2e1a')" title="Sunset"></button>
         </div>
         <button class="settings-btn danger" onclick="removeBackground()">Remove Background</button>
       </div>
@@ -116,18 +136,22 @@
       </div>
     </div>
 
+    <!-- Danger Zone -->
+    <div class="settings-section">
+      <div class="settings-section-title">Data</div>
+      <div class="settings-card">
+        <button class="settings-btn danger" onclick="clearAllData()">Clear All Local Data</button>
+        <div class="settings-disclaimer" style="padding:8px 16px;">Clears chats, settings, and cache. Account stays intact.</div>
+      </div>
+    </div>
+
     <!-- About -->
     <div class="settings-section">
       <div class="settings-section-title">About</div>
       <div class="settings-card">
-        <div class="settings-row">
-          <span>Version</span>
-          <span class="settings-value">v1.1.0</span>
-        </div>
-        <div class="settings-row">
-          <span>Author</span>
-          <span class="settings-value">Chrxmee-Midnightt</span>
-        </div>
+        <div class="settings-row"><span>Version</span><span class="settings-value">v1.1.0</span></div>
+        <div class="settings-row"><span>Author</span><span class="settings-value">Chrxmee-Midnightt</span></div>
+        <div class="settings-row"><span>AI</span><span class="settings-value">Pollinations + Groq</span></div>
       </div>
     </div>
   </div>
