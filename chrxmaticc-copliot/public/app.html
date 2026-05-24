@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#000000">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="manifest" href="/manifest.json">
   <title>Chrxmaticc Copilot</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -20,28 +21,31 @@
         <div class="sidebar-title">Chats</div>
         <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
       </div>
+      <div class="sidebar-actions-row">
+        <button class="sidebar-new-chat" onclick="newChat()" title="New Chat">+</button>
+        <button class="sidebar-fold" onclick="foldSidebar()" title="Fold Sidebar">◀</button>
+      </div>
       <div class="sidebar-search">
         <input type="text" placeholder="Search chats..." class="sidebar-search-input" id="chatSearch" oninput="filterChats()">
       </div>
-      <div class="sidebar-chats" id="savedChatsList">
-        <div class="chat-item active" onclick="loadChat('main')">
-          <div class="chat-item-avatar">🧠</div>
-          <div class="chat-item-info">
-            <div class="chat-item-name">Chrxmaticc Copilot</div>
-            <div class="chat-item-preview">Yo! I'm Chrxmaticc Copilot...</div>
-          </div>
-          <div class="chat-item-time">Now</div>
-        </div>
-      </div>
+      <div class="sidebar-chats" id="savedChatsList"></div>
       <div class="sidebar-footer">
         <div class="sidebar-profile" onclick="location.href='settings.html'">
           <div class="sidebar-profile-avatar" id="profileAvatar">👤</div>
           <div class="sidebar-profile-info">
             <div class="sidebar-profile-name" id="profileName">Guest</div>
-            <div class="sidebar-profile-status">Tap for settings</div>
+            <div class="sidebar-profile-status">Settings</div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Mini Sidebar (folded) -->
+    <div id="miniSidebar" class="mini-sidebar">
+      <button class="mini-sidebar-expand" onclick="unfoldSidebar()" title="Expand">▶</button>
+      <button class="mini-new-chat" onclick="newChat()" title="New Chat">+</button>
+      <div class="mini-avatars" id="miniAvatars"></div>
+      <button class="mini-settings" onclick="location.href='settings.html'" title="Settings">⚙️</button>
     </div>
 
     <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
@@ -53,14 +57,13 @@
           <span class="topbar-back">‹</span>
           <span class="topbar-avatar-sm" id="topbarAvatar">🧠</span>
         </button>
-        <div class="topbar-center" onclick="showContactInfo()">
+        <div class="topbar-center">
           <div class="topbar-name">Chrxmaticc Copilot</div>
           <div class="topbar-status">
             <span id="statusDot" class="status-dot"></span>
             <span id="statusText">Online</span>
           </div>
         </div>
-        <button class="topbar-btn" onclick="location.href='settings.html'">⚙️</button>
         <button class="topbar-btn" id="ttsBtn" onclick="toggleTTS()">🔊</button>
       </div>
 
@@ -78,7 +81,6 @@ Type /help to see everything I can do, or just talk to me.</div>
           <button class="quick-cmd" onclick="quickSend('/joke')">😂</button>
           <button class="quick-cmd" onclick="quickSend('/fact')">📚</button>
           <button class="quick-cmd" onclick="quickSend('/speak hello')">🔊</button>
-          <button class="quick-cmd" onclick="quickSend('/8ball will I be rich?')">🎱</button>
         </div>
         <div class="typing-indicator" id="typing">
           <div class="dot"></div><div class="dot"></div><div class="dot"></div>
@@ -90,7 +92,6 @@ Type /help to see everything I can do, or just talk to me.</div>
         <div class="input-wrap">
           <textarea id="userInput" rows="1" placeholder="iMessage"></textarea>
         </div>
-        <button class="input-btn" onclick="quickSend('/save')">💾</button>
         <button class="send-btn" id="sendBtn" onclick="sendMessage()">
           <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
         </button>
@@ -98,22 +99,17 @@ Type /help to see everything I can do, or just talk to me.</div>
       <div id="micStatus" class="mic-status"><span class="mic-pulse"></span> Listening...</div>
     </div>
 
-    <!-- Contact Info Modal -->
-    <div id="contactModal" class="modal">
-      <div class="modal-content contact-card">
-        <div class="contact-card-avatar" id="contactAvatar">🧠</div>
-        <div class="contact-card-name">Chrxmaticc Copilot</div>
-        <div class="contact-card-status">
-          <span id="contactStatusDot" class="status-dot"></span>
-          <span id="contactStatusText">Online</span>
+    <!-- Chat Action Modal -->
+    <div id="chatActionModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Chat Actions</div>
+          <button class="modal-close" onclick="hideChatActions()">✕</button>
         </div>
-        <div class="contact-card-actions">
-          <button class="contact-action" onclick="exportChat()">📤 Export Chat</button>
-          <button class="contact-action" onclick="clearChat()">🗑️ Clear Chat</button>
-          <button class="contact-action" onclick="newChat()">💬 New Chat</button>
-          <button class="contact-action" onclick="location.href='settings.html'">⚙️ Settings</button>
-        </div>
-        <button class="modal-close contact-close" onclick="hideContactInfo()">✕</button>
+        <button class="modal-btn" onclick="exportChat()">📤 Export Chat</button>
+        <button class="modal-btn" onclick="clearChat()">🗑️ Clear Chat</button>
+        <button class="modal-btn" onclick="deleteChat()">❌ Delete Chat</button>
+        <button class="modal-btn text" onclick="hideChatActions()">Cancel</button>
       </div>
     </div>
   </div>
