@@ -10,8 +10,7 @@
   "scripts": {
     "test": "echo \"offbrand copilot doesn't need tests\" && exit 0",
     "chat": "node bin/copilot.js",
-    "server": "node bin/server.js",
-    "build": "pkg bin/copilot.js --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --output executables/chrxmaticc-copilot"
+    "server": "node bin/server.js"
   },
   "keywords": [
     "copilot",
