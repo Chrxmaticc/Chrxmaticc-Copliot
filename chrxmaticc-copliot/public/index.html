@@ -4,107 +4,60 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#000000">
   <link rel="icon" type="image/png" href="favicon.png">
-  <title>Account — Chrxmaticc Copilot</title>
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="manifest" href="/manifest.json">
+  <title>Chrxmaticc Copilot</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-midnight">
-  <div class="settings-container">
-    <div class="settings-header">
-      <button class="settings-back" onclick="history.back()">‹ Back</button>
-      <h1 class="settings-title">Account</h1>
-    </div>
+  <div class="landing-container">
+    <div class="landing-card">
+      <div class="landing-avatar">🧠</div>
+      <h1 class="landing-title">Chrxmaticc Copilot</h1>
+      <p class="landing-subtitle">Offbrand. Hyper-intelligent. No subscription.</p>
 
-    <div class="settings-section">
-      <div class="settings-section-title">Account Info</div>
-      <div class="settings-card">
-        <div class="settings-row">
-          <span>Email</span>
-          <span class="settings-value" id="accountEmail">-</span>
-        </div>
-        <div class="settings-row">
-          <span>Account Created</span>
-          <span class="settings-value" id="accountCreated">-</span>
-        </div>
-        <div class="settings-row">
-          <span>Status</span>
-          <span class="settings-value" id="accountStatus">Active</span>
-        </div>
+      <div class="landing-buttons">
+        <button class="landing-btn primary" onclick="location.href='app.html'">
+          👤 Continue as Guest
+        </button>
+        <button class="landing-btn google" onclick="handleGoogleLogin()">
+          🔵 Continue with Google
+        </button>
+        <button class="landing-btn" onclick="showEmailAuth()">
+          ✉️ Sign in with Email
+        </button>
       </div>
-    </div>
 
-    <div class="settings-section">
-      <div class="settings-section-title">Security</div>
-      <div class="settings-card">
-        <div class="settings-row" onclick="showSecurityQA()">
-          <span>Security Question</span>
-          <span class="settings-value" id="currentSecurityQuestion">Not set</span>
+      <div id="emailAuthForm" class="email-auth-form" style="display:none">
+        <input type="email" id="authEmail" placeholder="Email" class="landing-input">
+        <input type="password" id="authPassword" placeholder="Password" class="landing-input">
+        <input type="text" id="signupSecurityQuestion" placeholder="Security Question (e.g. Pet's name?)" class="landing-input" style="display:none">
+        <input type="text" id="signupSecurityAnswer" placeholder="Security Answer" class="landing-input" style="display:none">
+        <div class="email-auth-buttons">
+          <button class="landing-btn primary" onclick="handleEmailAuth('login')">Sign In</button>
+          <button class="landing-btn" onclick="handleEmailAuth('signup')">Create Account</button>
         </div>
-        <div id="securityQAEditor" style="display:none; padding: 12px 16px;">
-          <input type="text" id="editSecurityQuestion" placeholder="New question" class="settings-input" style="width:100%; margin-bottom:8px;">
-          <input type="text" id="editSecurityAnswer" placeholder="New answer" class="settings-input" style="width:100%; margin-bottom:8px;">
-          <button class="settings-btn" onclick="saveSecurityQA()">Save Security Q&A</button>
-        </div>
-        <button class="settings-btn" onclick="location.href='forgot.html'">Change Password</button>
+        <button class="landing-btn text" onclick="location.href='forgot.html'" style="margin-top:4px;">Forgot Password?</button>
+        <div id="authError" class="auth-error"></div>
       </div>
-    </div>
 
-    <div class="settings-section">
-      <div class="settings-section-title">Danger Zone</div>
-      <div class="settings-card">
-        <button class="settings-btn danger" onclick="logout()">Log Out</button>
-        <button class="settings-btn danger" onclick="deleteAccount()" style="margin-top:4px;">Delete Account</button>
-        <div class="settings-disclaimer" style="padding:8px 16px;">Deleting your account removes all data permanently.</div>
+      <div class="landing-features">
+        <div class="feature-item">🎤 Voice Input</div>
+        <div class="feature-item">🔊 Text to Speech</div>
+        <div class="feature-item">🎨 Customizable Themes</div>
+        <div class="feature-item">🧠 Multiple AI Behaviors</div>
+        <div class="feature-item">💾 Saved Conversations</div>
+        <div class="feature-item">🖼️ Custom Backgrounds</div>
+        <div class="feature-item">🔒 Secure Accounts</div>
+        <div class="feature-item">🦊 Custom Avatars</div>
       </div>
+
+      <div class="landing-footer">v1.1.0 • Chrxmee-Midnightt</div>
     </div>
   </div>
-
-  <script>
-    function init() {
-      var email = localStorage.getItem('chrxmaticc_email');
-      document.getElementById('accountEmail').textContent = email || 'Guest';
-      document.getElementById('accountStatus').textContent = email ? 'Logged In' : 'Guest';
-      loadSecurityQA();
-    }
-
-    function loadSecurityQA() {
-      var qa = JSON.parse(localStorage.getItem('chrxmaticc_security_qa') || '{}');
-      if (qa.question) {
-        document.getElementById('currentSecurityQuestion').textContent = qa.question;
-        document.getElementById('editSecurityQuestion').value = qa.question;
-        document.getElementById('editSecurityAnswer').value = qa.answer || '';
-      }
-    }
-
-    function showSecurityQA() {
-      document.getElementById('securityQAEditor').style.display = 'block';
-    }
-
-    function saveSecurityQA() {
-      var q = document.getElementById('editSecurityQuestion').value.trim();
-      var a = document.getElementById('editSecurityAnswer').value.trim();
-      if (!q || !a) { alert('Fill in both fields.'); return; }
-      localStorage.setItem('chrxmaticc_security_qa', JSON.stringify({ question: q, answer: a }));
-      document.getElementById('currentSecurityQuestion').textContent = q;
-      document.getElementById('securityQAEditor').style.display = 'none';
-      alert('Security Q&A saved.');
-    }
-
-    function logout() {
-      localStorage.removeItem('chrxmaticc_token');
-      localStorage.removeItem('chrxmaticc_email');
-      location.href = 'index.html';
-    }
-
-    function deleteAccount() {
-      if (confirm('Delete your account? This cannot be undone.')) {
-        localStorage.clear();
-        location.href = 'index.html';
-      }
-    }
-
-    init();
-  </script>
+  <script src="auth.js"></script>
 </body>
 </html>
