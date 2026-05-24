@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="manifest" href="/manifest.json">
+  <title>Chrxmaticc Copilot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-midnight">
+  <div class="landing-container">
+    <div class="landing-card">
+      <div class="landing-avatar">🧠</div>
+      <h1 class="landing-title">Chrxmaticc Copilot</h1>
+      <p class="landing-subtitle">Offbrand. Hyper-intelligent. No subscription.</p>
+
+      <div class="landing-buttons">
+        <button class="landing-btn primary" onclick="location.href='app.html'">
+          👤 Continue as Guest
+        </button>
+        <button class="landing-btn google" onclick="handleGoogleLogin()">
+          🔵 Continue with Google
+        </button>
+        <button class="landing-btn" onclick="showEmailAuth()">
+          ✉️ Sign in with Email
+        </button>
+      </div>
+
+      <div id="emailAuthForm" class="email-auth-form" style="display:none">
+        <input type="email" id="authEmail" placeholder="Email" class="landing-input">
+        <input type="password" id="authPassword" placeholder="Password" class="landing-input">
+        <div class="email-auth-buttons">
+          <button class="landing-btn primary" onclick="handleEmailAuth('login')">Sign In</button>
+          <button class="landing-btn" onclick="handleEmailAuth('signup')">Create Account</button>
+        </div>
+        <div id="authError" class="auth-error"></div>
+      </div>
+
+      <div class="landing-features">
+        <div class="feature-item">🎤 Voice Input</div>
+        <div class="feature-item">🔊 Text to Speech</div>
+        <div class="feature-item">🎨 Customizable Themes</div>
+        <div class="feature-item">🧠 Multiple AI Behaviors</div>
+        <div class="feature-item">💾 Saved Conversations</div>
+        <div class="feature-item">🖼️ Custom Backgrounds</div>
+      </div>
+
+      <div class="landing-footer">
+        v1.1.0 • Chrxmee-Midnightt
+      </div>
+    </div>
+  </div>
+  <script src="auth.js"></script>
+</body>
+</html>
