@@ -1,19 +1,4 @@
 {
-  "functions": {
-    "api/chat.js": {
-      "runtime": "nodejs18.x",
-      "includeFiles": "src/personality.js"
-    },
-    "api/memory.js": {
-      "runtime": "nodejs18.x"
-    },
-    "api/auth.js": {
-      "runtime": "nodejs18.x"
-    },
-    "api/personal.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
     { "source": "/api/chat", "destination": "/api/chat.js" },
     { "source": "/api/memory", "destination": "/api/memory.js" },
