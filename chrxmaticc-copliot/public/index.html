@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <title>Settings — Chrxmaticc Copilot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-midnight">
+  <div class="settings-container">
+    <div class="settings-header">
+      <button class="settings-back" onclick="history.back()">‹ Back</button>
+      <h1 class="settings-title">Settings</h1>
+    </div>
+
+    <!-- Account -->
+    <div class="settings-section">
+      <div class="settings-section-title">Account</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="document.getElementById('avatarPicker').scrollIntoView()">
+          <span>Profile Picture</span>
+          <span class="settings-value" id="settingsAvatar">🧠</span>
+        </div>
+        <div class="settings-row">
+          <span>Name</span>
+          <span class="settings-value" id="settingsName">Guest</span>
+        </div>
+        <button class="settings-btn" onclick="location.href='index.html'">Switch Account</button>
+      </div>
+    </div>
+
+    <!-- Avatar Picker -->
+    <div class="settings-section" id="avatarPicker">
+      <div class="settings-section-title">Choose Avatar</div>
+      <div class="avatar-grid">
+        <button class="avatar-option" onclick="setAvatar('🧠')">🧠</button>
+        <button class="avatar-option" onclick="setAvatar('🤖')">🤖</button>
+        <button class="avatar-option" onclick="setAvatar('👽')">👽</button>
+        <button class="avatar-option" onclick="setAvatar('💀')">💀</button>
+        <button class="avatar-option" onclick="setAvatar('🦾')">🦾</button>
+        <button class="avatar-option" onclick="setAvatar('🎯')">🎯</button>
+        <button class="avatar-option" onclick="setAvatar('⚡')">⚡</button>
+        <button class="avatar-option" onclick="setAvatar('🔥')">🔥</button>
+        <button class="avatar-option" onclick="setAvatar('🌑')">🌑</button>
+        <button class="avatar-option" onclick="setAvatar('💎')">💎</button>
+        <button class="avatar-option" onclick="setAvatar('🦊')">🦊</button>
+        <button class="avatar-option" onclick="setAvatar('🐉')">🐉</button>
+        <button class="avatar-option" onclick="setAvatar('👑')">👑</button>
+        <button class="avatar-option" onclick="setAvatar('🌟')">🌟</button>
+        <button class="avatar-option" onclick="setAvatar('💜')">💜</button>
+        <button class="avatar-option" onclick="setAvatar('🖤')">🖤</button>
+      </div>
+    </div>
+
+    <!-- Themes -->
+    <div class="settings-section">
+      <div class="settings-section-title">Theme</div>
+      <div class="theme-grid">
+        <button class="theme-option theme-midnight" onclick="changeTheme('midnight')">🌑 Midnight</button>
+        <button class="theme-option theme-dark" onclick="changeTheme('dark')">🌙 Dark</button>
+        <button class="theme-option theme-white" onclick="changeTheme('white')">☀️ Light</button>
+        <button class="theme-option theme-cyberpunk" onclick="changeTheme('cyberpunk')">💜 Cyberpunk</button>
+        <button class="theme-option theme-chrome" onclick="changeTheme('chrome')">⚪ Chrome</button>
+        <button class="theme-option theme-ocean" onclick="changeTheme('ocean')">🌊 Ocean</button>
+        <button class="theme-option theme-forest" onclick="changeTheme('forest')">🌲 Forest</button>
+        <button class="theme-option theme-sunset" onclick="changeTheme('sunset')">🌅 Sunset</button>
+      </div>
+    </div>
+
+    <!-- Background -->
+    <div class="settings-section">
+      <div class="settings-section-title">Chat Background</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="promptBackground()">
+          <span>Custom URL</span>
+          <span class="settings-value">Paste image URL</span>
+        </div>
+        <div class="background-presets">
+          <button class="bg-preset" style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e)" onclick="setBackground('')" title="Default Dark"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#1a1a2e,#16213e)" onclick="setBackground('')" title="Deep Blue"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#0f0f0f,#1a1a1a)" onclick="setBackground('')" title="Dark Gray"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#1a0a0a,#2e1a1a)" onclick="setBackground('')" title="Deep Red"></button>
+          <button class="bg-preset" style="background:linear-gradient(135deg,#0a1a0a,#1a2e1a)" onclick="setBackground('')" title="Deep Green"></button>
+        </div>
+        <button class="settings-btn danger" onclick="removeBackground()">Remove Background</button>
+      </div>
+    </div>
+
+    <!-- AI Behavior -->
+    <div class="settings-section">
+      <div class="settings-section-title">AI Behavior</div>
+      <div class="settings-card">
+        <select id="behaviorSelect" class="settings-select" onchange="setBehavior(this.value)">
+          <option value="default">Default — Standard Copilot</option>
+          <option value="genius">Genius — Hyper-detailed technical answers</option>
+          <option value="comedian">Comedian — Funny and sarcastic</option>
+          <option value="philosopher">Philosopher — Deep and thoughtful</option>
+          <option value="hacker">Hacker — Terminal-style, brief</option>
+          <option value="poet">Poet — Rhymes and rhythm</option>
+          <option value="teacher">Teacher — Explains clearly</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Surprise Mode -->
+    <div class="settings-section">
+      <div class="settings-section-title">Surprise Mode</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="toggleSurpriseMode()">
+          <span>Random Fun Events</span>
+          <span class="settings-value" id="surpriseStatus">OFF</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="settings-section">
+      <div class="settings-section-title">About</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <span>Version</span>
+          <span class="settings-value">v1.1.0</span>
+        </div>
+        <div class="settings-row">
+          <span>Author</span>
+          <span class="settings-value">Chrxmee-Midnightt</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
