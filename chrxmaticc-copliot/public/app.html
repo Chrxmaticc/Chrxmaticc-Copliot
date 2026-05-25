@@ -40,7 +40,7 @@
       </div>
     </div>
 
-    <!-- Mini Sidebar (folded) -->
+    <!-- Mini Sidebar -->
     <div id="miniSidebar" class="mini-sidebar">
       <button class="mini-sidebar-expand" onclick="unfoldSidebar()" title="Expand">▶</button>
       <button class="mini-new-chat" onclick="newChat()" title="New Chat">+</button>
@@ -57,13 +57,20 @@
           <span class="topbar-back">‹</span>
           <span class="topbar-avatar-sm" id="topbarAvatar">🧠</span>
         </button>
-        <div class="topbar-center">
+        <div class="topbar-center" ondblclick="doubleTapTopbar()">
           <div class="topbar-name">Chrxmaticc Copilot</div>
           <div class="topbar-status">
             <span id="statusDot" class="status-dot"></span>
             <span id="statusText">Online</span>
           </div>
         </div>
+        <select id="personalitySelect" class="personality-select" onchange="changePersonality(this.value)">
+          <option value="general">Copilot</option>
+          <option value="coder">Coder</option>
+          <option value="creative">Creative</option>
+          <option value="speed">Speed</option>
+          <option value="intermediate">Intermediate</option>
+        </select>
         <button class="topbar-btn" id="ttsBtn" onclick="toggleTTS()">🔊</button>
       </div>
 
@@ -90,7 +97,7 @@ Type /help to see everything I can do, or just talk to me.</div>
       <div class="inputbar">
         <button class="input-btn" id="micBtn" onclick="toggleMic()">🎤</button>
         <div class="input-wrap">
-          <textarea id="userInput" rows="1" placeholder="Message."></textarea>
+          <textarea id="userInput" rows="1" placeholder="Message"></textarea>
         </div>
         <button class="send-btn" id="sendBtn" onclick="sendMessage()">
           <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
@@ -112,6 +119,9 @@ Type /help to see everything I can do, or just talk to me.</div>
         <button class="modal-btn text" onclick="hideChatActions()">Cancel</button>
       </div>
     </div>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
   </div>
   <script src="app.js"></script>
 </body>
