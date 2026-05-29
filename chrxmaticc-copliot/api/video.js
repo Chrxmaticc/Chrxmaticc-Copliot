@@ -1,5 +1,5 @@
-// Chrxmaticc Copilot — Video Generation API
-// Copilot Generator 1.0 — Single clean video
+// Chrxmaticc Copilot — Video Generator API
+// Generates image frames, client stitches into GIF
 // Author: Chrxmee-Midnightt
 
 var https = require('https');
@@ -12,27 +12,25 @@ module.exports = async function(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   var body = req.body || {};
-  var prompt = body.prompt || '';
+  var prompt = (body.prompt || 'a beautiful animation').slice(0, 300);
+  var frames = Math.min(8, Math.max(2, body.frames || 4));
+  var width = 512;
+  var height = 512;
 
-  if (!prompt) return res.status(400).json({ error: 'Missing prompt. Usage: /video <description>' });
+  var frameUrls = [];
+  for (var i = 0; i < frames; i++) {
+    var framePrompt = prompt + ', frame ' + (i + 1) + ' of ' + frames + ', smooth motion, consistent style, same scene';
+    var safePrompt = encodeURIComponent(framePrompt.slice(0, 400));
+    frameUrls.push('https://image.pollinations.ai/prompt/' + safePrompt + '?width=' + width + '&height=' + height + '&nologo=true&seed=' + (Date.now() + i));
+  }
 
-  var safePrompt = encodeURIComponent(prompt.slice(0, 300) + ', smooth animation, video style');
-  var videoUrl = 'https://image.pollinations.ai/prompt/' + safePrompt + '?width=512&height=512&nologo=true&seed=' + Date.now();
-
-  https.get(videoUrl, function(imgRes) {
-    if (imgRes.statusCode === 200 || imgRes.statusCode === 302) {
-      res.status(200).json({
-        success: true,
-        url: videoUrl,
-        prompt: prompt,
-        model: 'Copilot Generator 1.0',
-        provider: 'Pollinations AI',
-        note: 'Single video file generated.'
-      });
-    } else {
-      res.status(500).json({ error: 'Video generation failed. Try a different prompt.' });
-    }
-  }).on('error', function() {
-    res.status(500).json({ error: 'Video service unavailable.' });
+  res.status(200).json({
+    success: true,
+    frames: frameUrls,
+    prompt: prompt,
+    model: 'Copilot Generator 1.0',
+    provider: 'Pollinations AI',
+    frameCount: frames,
+    note: 'Frames generated. Client will stitch into animated GIF.'
   });
 };
