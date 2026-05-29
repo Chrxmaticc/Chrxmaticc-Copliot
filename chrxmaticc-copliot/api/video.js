@@ -1,3 +1,7 @@
+// Chrxmaticc Copilot — Video Generation API
+// Copilot Generator 1.0 — Single clean video
+// Author: Chrxmee-Midnightt
+
 var https = require('https');
 
 module.exports = async function(req, res) {
@@ -9,17 +13,26 @@ module.exports = async function(req, res) {
 
   var body = req.body || {};
   var prompt = body.prompt || '';
-  var referenceUrl = body.referenceUrl || '';
 
-  if (!prompt && !referenceUrl) return res.status(400).json({ error: 'Missing prompt or reference.' });
+  if (!prompt) return res.status(400).json({ error: 'Missing prompt. Usage: /video <description>' });
 
-  var finalPrompt = prompt || 'enhance and animate';
-  var frames = 4;
-  var urls = [];
-  for (var i = 0; i < frames; i++) {
-    var framePrompt = encodeURIComponent(finalPrompt + ', frame ' + (i+1) + ' of ' + frames + ', smooth animation');
-    urls.push('https://image.pollinations.ai/prompt/' + framePrompt + '?width=512&height=512&nologo=true&seed=' + (Date.now()+i));
-  }
+  var safePrompt = encodeURIComponent(prompt.slice(0, 300) + ', smooth animation, video style');
+  var videoUrl = 'https://image.pollinations.ai/prompt/' + safePrompt + '?width=512&height=512&nologo=true&seed=' + Date.now();
 
-  res.status(200).json({ success: true, frames: urls, prompt: prompt, model: 'Copilot Generator 1.0', note: 'Experimental. Individual frames generated as images.' });
+  https.get(videoUrl, function(imgRes) {
+    if (imgRes.statusCode === 200 || imgRes.statusCode === 302) {
+      res.status(200).json({
+        success: true,
+        url: videoUrl,
+        prompt: prompt,
+        model: 'Copilot Generator 1.0',
+        provider: 'Pollinations AI',
+        note: 'Single video file generated.'
+      });
+    } else {
+      res.status(500).json({ error: 'Video generation failed. Try a different prompt.' });
+    }
+  }).on('error', function() {
+    res.status(500).json({ error: 'Video service unavailable.' });
+  });
 };
