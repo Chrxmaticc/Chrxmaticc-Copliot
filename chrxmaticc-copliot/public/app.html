@@ -59,7 +59,10 @@
       </div>
 
       <div class="messages" id="messages">
-        <div class="bubble-row ai"><div class="bubble">Yo! I'm Chrxmaticc Copilot. Offbrand. Hyper-intelligent. No subscription.\n\nType /help to see everything I can do.\nTry /image, /video, or attach a file!</div><div class="timestamp">Now</div></div>
+        <div class="bubble-row ai"><div class="bubble">Yo! I'm Chrxmaticc Copilot. Offbrand. Hyper-intelligent. No subscription.
+
+Type /help to see what I can do.
+Try /image, /video, or attach a file with the 🔗 button!</div><div class="timestamp">Now</div></div>
         <div class="quick-commands">
           <button class="quick-cmd" onclick="quickSend('/image a chrome fox')">🎨 Image</button>
           <button class="quick-cmd" onclick="quickSend('/video neon city')">🎬 Video</button>
@@ -75,7 +78,7 @@
         <button class="input-btn" id="micBtn" onclick="toggleMic()">🎤</button>
         <div class="input-wrap"><textarea id="userInput" rows="1" placeholder="Message"></textarea></div>
         <button class="input-btn attachment-btn" id="attachBtn" onclick="triggerFileUpload()">🔗</button>
-        <input type="file" id="fileInput" style="display:none" accept="image/*,video/*" onchange="handleFileUpload(event)">
+        <input type="file" id="fileInput" style="display:none" accept="image/*,video/*,.js,.json,.html,.css,.md,.txt,.py,.glsl,.yml,.yaml,.xml,.svg" onchange="handleFileUpload(event)">
         <button class="send-btn" id="sendBtn" onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
       </div>
       <div id="micStatus" class="mic-status"><span class="mic-pulse"></span> Listening...</div>
@@ -94,6 +97,7 @@
 
     <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
