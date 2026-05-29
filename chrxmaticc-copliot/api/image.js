@@ -1,3 +1,7 @@
+// Chrxmaticc Copilot — Image Generation API
+// Copilot Artist 1.0 — Single clean image
+// Author: Chrxmee-Midnightt
+
 var https = require('https');
 var userLimits = {};
 
@@ -19,27 +23,32 @@ module.exports = async function(req, res) {
 
   var body = req.body || {};
   var prompt = body.prompt || '';
-  var referenceUrl = body.referenceUrl || '';
   var width = Math.min(1024, Math.max(128, body.width || 512));
   var height = Math.min(1024, Math.max(128, body.height || 512));
   var userId = body.userId || 'anonymous';
 
-  if (!prompt && !referenceUrl) return res.status(400).json({ error: 'Missing prompt or reference image.' });
+  if (!prompt) return res.status(400).json({ error: 'Missing prompt. Usage: /image <description>' });
   if (!checkLimit(userId)) return res.status(429).json({ error: 'Rate limit reached. 10 images per hour.' });
 
-  var finalPrompt = prompt;
-  if (referenceUrl) {
-    finalPrompt = prompt ? prompt + ' (reference image provided)' : 'enhance and stylize this image';
-  }
-
-  var safePrompt = encodeURIComponent(finalPrompt.slice(0, 500));
+  var safePrompt = encodeURIComponent(prompt.slice(0, 500));
   var imageUrl = 'https://image.pollinations.ai/prompt/' + safePrompt + '?width=' + width + '&height=' + height + '&nologo=true&seed=' + Date.now();
 
   https.get(imageUrl, function(imgRes) {
     if (imgRes.statusCode === 200 || imgRes.statusCode === 302) {
-      res.status(200).json({ success: true, url: imageUrl, prompt: prompt, model: 'Copilot Artist 1.0', remaining: 10 - (userLimits[userId]?.count || 0) });
+      res.status(200).json({
+        success: true,
+        url: imageUrl,
+        prompt: prompt,
+        width: width,
+        height: height,
+        model: 'Copilot Artist 1.0',
+        provider: 'Pollinations AI',
+        remaining: 10 - (userLimits[userId]?.count || 0)
+      });
     } else {
-      res.status(500).json({ error: 'Generation failed. Try a different prompt.' });
+      res.status(500).json({ error: 'Image generation failed. Try a different prompt.' });
     }
-  }).on('error', function() { res.status(500).json({ error: 'Image service unavailable.' }); });
+  }).on('error', function() {
+    res.status(500).json({ error: 'Image service unavailable.' });
+  });
 };
