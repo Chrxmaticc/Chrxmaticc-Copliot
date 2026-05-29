@@ -1,6 +1,6 @@
 // ╔══════════════════════════════════════════╗
 // ║  Chrxmaticc Copilot — Web Dashboard     ║
-// ║  Image + Video + Files + GIF Stitching   ║
+// ║  Image + GIF (FFmpeg) + Files + Voice   ║
 // ║  Author: Chrxmee-Midnightt              ║
 // ╚══════════════════════════════════════════╝
 
@@ -15,28 +15,17 @@ var messageCount = 0, lastChatId = null, confettiActive = false;
 var pendingFile = null;
 
 function grabDOM() {
-  messagesEl = document.getElementById('messages');
-  inputEl = document.getElementById('userInput');
-  sendBtn = document.getElementById('sendBtn');
-  typingEl = document.getElementById('typing');
-  statusDot = document.getElementById('statusDot');
-  statusText = document.getElementById('statusText');
-  micBtn = document.getElementById('micBtn');
-  micStatus = document.getElementById('micStatus');
-  ttsBtn = document.getElementById('ttsBtn');
-  sidebar = document.getElementById('sidebar');
-  miniSidebar = document.getElementById('miniSidebar');
-  overlay = document.getElementById('overlay');
-  savedChatsList = document.getElementById('savedChatsList');
-  chatSearch = document.getElementById('chatSearch');
-  profileName = document.getElementById('profileName');
-  profileAvatar = document.getElementById('profileAvatar');
-  chatActionModal = document.getElementById('chatActionModal');
-  personalitySelect = document.getElementById('personalitySelect');
-  confettiCanvas = document.getElementById('confettiCanvas');
-  fileInput = document.getElementById('fileInput');
-  filePreview = document.getElementById('filePreview');
-  attachBtn = document.getElementById('attachBtn');
+  messagesEl = document.getElementById('messages'); inputEl = document.getElementById('userInput');
+  sendBtn = document.getElementById('sendBtn'); typingEl = document.getElementById('typing');
+  statusDot = document.getElementById('statusDot'); statusText = document.getElementById('statusText');
+  micBtn = document.getElementById('micBtn'); micStatus = document.getElementById('micStatus');
+  ttsBtn = document.getElementById('ttsBtn'); sidebar = document.getElementById('sidebar');
+  miniSidebar = document.getElementById('miniSidebar'); overlay = document.getElementById('overlay');
+  savedChatsList = document.getElementById('savedChatsList'); chatSearch = document.getElementById('chatSearch');
+  profileName = document.getElementById('profileName'); profileAvatar = document.getElementById('profileAvatar');
+  chatActionModal = document.getElementById('chatActionModal'); personalitySelect = document.getElementById('personalitySelect');
+  confettiCanvas = document.getElementById('confettiCanvas'); fileInput = document.getElementById('fileInput');
+  filePreview = document.getElementById('filePreview'); attachBtn = document.getElementById('attachBtn');
 }
 
 function init() {
@@ -117,24 +106,20 @@ async function generateImage(prompt) {
 }
 
 async function generateVideo(prompt) {
-  addHint('🎬 Copilot Generator 1.0: "' + (prompt || 'video') + '"');
+  addHint('🎬 Copilot Generator 1.0: "' + (prompt || 'GIF') + '" (FFmpeg)');
   if (sendBtn) sendBtn.disabled = true;
   try {
     var res = await fetch('/api/video', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt || 'a beautiful animation', frames: 4 }) });
     var data = await res.json();
-    if (data.success && data.frames && data.frames.length > 0) {
-      addHint('📥 Downloading ' + data.frames.length + ' frames...');
-      var loadedFrames = [];
-      for (var i = 0; i < data.frames.length; i++) { addHint('📥 Frame ' + (i+1) + '/' + data.frames.length); var img = await loadImage(data.frames[i]); loadedFrames.push(img); }
-      addHint('🔧 Stitching into GIF...');
-      var gif = new GIF({ workers: 2, quality: 10, width: 512, height: 512, workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js' });
-      loadedFrames.forEach(function(img) { gif.addFrame(img, { delay: 500, copy: true }); });
-      gif.on('finished', function(blob) { var url = URL.createObjectURL(blob); addMediaBubble(url, 'image', prompt + ' (GIF)'); addHint('✅ GIF ready! ' + data.frames.length + ' frames.'); if (sendBtn) sendBtn.disabled = false; });
-      gif.render();
-    } else { addError(data.error || 'Generation failed.'); if (sendBtn) sendBtn.disabled = false; }
-  } catch(e) { addError('Video service offline.'); if (sendBtn) sendBtn.disabled = false; }
+    if (data.success && data.gif) {
+      addMediaBubble(data.gif, 'image', prompt + ' (GIF)');
+      addHint('✅ GIF generated with FFmpeg! ' + (data.frames || 4) + ' frames.');
+    } else {
+      addError(data.error || 'GIF generation failed.');
+    }
+  } catch(e) { addError('GIF service offline.'); }
+  if (sendBtn) sendBtn.disabled = false;
 }
-function loadImage(url) { return new Promise(function(resolve, reject) { var img = new Image(); img.crossOrigin = 'anonymous'; img.onload = function() { resolve(img); }; img.onerror = function() { reject(new Error('Failed')); }; img.src = url; }); }
 
 function addMediaBubble(url, type, caption) {
   if (!messagesEl) return; if (typingEl?.parentNode) typingEl.remove();
@@ -171,8 +156,8 @@ function stopMicUI() { isListening=false; if(micBtn) micBtn.textContent='🎤'; 
 function toggleTTS() { ttsEnabled=!ttsEnabled; if(ttsBtn) ttsBtn.textContent=ttsEnabled?'🔊':'🔇'; if(ttsEnabled&&lastAIResponse) speakText(lastAIResponse); }
 function speakText(text) { if(!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,'').slice(0,300)); u.rate=1.0;u.pitch=1.0;u.volume=1.0; window.speechSynthesis.speak(u); }
 
-function triggerEasterEgg() { document.body.style.transform='rotate(0.5deg)'; setTimeout(function(){document.body.style.transform='';},600); launchConfetti(); var q=['You found the secret.','Thread pulled from pure vibes.','The vault is wet.','26 shaders.']; addHint('🥚 '+q[Math.floor(Math.random()*q.length)]); }
-function randomCompliment() { var c=['💡 You\'re on fire.','🚀 Next level.','🧠 Big brain.','⚡ Legendary.']; addHint(c[Math.floor(Math.random()*c.length)]); }
+function triggerEasterEgg() { document.body.style.transform='rotate(0.5deg)'; setTimeout(function(){document.body.style.transform='';},600); launchConfetti(); addHint('🥚 Easter egg found!'); }
+function randomCompliment() { var c=['💡 On fire.','🚀 Next level.','🧠 Big brain.','⚡ Legendary.']; addHint(c[Math.floor(Math.random()*c.length)]); }
 function launchConfetti() { if(confettiActive) return; confettiActive=true; var ctx=confettiCanvas?.getContext('2d'); if(!ctx){confettiActive=false;return;} confettiCanvas.width=window.innerWidth;confettiCanvas.height=window.innerHeight;confettiCanvas.style.display='block'; var particles=[]; for(var i=0;i<60;i++){ particles.push({x:Math.random()*confettiCanvas.width,y:-20,vx:(Math.random()-.5)*6,vy:Math.random()*4+2,size:Math.random()*6+3,color:'hsl('+Math.random()*360+',80%,60%)',rotation:Math.random()*360}); } function animate(){ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);var alive=false;particles.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.rotation+=2;if(p.y<confettiCanvas.height+20){alive=true;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rotation*Math.PI/180);ctx.fillStyle=p.color;ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);ctx.restore();}});if(alive) requestAnimationFrame(animate);else{confettiCanvas.style.display='none';confettiActive=false;}} animate(); }
 
 init();
