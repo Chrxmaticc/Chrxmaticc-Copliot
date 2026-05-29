@@ -470,3 +470,16 @@ body.theme-sunset { background: #1a0a0a; color: #f0c8b8; }
   .mini-sidebar.visible ~ .main { margin-left: 52px; }
   .personality-select { max-width: 90px; font-size: 11px; }
 }
+/* Media bubbles */
+.media-bubble { padding: 8px !important; background: transparent !important; max-width: 280px; }
+.media-bubble img { width: 100%; border-radius: 12px; cursor: pointer; display: block; }
+.media-bubble video { width: 100%; border-radius: 12px; }
+.media-actions { display: flex; gap: 6px; margin-top: 6px; }
+.media-actions button {
+  flex: 1; padding: 6px 10px; border-radius: 8px; border: none;
+  background: #2c2c2e; color: #fff; font-size: 11px; cursor: pointer;
+}
+
+/* Theme overrides */
+.theme-white .media-actions button { background: #e9e9ef; color: #000; }
+.theme-cyberpunk .media-actions button { background: #1a1a3a; color: #0ff; }
