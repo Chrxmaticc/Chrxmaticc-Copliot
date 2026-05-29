@@ -11,11 +11,9 @@
   <link rel="manifest" href="/manifest.json">
   <title>Chrxmaticc Copilot</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="analytics.js"></script>
 </head>
 <body class="theme-midnight">
   <div id="app">
-    <!-- Sidebar -->
     <div id="sidebar" class="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-avatar" id="sidebarAvatar">🧠</div>
@@ -23,105 +21,77 @@
         <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
       </div>
       <div class="sidebar-actions-row">
-        <button class="sidebar-new-chat" onclick="newChat()" title="New Chat">+</button>
-        <button class="sidebar-fold" onclick="foldSidebar()" title="Fold Sidebar">◀</button>
+        <button class="sidebar-new-chat" onclick="newChat()">+</button>
+        <button class="sidebar-fold" onclick="foldSidebar()">◀</button>
       </div>
-      <div class="sidebar-search">
-        <input type="text" placeholder="Search chats..." class="sidebar-search-input" id="chatSearch" oninput="filterChats()">
-      </div>
+      <div class="sidebar-search"><input type="text" placeholder="Search chats..." class="sidebar-search-input" id="chatSearch" oninput="filterChats()"></div>
       <div class="sidebar-chats" id="savedChatsList"></div>
       <div class="sidebar-footer">
         <div class="sidebar-profile" onclick="location.href='settings.html'">
           <div class="sidebar-profile-avatar" id="profileAvatar">👤</div>
-          <div class="sidebar-profile-info">
-            <div class="sidebar-profile-name" id="profileName">Guest</div>
-            <div class="sidebar-profile-status">Settings</div>
-          </div>
+          <div class="sidebar-profile-info"><div class="sidebar-profile-name" id="profileName">Guest</div><div class="sidebar-profile-status">Settings</div></div>
         </div>
       </div>
     </div>
-
-    <!-- Mini Sidebar -->
     <div id="miniSidebar" class="mini-sidebar">
-      <button class="mini-sidebar-expand" onclick="unfoldSidebar()" title="Expand">▶</button>
-      <button class="mini-new-chat" onclick="newChat()" title="New Chat">+</button>
+      <button class="mini-sidebar-expand" onclick="unfoldSidebar()">▶</button>
+      <button class="mini-new-chat" onclick="newChat()">+</button>
       <div class="mini-avatars" id="miniAvatars"></div>
-      <button class="mini-settings" onclick="location.href='settings.html'" title="Settings">⚙️</button>
+      <button class="mini-settings" onclick="location.href='settings.html'">⚙️</button>
     </div>
-
     <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Main Chat -->
     <div id="main" class="main">
       <div class="topbar">
-        <button class="topbar-btn" onclick="toggleSidebar()">
-          <span class="topbar-back">‹</span>
-          <span class="topbar-avatar-sm" id="topbarAvatar">🧠</span>
-        </button>
+        <button class="topbar-btn" onclick="toggleSidebar()"><span class="topbar-back">‹</span><span class="topbar-avatar-sm" id="topbarAvatar">🧠</span></button>
         <div class="topbar-center" ondblclick="doubleTapTopbar()">
           <div class="topbar-name">Chrxmaticc Copilot</div>
-          <div class="topbar-status">
-            <span id="statusDot" class="status-dot"></span>
-            <span id="statusText">Online</span>
-          </div>
+          <div class="topbar-status"><span id="statusDot" class="status-dot"></span><span id="statusText">Online</span></div>
         </div>
         <select id="personalitySelect" class="personality-select" onchange="changePersonality(this.value)">
-          <option value="general">Copilot</option>
-          <option value="coder">Coder</option>
-          <option value="creative">Creative</option>
-          <option value="speed">Speed</option>
+          <option value="conversational">Conversational</option>
+          <option value="sonnet">Sonnet</option>
+          <option value="vision">Vision</option>
           <option value="intermediate">Intermediate</option>
+          <option value="speed">Speed</option>
         </select>
         <button class="topbar-btn" id="ttsBtn" onclick="toggleTTS()">🔊</button>
       </div>
 
       <div class="messages" id="messages">
-        <div class="bubble-row ai">
-          <div class="bubble">Yo! I'm Chrxmaticc Copilot. Offbrand. Hyper-intelligent. No subscription.
-
-Type /help to see everything I can do, or just talk to me.</div>
-          <div class="timestamp">Now</div>
-        </div>
+        <div class="bubble-row ai"><div class="bubble">Yo! I'm Chrxmaticc Copilot. Offbrand. Hyper-intelligent. No subscription.\n\nType /help to see everything I can do.\nTry /image, /video, or attach a file!</div><div class="timestamp">Now</div></div>
         <div class="quick-commands">
+          <button class="quick-cmd" onclick="quickSend('/image a chrome fox')">🎨 Image</button>
+          <button class="quick-cmd" onclick="quickSend('/video neon city')">🎬 Video</button>
           <button class="quick-cmd" onclick="quickSend('/weather London')">🌤️</button>
           <button class="quick-cmd" onclick="quickSend('/crypto bitcoin')">💰</button>
           <button class="quick-cmd" onclick="quickSend('/roll 2d20')">🎲</button>
           <button class="quick-cmd" onclick="quickSend('/joke')">😂</button>
-          <button class="quick-cmd" onclick="quickSend('/fact')">📚</button>
-          <button class="quick-cmd" onclick="quickSend('/speak hello')">🔊</button>
         </div>
-        <div class="typing-indicator" id="typing">
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        </div>
+        <div class="typing-indicator" id="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
       </div>
 
       <div class="inputbar">
         <button class="input-btn" id="micBtn" onclick="toggleMic()">🎤</button>
-        <div class="input-wrap">
-          <textarea id="userInput" rows="1" placeholder="Message"></textarea>
-        </div>
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-        </button>
+        <div class="input-wrap"><textarea id="userInput" rows="1" placeholder="Message"></textarea></div>
+        <button class="input-btn attachment-btn" id="attachBtn" onclick="triggerFileUpload()">🔗</button>
+        <input type="file" id="fileInput" style="display:none" accept="image/*,video/*" onchange="handleFileUpload(event)">
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
       </div>
       <div id="micStatus" class="mic-status"><span class="mic-pulse"></span> Listening...</div>
+      <div id="filePreview" class="file-preview"></div>
     </div>
 
-    <!-- Chat Action Modal -->
     <div id="chatActionModal" class="modal">
       <div class="modal-content">
-        <div class="modal-header">
-          <div class="modal-title">Chat Actions</div>
-          <button class="modal-close" onclick="hideChatActions()">✕</button>
-        </div>
-        <button class="modal-btn" onclick="exportChat()">📤 Export Chat</button>
-        <button class="modal-btn" onclick="clearChat()">🗑️ Clear Chat</button>
-        <button class="modal-btn" onclick="deleteChat()">❌ Delete Chat</button>
+        <div class="modal-header"><div class="modal-title">Chat Actions</div><button class="modal-close" onclick="hideChatActions()">✕</button></div>
+        <button class="modal-btn" onclick="exportChat()">📤 Export</button>
+        <button class="modal-btn" onclick="clearChat()">🗑️ Clear</button>
+        <button class="modal-btn" onclick="deleteChat()">❌ Delete</button>
         <button class="modal-btn text" onclick="hideChatActions()">Cancel</button>
       </div>
     </div>
 
-    <!-- Confetti Canvas -->
     <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
   </div>
   <script src="app.js"></script>
