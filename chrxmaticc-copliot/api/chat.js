@@ -1,9 +1,13 @@
 // Chrxmaticc Copilot — Chat API with File Support
 // Author: Chrxmee-Midnightt
+// Model: Groq (multi-model via personalities)
 
 var https = require('https');
 var path = require('path');
 var fs = require('fs');
+
+// Groq config
+var GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 
 var PERSONALITIES = {};
 var personalitiesDir = path.join(__dirname, '..', 'src', 'personalities');
@@ -26,7 +30,8 @@ var DEFAULT_PERSONALITY = PERSONALITIES['conversational'] || {
   name: 'Copilot Conversational',
   systemPrompt: 'You are Chrxmaticc Copilot. Be helpful, casual, and concise.',
   temperature: 0.8,
-  maxTokens: 650
+  maxTokens: 650,
+  model: 'llama-3.3-70b-versatile'
 };
 
 module.exports = async function(req, res) {
@@ -43,6 +48,9 @@ module.exports = async function(req, res) {
   var personalityKey = PERSONALITY_MAP[body.personality] || 'conversational';
   var selectedPersonality = PERSONALITIES[personalityKey] || DEFAULT_PERSONALITY;
   var systemPrompt = selectedPersonality.systemPrompt;
+  var model = selectedPersonality.model || 'llama-3.3-70b-versatile';
+  var temperature = selectedPersonality.temperature || 0.8;
+  var maxTokens = selectedPersonality.maxTokens || 650;
 
   if (body.personalInfo) {
     systemPrompt += ' The user shared: ' + body.personalInfo + '. Use this when relevant.';
@@ -53,25 +61,36 @@ module.exports = async function(req, res) {
     systemPrompt += ' The user attached a file. Read its content and respond accordingly.';
   }
 
-  var response = await getAIResponse(message, systemPrompt, selectedPersonality.temperature, selectedPersonality.maxTokens);
+  var response = await getAIResponse(message, systemPrompt, model, temperature, maxTokens);
   res.status(200).json(response);
 };
 
-function getAIResponse(message, systemPrompt, temperature, maxTokens) {
+function getAIResponse(message, systemPrompt, model, temperature, maxTokens) {
   return new Promise(function(resolve) {
+    if (!GROQ_API_KEY) {
+      resolve({ response: getFallback(message), provider: 'offline' });
+      return;
+    }
+
     var data = JSON.stringify({
-      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: message }],
-      model: 'openai',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+      model: model,
       max_tokens: maxTokens || 250,
       temperature: temperature || 0.85
     });
 
     var options = {
-      hostname: 'text.pollinations.ai',
-      path: '/openai',
+      hostname: 'api.groq.com',
+      path: '/openai/v1/chat/completions',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 15000
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + GROQ_API_KEY
+      },
+      timeout: 30000
     };
 
     var req = https.request(options, function(apiRes) {
@@ -80,15 +99,17 @@ function getAIResponse(message, systemPrompt, temperature, maxTokens) {
       apiRes.on('end', function() {
         try {
           var json = JSON.parse(body);
-          var text = json.text || json.choices?.[0]?.message?.content || getFallback(message);
-          resolve({ response: text, provider: 'pollinations' });
+          var text = json.choices?.[0]?.message?.content || getFallback(message);
+          resolve({ response: text, provider: 'groq', model: model });
         } catch (e) {
           resolve({ response: getFallback(message), provider: 'offline' });
         }
       });
     });
 
-    req.on('error', function() { resolve({ response: getFallback(message), provider: 'offline' }); });
+    req.on('error', function() {
+      resolve({ response: getFallback(message), provider: 'offline' });
+    });
     req.write(data);
     req.end();
   });
