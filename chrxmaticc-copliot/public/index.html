@@ -5,60 +5,189 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#000000">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="apple-touch-icon" href="favicon.png">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="/manifest.json">
   <title>Chrxmaticc Copilot</title>
   <link rel="stylesheet" href="style.css">
   <script defer src="analytics.js"></script>
+  <style>
+    /* Index-specific overrides */
+    .index-wrapper {
+      position: relative; width: 100%; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .index-bg {
+      position: absolute; inset: 0;
+      background: url('chrome.gif') center/cover no-repeat;
+      opacity: 0.08;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .index-bg-texture {
+      position: absolute; inset: 0;
+      background: url('chrome2.jpeg') center/cover no-repeat;
+      opacity: 0.04;
+      mix-blend-mode: overlay;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .index-card {
+      position: relative; z-index: 2;
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 28px;
+      padding: 48px 32px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 0 60px rgba(0,0,0,0.5), 0 0 120px rgba(180,180,200,0.03);
+    }
+    .index-logo {
+      width: 72px; height: 72px;
+      margin: 0 auto 20px;
+      filter: drop-shadow(0 0 20px rgba(200,200,220,0.25));
+    }
+    .index-logo img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+    }
+    .index-title {
+      font-size: 28px; font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #a0a0a0, #d0d0d0, #b0b0b0, #c8c8c8, #a8a8a8);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: chromeShimmer 3s ease-in-out infinite;
+      margin-bottom: 6px;
+    }
+    .index-subtitle {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 36px;
+      letter-spacing: 0.3px;
+    }
+    .index-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+    .index-feature {
+      font-size: 12px;
+      color: #999;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .index-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: #d0d0d0;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-bottom: 8px;
+      font-family: inherit;
+      letter-spacing: 0.2px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .index-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
+      color: #fff;
+      box-shadow: 0 0 30px rgba(180,180,200,0.06);
+    }
+    .index-btn.primary {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+    .index-btn.primary:hover {
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 0 40px rgba(200,200,220,0.1);
+    }
+    .index-footer {
+      font-size: 11px;
+      color: #555;
+      margin-top: 24px;
+      letter-spacing: 0.5px;
+    }
+    @keyframes chromeShimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
 </head>
 <body class="theme-midnight">
-  <div class="landing-container">
-    <div class="landing-card">
-      <div class="landing-avatar">🧠</div>
-      <h1 class="landing-title">Chrxmaticc Copilot</h1>
-      <p class="landing-subtitle">Offbrand. Hyper-intelligent. No subscription.</p>
+  <div class="index-wrapper">
+    <div class="index-bg"></div>
+    <div class="index-bg-texture"></div>
+    <div class="index-card">
+      <div class="index-logo">
+        <img src="icon.png" alt="Chrxmaticc Copilot">
+      </div>
+      <h1 class="index-title">Chrxmaticc Copilot</h1>
+      <p class="index-subtitle">Offbrand. Hyper-intelligent. No subscription.</p>
 
-      <div class="landing-buttons">
-        <button class="landing-btn primary" onclick="location.href='app.html'">
-          👤 Continue as Guest
-        </button>
-        <button class="landing-btn google" onclick="handleGoogleLogin()">
-          🔵 Continue with Google
-        </button>
-        <button class="landing-btn" onclick="showEmailAuth()">
-          ✉️ Sign in with Email
-        </button>
+      <div class="index-features">
+        <div class="index-feature">Voice Input</div>
+        <div class="index-feature">Text to Speech</div>
+        <div class="index-feature">8 Themes</div>
+        <div class="index-feature">Multiple AI Modes</div>
+        <div class="index-feature">Saved Chats</div>
+        <div class="index-feature">Custom Backgrounds</div>
+        <div class="index-feature">Code Highlighting</div>
+        <div class="index-feature">File Support</div>
       </div>
 
-      <div id="emailAuthForm" class="email-auth-form" style="display:none">
-        <input type="email" id="authEmail" placeholder="Email" class="landing-input">
-        <input type="password" id="authPassword" placeholder="Password" class="landing-input">
-        <input type="text" id="signupSecurityQuestion" placeholder="Security Question (e.g. Pet's name?)" class="landing-input" style="display:none">
-        <input type="text" id="signupSecurityAnswer" placeholder="Security Answer" class="landing-input" style="display:none">
-        <div class="email-auth-buttons">
-          <button class="landing-btn primary" onclick="handleEmailAuth('login')">Sign In</button>
-          <button class="landing-btn" onclick="handleEmailAuth('signup')">Create Account</button>
-        </div>
-        <button class="landing-btn text" onclick="location.href='forgot.html'" style="margin-top:4px;">Forgot Password?</button>
-        <div id="authError" class="auth-error"></div>
-      </div>
+      <button class="index-btn primary" id="btnSignIn">Sign In</button>
+      <button class="index-btn" id="btnSignUp">Create Account</button>
 
-      <div class="landing-features">
-        <div class="feature-item">🎤 Voice Input</div>
-        <div class="feature-item">🔊 Text to Speech</div>
-        <div class="feature-item">🎨 Customizable Themes</div>
-        <div class="feature-item">🧠 Multiple AI Behaviors</div>
-        <div class="feature-item">💾 Saved Conversations</div>
-        <div class="feature-item">🖼️ Custom Backgrounds</div>
-        <div class="feature-item">🔒 Secure Accounts</div>
-        <div class="feature-item">🦊 Custom Avatars</div>
-      </div>
-
-      <div class="landing-footer">v1.1.0 • Chrxmee-Midnightt</div>
+      <div class="index-footer">v1.2.0 • Chrxmee-Midnightt</div>
     </div>
   </div>
-  <script src="auth.js"></script>
+
+  <script>
+    (function() {
+      var existingUser = null;
+      try { existingUser = JSON.parse(localStorage.getItem('chrxmaticc_user')); } catch(e) {}
+
+      document.getElementById('btnSignIn').addEventListener('click', function() {
+        if (existingUser && existingUser.email) {
+          // User has an account in localStorage — log them straight back in
+          location.href = 'app.html';
+        } else {
+          // No saved account — go to accounts page
+          location.href = 'accounts.html';
+        }
+      });
+
+      document.getElementById('btnSignUp').addEventListener('click', function() {
+        location.href = 'accounts.html?mode=signup';
+      });
+
+      // Auto-redirect if user already logged in and lands on index
+      if (existingUser && existingUser.email && window.location.search.indexOf('force') === -1) {
+        // They're logged in — but we stay on index, just update button text
+        document.getElementById('btnSignIn').textContent = 'Continue as ' + (existingUser.displayName || existingUser.email);
+      }
+    })();
+  </script>
 </body>
 </html>
