@@ -4,108 +4,317 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#000000">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <title>Account — Chrxmaticc Copilot</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <title>Accounts — Chrxmaticc Copilot</title>
   <link rel="stylesheet" href="style.css">
   <script defer src="analytics.js"></script>
+  <style>
+    .accounts-wrapper {
+      position: relative; width: 100%; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .accounts-bg {
+      position: absolute; inset: 0;
+      background: url('chrome.gif') center/cover no-repeat;
+      opacity: 0.06;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .accounts-bg-texture {
+      position: absolute; inset: 0;
+      background: url('chrome2.jpeg') center/cover no-repeat;
+      opacity: 0.03;
+      mix-blend-mode: overlay;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .accounts-card {
+      position: relative; z-index: 2;
+      background: rgba(13,13,13,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 28px;
+      padding: 40px 28px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 0 60px rgba(0,0,0,0.5), 0 0 120px rgba(180,180,200,0.03);
+    }
+    .accounts-logo {
+      width: 56px; height: 56px;
+      margin: 0 auto 16px;
+      filter: drop-shadow(0 0 16px rgba(200,200,220,0.2));
+    }
+    .accounts-logo img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+    }
+    .accounts-title {
+      font-size: 22px; font-weight: 700;
+      letter-spacing: -0.4px;
+      background: linear-gradient(135deg, #a0a0a0, #d0d0d0, #b0b0b0, #c8c8c8);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: chromeShimmer 3s ease-in-out infinite;
+      margin-bottom: 4px;
+    }
+    .accounts-subtitle {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 28px;
+    }
+    .auth-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 13px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: #d0d0d0;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-bottom: 8px;
+      font-family: inherit;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .auth-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
+      color: #fff;
+      box-shadow: 0 0 30px rgba(180,180,200,0.06);
+    }
+    .auth-btn.discord {
+      border-color: rgba(88,101,242,0.3);
+      background: rgba(88,101,242,0.08);
+    }
+    .auth-btn.discord:hover {
+      border-color: rgba(88,101,242,0.5);
+      background: rgba(88,101,242,0.14);
+      box-shadow: 0 0 30px rgba(88,101,242,0.15);
+    }
+    .auth-btn.guest {
+      border-color: rgba(255,255,255,0.05);
+      background: transparent;
+    }
+    .auth-btn-icon {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+    }
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 16px 0;
+      color: #555;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+    }
+    .email-auth-section {
+      display: none;
+      margin-top: 4px;
+    }
+    .email-auth-section.visible {
+      display: block;
+    }
+    .auth-input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #d0d0d0;
+      font-size: 14px;
+      font-family: inherit;
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .auth-input:focus {
+      border-color: rgba(255,255,255,0.2);
+    }
+    .auth-input::placeholder {
+      color: #555;
+    }
+    .auth-error {
+      color: #ff453a;
+      font-size: 12px;
+      margin-top: 8px;
+      text-align: center;
+    }
+    .auth-back {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: none;
+      color: #777;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+    .auth-back:hover {
+      color: #aaa;
+    }
+    @keyframes chromeShimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
 </head>
 <body class="theme-midnight">
-  <div class="settings-container">
-    <div class="settings-header">
-      <button class="settings-back" onclick="history.back()">‹ Back</button>
-      <h1 class="settings-title">Account</h1>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-section-title">Account Info</div>
-      <div class="settings-card">
-        <div class="settings-row">
-          <span>Email</span>
-          <span class="settings-value" id="accountEmail">-</span>
-        </div>
-        <div class="settings-row">
-          <span>Account Created</span>
-          <span class="settings-value" id="accountCreated">-</span>
-        </div>
-        <div class="settings-row">
-          <span>Status</span>
-          <span class="settings-value" id="accountStatus">Active</span>
-        </div>
+  <div class="accounts-wrapper">
+    <div class="accounts-bg"></div>
+    <div class="accounts-bg-texture"></div>
+    <div class="accounts-card">
+      <div class="accounts-logo">
+        <img src="icon.png" alt="Chrxmaticc">
       </div>
-    </div>
+      <h1 class="accounts-title">Chrxmaticc Copilot</h1>
+      <p class="accounts-subtitle" id="accountsSubtitle">Sign in to continue</p>
 
-    <div class="settings-section">
-      <div class="settings-section-title">Security</div>
-      <div class="settings-card">
-        <div class="settings-row" onclick="showSecurityQA()">
-          <span>Security Question</span>
-          <span class="settings-value" id="currentSecurityQuestion">Not set</span>
-        </div>
-        <div id="securityQAEditor" style="display:none; padding: 12px 16px;">
-          <input type="text" id="editSecurityQuestion" placeholder="New question" class="settings-input" style="width:100%; margin-bottom:8px;">
-          <input type="text" id="editSecurityAnswer" placeholder="New answer" class="settings-input" style="width:100%; margin-bottom:8px;">
-          <button class="settings-btn" onclick="saveSecurityQA()">Save Security Q&A</button>
-        </div>
-        <button class="settings-btn" onclick="location.href='forgot.html'">Change Password</button>
-      </div>
-    </div>
+      <!-- Discord -->
+      <button class="auth-btn discord" id="btnDiscord">
+        <svg class="auth-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Continue with Discord
+      </button>
 
-    <div class="settings-section">
-      <div class="settings-section-title">Danger Zone</div>
-      <div class="settings-card">
-        <button class="settings-btn danger" onclick="logout()">Log Out</button>
-        <button class="settings-btn danger" onclick="deleteAccount()" style="margin-top:4px;">Delete Account</button>
-        <div class="settings-disclaimer" style="padding:8px 16px;">Deleting your account removes all data permanently.</div>
+      <!-- Email -->
+      <button class="auth-btn" id="btnEmail">
+        <svg class="auth-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13L2 4"/></svg>
+        Sign in with Email
+      </button>
+
+      <!-- Email form -->
+      <div class="email-auth-section" id="emailSection">
+        <input type="email" class="auth-input" id="authEmail" placeholder="Email">
+        <input type="password" class="auth-input" id="authPassword" placeholder="Password">
+        <input type="text" class="auth-input" id="signupSecurityQuestion" placeholder="Security Question (e.g. Pet's name?)" style="display:none">
+        <input type="text" class="auth-input" id="signupSecurityAnswer" placeholder="Security Answer" style="display:none">
+        <button class="auth-btn" id="btnEmailSignIn" style="margin-bottom:4px;">Sign In</button>
+        <button class="auth-btn" id="btnEmailSignUp">Create Account</button>
+        <div class="auth-error" id="authError"></div>
       </div>
+
+      <div class="auth-divider">or</div>
+
+      <!-- Guest -->
+      <button class="auth-btn guest" id="btnGuest">
+        Continue as Guest
+      </button>
+
+      <button class="auth-back" onclick="location.href='index.html'">← Back</button>
     </div>
   </div>
 
+  <script src="auth.js"></script>
   <script>
-    function init() {
-      var email = localStorage.getItem('chrxmaticc_email');
-      document.getElementById('accountEmail').textContent = email || 'Guest';
-      document.getElementById('accountStatus').textContent = email ? 'Logged In' : 'Guest';
-      loadSecurityQA();
-    }
-
-    function loadSecurityQA() {
-      var qa = JSON.parse(localStorage.getItem('chrxmaticc_security_qa') || '{}');
-      if (qa.question) {
-        document.getElementById('currentSecurityQuestion').textContent = qa.question;
-        document.getElementById('editSecurityQuestion').value = qa.question;
-        document.getElementById('editSecurityAnswer').value = qa.answer || '';
+    // Auto open email form if ?mode=signup
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'signup') {
+        document.getElementById('accountsSubtitle').textContent = 'Create your account';
+        document.getElementById('emailSection').classList.add('visible');
+        document.getElementById('signupSecurityQuestion').style.display = 'block';
+        document.getElementById('signupSecurityAnswer').style.display = 'block';
+        document.getElementById('btnEmailSignIn').style.display = 'none';
       }
-    }
 
-    function showSecurityQA() {
-      document.getElementById('securityQAEditor').style.display = 'block';
-    }
+      document.getElementById('btnDiscord').addEventListener('click', function() {
+        location.href = '/api/auth/discord';
+      });
 
-    function saveSecurityQA() {
-      var q = document.getElementById('editSecurityQuestion').value.trim();
-      var a = document.getElementById('editSecurityAnswer').value.trim();
-      if (!q || !a) { alert('Fill in both fields.'); return; }
-      localStorage.setItem('chrxmaticc_security_qa', JSON.stringify({ question: q, answer: a }));
-      document.getElementById('currentSecurityQuestion').textContent = q;
-      document.getElementById('securityQAEditor').style.display = 'none';
-      alert('Security Q&A saved.');
-    }
+      document.getElementById('btnEmail').addEventListener('click', function() {
+        var section = document.getElementById('emailSection');
+        section.classList.toggle('visible');
+        if (section.classList.contains('visible')) {
+          document.getElementById('accountsSubtitle').textContent = 'Sign in with Email';
+        }
+      });
 
-    function logout() {
-      localStorage.removeItem('chrxmaticc_token');
-      localStorage.removeItem('chrxmaticc_email');
-      location.href = 'index.html';
-    }
+      document.getElementById('btnGuest').addEventListener('click', function() {
+        // Clear any existing user but keep guest mode
+        localStorage.removeItem('chrxmaticc_user');
+        location.href = 'app.html';
+      });
 
-    function deleteAccount() {
-      if (confirm('Delete your account? This cannot be undone.')) {
-        localStorage.clear();
-        location.href = 'index.html';
+      // Email auth handlers (reuse existing auth.js functions if available)
+      document.getElementById('btnEmailSignIn').addEventListener('click', function() {
+        if (typeof handleEmailAuth === 'function') {
+          handleEmailAuth('login');
+        } else {
+          basicEmailAuth('login');
+        }
+      });
+
+      document.getElementById('btnEmailSignUp').addEventListener('click', function() {
+        if (typeof handleEmailAuth === 'function') {
+          handleEmailAuth('signup');
+        } else {
+          basicEmailAuth('signup');
+        }
+      });
+
+      function basicEmailAuth(mode) {
+        var email = document.getElementById('authEmail').value.trim();
+        var password = document.getElementById('authPassword').value.trim();
+        var errEl = document.getElementById('authError');
+
+        if (!email || !password) {
+          errEl.textContent = 'Please fill in all fields.';
+          return;
+        }
+
+        var users = {};
+        try { users = JSON.parse(localStorage.getItem('chrxmaticc_users') || '{}'); } catch(e) {}
+
+        if (mode === 'signup') {
+          var question = document.getElementById('signupSecurityQuestion').value.trim();
+          var answer = document.getElementById('signupSecurityAnswer').value.trim();
+          if (!question || !answer) {
+            errEl.textContent = 'Please set a security question and answer.';
+            return;
+          }
+          if (users[email]) {
+            errEl.textContent = 'An account with this email already exists.';
+            return;
+          }
+          users[email] = { password: password, question: question, answer: answer };
+          localStorage.setItem('chrxmaticc_users', JSON.stringify(users));
+          localStorage.setItem('chrxmaticc_user', JSON.stringify({ email: email, displayName: email.split('@')[0], provider: 'email' }));
+          location.href = 'app.html';
+        } else {
+          if (!users[email] || users[email].password !== password) {
+            errEl.textContent = 'Invalid email or password.';
+            return;
+          }
+          localStorage.setItem('chrxmaticc_user', JSON.stringify({ email: email, displayName: email.split('@')[0], provider: 'email' }));
+          location.href = 'app.html';
+        }
       }
-    }
-
-    init();
+    })();
   </script>
 </body>
 </html>
