@@ -6,7 +6,6 @@ var https = require('https');
 var path = require('path');
 var fs = require('fs');
 
-// Groq config
 var GROQ_KEY = process.env.GROQ_KEY || '';
 
 var PERSONALITIES = {};
@@ -61,56 +60,80 @@ module.exports = async function(req, res) {
     systemPrompt += ' The user attached a file. Read its content and respond accordingly.';
   }
 
-  var response = await getAIResponse(message, systemPrompt, model, temperature, maxTokens);
+  var response = await callGroq(message, systemPrompt, model, temperature, maxTokens);
   res.status(200).json(response);
 };
 
-function getAIResponse(message, systemPrompt, model, temperature, maxTokens) {
+function callGroq(userMessage, systemPrompt, model, temperature, maxTokens) {
   return new Promise(function(resolve) {
     if (!GROQ_KEY) {
-      resolve({ response: getFallback(message), provider: 'offline' });
+      resolve({ response: getFallback(userMessage), provider: 'offline' });
       return;
     }
 
-    var data = JSON.stringify({
+    var payload = JSON.stringify({
+      model: model,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
+        { role: 'user', content: userMessage }
       ],
-      model: model,
-      max_tokens: maxTokens || 250,
-      temperature: temperature || 0.85
+      temperature: temperature,
+      max_tokens: maxTokens
     });
 
-    var options = {
+    var req = https.request({
       hostname: 'api.groq.com',
       path: '/openai/v1/chat/completions',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + GROQ_KEY
+        'Authorization': 'Bearer ' + GROW_KEY,
+        'Content-Length': Buffer.byteLength(payload)
       },
-      timeout: 30000
-    };
-
-    var req = https.request(options, function(apiRes) {
-      var body = '';
-      apiRes.on('data', function(c) { body += c; });
+      timeout: 25000
+    }, function(apiRes) {
+      var chunks = [];
+      apiRes.on('data', function(chunk) { chunks.push(chunk); });
       apiRes.on('end', function() {
+        var raw = Buffer.concat(chunks).toString('utf8');
         try {
-          var json = JSON.parse(body);
-          var text = json.choices?.[0]?.message?.content || getFallback(message);
-          resolve({ response: text, provider: 'groq', model: model });
+          var json = JSON.parse(raw);
+          var content = '';
+
+          // Try to extract the response text
+          if (json.choices && json.choices.length > 0) {
+            var choice = json.choices[0];
+            if (choice.message && choice.message.content) {
+              content = choice.message.content;
+            } else if (choice.text) {
+              content = choice.text;
+            }
+          }
+
+          if (content) {
+            resolve({ response: content, provider: 'groq', model: model });
+          } else if (json.error) {
+            // Groq returned an error
+            resolve({ response: 'Groq error: ' + (json.error.message || json.error.code || 'unknown'), provider: 'groq' });
+          } else {
+            resolve({ response: getFallback(userMessage), provider: 'offline' });
+          }
         } catch (e) {
-          resolve({ response: getFallback(message), provider: 'offline' });
+          resolve({ response: getFallback(userMessage), provider: 'offline' });
         }
       });
     });
 
-    req.on('error', function() {
-      resolve({ response: getFallback(message), provider: 'offline' });
+    req.on('timeout', function() {
+      req.destroy();
+      resolve({ response: getFallback(userMessage), provider: 'offline' });
     });
-    req.write(data);
+
+    req.on('error', function() {
+      resolve({ response: getFallback(userMessage), provider: 'offline' });
+    });
+
+    req.write(payload);
     req.end();
   });
 }
