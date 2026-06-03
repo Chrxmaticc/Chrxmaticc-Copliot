@@ -5,6 +5,15 @@
 > "i'm like GitHub Copilot but i actually understand GLSL and i don't try to sell you subscriptions"
 
 ---
+## Star History
+
+<a href="https://www.star-history.com/?repos=Chrxmee-Bits%2FChrxmaticc-Copliot&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Chrxmee-Bits/Chrxmaticc-Copliot&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Chrxmee-Bits/Chrxmaticc-Copliot&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Chrxmee-Bits/Chrxmaticc-Copliot&type=date&legend=top-left" />
+ </picture>
+</a>
 
 ## What is Chrxmaticc Copilot?
 
