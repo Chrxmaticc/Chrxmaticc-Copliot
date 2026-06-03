@@ -2,11 +2,11 @@
 // Author: Chrxmee-Midnightt
 // Model: Groq (multi-model via personalities)
 
-var https = require('https');
 var path = require('path');
 var fs = require('fs');
 
 var GROQ_KEY = process.env.GROQ_KEY || '';
+var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 var PERSONALITIES = {};
 var personalitiesDir = path.join(__dirname, '..', 'src', 'personalities');
@@ -68,59 +68,37 @@ module.exports = async function(req, res) {
   }
 };
 
-function askGroq(systemPrompt, userMessage, model, temperature, maxTokens) {
-  return new Promise(function(resolve, reject) {
-    if (!GROQ_KEY) {
-      reject('no key');
-      return;
-    }
+async function askGroq(systemPrompt, userMessage, model, temperature, maxTokens) {
+  if (!GROQ_KEY) throw new Error('no key');
 
-    var body = JSON.stringify({
+  var response = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + GROQ_KEY
+    },
+    body: JSON.stringify({
       model: model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
       temperature: temperature,
-      max_completion_tokens: maxTokens
-    });
-
-    var options = {
-      hostname: 'api.groq.com',
-      path: '/openai/v1/chat/completions',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + GROQ_KEY
-      }
-    };
-
-    var req = https.request(options, function(response) {
-      var data = '';
-      response.on('data', function(chunk) { data += chunk; });
-      response.on('end', function() {
-        try {
-          var json = JSON.parse(data);
-          if (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) {
-            resolve(json.choices[0].message.content);
-          } else if (json.error) {
-            reject(json.error.message || 'groq error');
-          } else {
-            reject('empty response');
-          }
-        } catch (e) {
-          reject('parse error');
-        }
-      });
-    });
-
-    req.on('error', function(e) {
-      reject(e.message || 'request failed');
-    });
-
-    req.write(body);
-    req.end();
+      max_tokens: maxTokens
+    })
   });
+
+  var json = await response.json();
+
+  if (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) {
+    return json.choices[0].message.content;
+  }
+
+  if (json.error) {
+    throw new Error(json.error.message || 'groq error');
+  }
+
+  throw new Error('empty response');
 }
 
 function getFallback(input) {
