@@ -5,18 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#000000">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="apple-touch-icon" href="favicon.png">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="/manifest.json">
   <title>Chrxmaticc Copilot</title>
   <link rel="stylesheet" href="style.css">
+  <script defer src="analytics.js"></script>
 </head>
 <body class="theme-midnight">
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-chrome-ring">
+      <img src="chrome.gif" alt="Loading" class="loading-gif" />
+      <div class="loading-texture-overlay"></div>
+    </div>
+    <div class="loading-icon-center">
+      <img src="icon.png" alt="Chrxmaticc" class="loading-icon-img" />
+    </div>
+    <div class="loading-text">Chrxmaticc Copilot</div>
+  </div>
+
   <div id="app">
     <div id="sidebar" class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-avatar" id="sidebarAvatar">🧠</div>
+        <div class="sidebar-avatar" id="sidebarAvatar">
+          <img src="icon.png" alt="Copilot" class="avatar-icon" />
+        </div>
         <div class="sidebar-title">Chats</div>
         <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
       </div>
@@ -28,7 +43,9 @@
       <div class="sidebar-chats" id="savedChatsList"></div>
       <div class="sidebar-footer">
         <div class="sidebar-profile" onclick="location.href='settings.html'">
-          <div class="sidebar-profile-avatar" id="profileAvatar">👤</div>
+          <div class="sidebar-profile-avatar" id="profileAvatar">
+            <img src="icon.png" alt="Profile" class="avatar-icon" />
+          </div>
           <div class="sidebar-profile-info"><div class="sidebar-profile-name" id="profileName">Guest</div><div class="sidebar-profile-status">Settings</div></div>
         </div>
       </div>
@@ -43,9 +60,14 @@
 
     <div id="main" class="main">
       <div class="topbar">
-        <button class="topbar-btn" onclick="toggleSidebar()"><span class="topbar-back">‹</span><span class="topbar-avatar-sm" id="topbarAvatar">🧠</span></button>
+        <button class="topbar-btn" onclick="toggleSidebar()">
+          <span class="topbar-back">‹</span>
+          <span class="topbar-avatar-sm chrome-logo-sm">
+            <img src="chrome.gif" alt="Chrxmaticc" />
+          </span>
+        </button>
         <div class="topbar-center" ondblclick="doubleTapTopbar()">
-          <div class="topbar-name">Chrxmaticc Copilot</div>
+          <div class="topbar-name chrome-text">Chrxmaticc Copilot</div>
           <div class="topbar-status"><span id="statusDot" class="status-dot"></span><span id="statusText">Online</span></div>
         </div>
         <select id="personalitySelect" class="personality-select" onchange="changePersonality(this.value)">
@@ -62,14 +84,14 @@
         <div class="bubble-row ai"><div class="bubble">Yo! I'm Chrxmaticc Copilot. Offbrand. Hyper-intelligent. No subscription.
 
 Type /help to see what I can do.
-Try /image for AI art, /video for GIFs, or attach files with 🔗</div><div class="timestamp">Now</div></div>
+Try /image for AI art, or attach files with 🔗</div><div class="timestamp">Now</div></div>
         <div class="quick-commands">
-          <button class="quick-cmd" onclick="quickSend('/image a chrome fox')">🎨 Image</button>
-          <button class="quick-cmd" onclick="quickSend('/video neon city')">🎬 GIF</button>
-          <button class="quick-cmd" onclick="quickSend('/weather London')">🌤️</button>
-          <button class="quick-cmd" onclick="quickSend('/crypto bitcoin')">💰</button>
-          <button class="quick-cmd" onclick="quickSend('/roll 2d20')">🎲</button>
-          <button class="quick-cmd" onclick="quickSend('/joke')">😂</button>
+          <button class="quick-cmd" onclick="quickSend('/image a chrome fox')">Image</button>
+          <button class="quick-cmd" onclick="quickSend('Write a function to reverse a string')">Code</button>
+          <button class="quick-cmd" onclick="quickSend('/roll 2d20')">Roll</button>
+          <button class="quick-cmd" onclick="quickSend('/joke')">Joke</button>
+          <button class="quick-cmd" onclick="quickSend('Explain quantum computing')">Explain</button>
+          <button class="quick-cmd" onclick="quickSend('What can you do?')">Help</button>
         </div>
         <div class="typing-indicator" id="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
       </div>
@@ -78,7 +100,7 @@ Try /image for AI art, /video for GIFs, or attach files with 🔗</div><div clas
         <button class="input-btn" id="micBtn" onclick="toggleMic()">🎤</button>
         <div class="input-wrap"><textarea id="userInput" rows="1" placeholder="Message"></textarea></div>
         <button class="input-btn attachment-btn" id="attachBtn" onclick="triggerFileUpload()">🔗</button>
-        <input type="file" id="fileInput" style="display:none" accept="image/*,video/*,.js,.json,.html,.css,.md,.txt,.py,.glsl,.yml,.yaml,.xml,.svg" onchange="handleFileUpload(event)">
+        <input type="file" id="fileInput" style="display:none" accept="image/*,.js,.json,.html,.css,.md,.txt,.py,.glsl,.yml,.yaml,.xml,.svg" onchange="handleFileUpload(event)">
         <button class="send-btn" id="sendBtn" onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
       </div>
       <div id="micStatus" class="mic-status"><span class="mic-pulse"></span> Listening...</div>
@@ -88,9 +110,9 @@ Try /image for AI art, /video for GIFs, or attach files with 🔗</div><div clas
     <div id="chatActionModal" class="modal">
       <div class="modal-content">
         <div class="modal-header"><div class="modal-title">Chat Actions</div><button class="modal-close" onclick="hideChatActions()">✕</button></div>
-        <button class="modal-btn" onclick="exportChat()">📤 Export</button>
-        <button class="modal-btn" onclick="clearChat()">🗑️ Clear</button>
-        <button class="modal-btn" onclick="deleteChat()">❌ Delete</button>
+        <button class="modal-btn" onclick="exportChat()">Export</button>
+        <button class="modal-btn" onclick="clearChat()">Clear</button>
+        <button class="modal-btn" onclick="deleteChat()">Delete</button>
         <button class="modal-btn text" onclick="hideChatActions()">Cancel</button>
       </div>
     </div>
