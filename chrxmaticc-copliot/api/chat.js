@@ -7,7 +7,7 @@ var path = require('path');
 var fs = require('fs');
 
 // Groq config
-var GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+var GROQ_KEY = process.env.GROQ_KEY || '';
 
 var PERSONALITIES = {};
 var personalitiesDir = path.join(__dirname, '..', 'src', 'personalities');
@@ -67,7 +67,7 @@ module.exports = async function(req, res) {
 
 function getAIResponse(message, systemPrompt, model, temperature, maxTokens) {
   return new Promise(function(resolve) {
-    if (!GROQ_API_KEY) {
+    if (!GROQ_KEY) {
       resolve({ response: getFallback(message), provider: 'offline' });
       return;
     }
@@ -88,7 +88,7 @@ function getAIResponse(message, systemPrompt, model, temperature, maxTokens) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + GROQ_API_KEY
+        'Authorization': 'Bearer ' + GROQ_KEY
       },
       timeout: 30000
     };
@@ -118,6 +118,6 @@ function getAIResponse(message, systemPrompt, model, temperature, maxTokens) {
 function getFallback(input) {
   var lower = (input || '').toLowerCase();
   if (lower.indexOf('hello') !== -1) return 'Yo! What\'s good?';
-  if (lower.indexOf('help') !== -1) return 'Commands: /image, /video, /weather, /crypto, /roll, /joke, /speak. Attach files with the link button.';
+  if (lower.indexOf('help') !== -1) return 'Commands: /image, /weather, /crypto, /roll, /joke, /speak. Attach files with the link button.';
   return 'I\'m in offline mode. Limited responses but still here.';
 }
