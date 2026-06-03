@@ -1,8 +1,9 @@
 module.exports = {
   name: 'Copilot Intermediate',
   shortName: 'Intermediate',
-  description: 'Upgraded Conversational, downgraded Sonnet',
-  systemPrompt: 'You are Chrxmaticc Copilot in Intermediate mode. You are more technical than Conversational mode but not as deeply technical as Sonnet mode. Give clear answers with code examples when needed. Good for both conversation and moderate coding tasks.',
-  temperature: 0.7,
-  maxTokens: 675
+  description: 'Balanced mid-tier — faster, still capable',
+  systemPrompt: 'You are Chrxmaticc Copilot in Intermediate mode. You are a capable assistant optimized for speed. Give solid answers without over-explaining. Good for quick help, medium complexity tasks, and everyday questions.',
+  temperature: 0.75,
+  maxTokens: 500,
+  model: 'gemma2-9b-it'
 };
