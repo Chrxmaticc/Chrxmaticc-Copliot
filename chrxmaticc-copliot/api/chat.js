@@ -1,12 +1,13 @@
-// Chrxmaticc Copilot — Chat API with File Support
+// Chrxmaticc Copilot — Chat API with Free Image Vision
 // Author: Chrxmee-Midnightt
-// Model: Groq (multi-model via personalities)
+// Groq + Pollinations Vision (free, no API key)
 
 var path = require('path');
 var fs = require('fs');
 
 var GROQ_KEY = process.env.GROQ_KEY || '';
 var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+var VISION_URL = 'https://image.pollinations.ai/describe';
 
 var PERSONALITIES = {};
 var personalitiesDir = path.join(__dirname, '..', 'src', 'personalities');
@@ -33,6 +34,9 @@ var DEFAULT_PERSONALITY = PERSONALITIES['conversational'] || {
   model: 'llama-3.3-70b-versatile'
 };
 
+// Image file extensions
+var IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.ico', '.tiff', '.avif'];
+
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -42,7 +46,13 @@ module.exports = async function(req, res) {
 
   var body = req.body || {};
   var message = body.message || '';
-  if (!message) return res.status(400).json({ error: 'Missing message' });
+  var fileName = body.fileName || '';
+  var fileType = body.fileType || '';
+  var imageUrl = body.imageUrl || '';
+
+  if (!message && !imageUrl && !body.fileContent) {
+    return res.status(400).json({ error: 'Missing message' });
+  }
 
   var personalityKey = PERSONALITY_MAP[body.personality] || 'conversational';
   var selectedPersonality = PERSONALITIES[personalityKey] || DEFAULT_PERSONALITY;
@@ -55,8 +65,43 @@ module.exports = async function(req, res) {
     systemPrompt += ' The user shared: ' + body.personalInfo + '. Use this when relevant.';
   }
 
-  if (body.fileContent) {
-    message = '[File: ' + (body.fileName || 'unknown') + ']\nContent: ' + body.fileContent.slice(0, 2000) + '\n\nUser: ' + message;
+  // ── IMAGE DETECTION & VISION ──
+  var isImage = false;
+
+  // Check by MIME type
+  if (fileType && fileType.startsWith('image/')) {
+    isImage = true;
+  }
+  // Check by file extension
+  if (fileName) {
+    var ext = '.' + fileName.split('.').pop().toLowerCase();
+    if (IMAGE_EXTENSIONS.indexOf(ext) !== -1) {
+      isImage = true;
+    }
+  }
+  // Check if imageUrl is provided
+  if (imageUrl) {
+    isImage = true;
+  }
+
+  if (isImage) {
+    try {
+      var descUrl = imageUrl || body.fileContent || '';
+      var description = await describeImage(descUrl);
+      if (description) {
+        message = '[The user uploaded an image. Here is a description of what it shows: "' + description + '"]\n\nUser: ' + (message || 'What do you see in this image? Describe it and respond accordingly.');
+        systemPrompt += ' The user has shared an image. A description of the image has been provided. Use this description to respond as if you can see the image. Be vivid and detailed when describing it back.';
+      }
+    } catch(e) {
+      // Vision failed, continue with just file info
+      message = '[Image: ' + (fileName || 'uploaded') + ']\n\nUser: ' + (message || 'I uploaded an image.');
+      systemPrompt += ' The user uploaded an image but automatic description failed. Let them know and ask them to describe it.';
+    }
+  }
+
+  // ── TEXT FILE HANDLING ──
+  if (body.fileContent && !isImage) {
+    message = '[File: ' + (fileName || 'unknown') + ']\nContent:\n' + String(body.fileContent).slice(0, 3000) + '\n\nUser: ' + (message || 'See attached file.');
     systemPrompt += ' The user attached a file. Read its content and respond accordingly.';
   }
 
@@ -67,6 +112,28 @@ module.exports = async function(req, res) {
     res.status(200).json({ response: getFallback(message), provider: 'offline' });
   }
 };
+
+// ── Free image description via Pollinations ──
+async function describeImage(imageUrl) {
+  // If it's a blob URL or data URL, we can't send it directly to Pollinations
+  // The frontend should pass a proper URL
+  if (!imageUrl || imageUrl.indexOf('blob:') === 0 || imageUrl.indexOf('data:') === 0) {
+    return null;
+  }
+
+  try {
+    var url = VISION_URL + '?url=' + encodeURIComponent(imageUrl);
+    var response = await fetch(url);
+    var text = await response.text();
+
+    if (text && text.length > 10 && text.toLowerCase().indexOf('error') === -1 && text.toLowerCase().indexOf('failed') === -1) {
+      return text.trim();
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
+}
 
 async function askGroq(systemPrompt, userMessage, model, temperature, maxTokens) {
   if (!GROQ_KEY) throw new Error('no key');
@@ -94,10 +161,7 @@ async function askGroq(systemPrompt, userMessage, model, temperature, maxTokens)
     return json.choices[0].message.content;
   }
 
-  if (json.error) {
-    throw new Error(json.error.message || 'groq error');
-  }
-
+  if (json.error) throw new Error(json.error.message || 'groq error');
   throw new Error('empty response');
 }
 
