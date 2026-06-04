@@ -1,5 +1,11 @@
 # Contributor Covenant Code of Conduct
-
+<table>
+  <tr>
+    <td>
+      <img src="./chrxmaticc-copliot/public/icon.png" alt="Chrxmaticc Copilot Icon">
+    </td>
+  </tr>
+</table>
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our
