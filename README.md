@@ -1,4 +1,12 @@
 # Chrxmaticc Copilot v1.0.0
+<table>
+  <tr>
+    <td>
+      <img src="./chrxmaticc-copliot/public/icon.png" alt="Chrxmaticc Copilot Icon">
+    </td>
+  </tr>
+</table>
+
 
 **Offbrand Terminal AI — Hyper-Intelligent. No Subscription.**
 
@@ -233,9 +241,10 @@ MIT — Offbrand. Unlicensed vibes. Do whatever you want.
 
 ---
 
-## Ecosystem
-
-chrxmaticc-png          CLI shader renderer (26 shaders, 2D + 3D)
-chrxmaticc-copilot      Terminal AI assistant (this package)
-chrxmaticc-ai           Tiny LLM for shader generation (coming soon)
-chrxmaticc-studio       Web GUI for live preview (coming soon)
+<table>
+  <tr>
+    <td>
+      <img src="./chrxmaticc-copliot/public/chrome.gif" alt="Framed GIF">
+    </td>
+  </tr>
+</table>
