@@ -1,5 +1,11 @@
 # Contributing to Chrxmaticc Copliot / AI
-
+<table>
+  <tr>
+    <td>
+      <img src="./chrxmaticc-copliot/public/icon.png" alt="Chrxmaticc Copilot Icon">
+    </td>
+  </tr>
+</table>
 ## How to Contribute
 
 ### Report Bugs (or on commands)
