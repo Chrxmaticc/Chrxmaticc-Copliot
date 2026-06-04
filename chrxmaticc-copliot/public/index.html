@@ -13,17 +13,53 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="analytics.js"></script>
   <style>
+    /* ═══════════════════════════════════════
+       INDEX — GOLD DEFAULT, THEME SWITCHER
+       ═══════════════════════════════════════ */
+    :root {
+      --bg: #0b0b0a;
+      --panel: rgba(18,18,16,0.8);
+      --border: rgba(212,165,116,0.1);
+      --text: #e8d5c4;
+      --muted: #8a7a6a;
+      --accent: #d4a574;
+      --accent2: #c9956b;
+      --glow: rgba(212,165,116,0.15);
+      --card-bg: rgba(18,18,16,0.8);
+    }
+    [data-theme="midnight"] {
+      --bg: #0a0a0a; --panel: #0d0d0d; --border: #1a1a1a; --text: #e0e0e0;
+      --muted: #8e8e93; --accent: #a0a0d0; --accent2: #8888bb; --glow: rgba(150,150,200,0.1);
+      --card-bg: #0d0d0d;
+    }
+    [data-theme="glass"] {
+      --bg: #0a0a0f; --panel: rgba(20,20,30,0.5); --border: rgba(255,255,255,0.06);
+      --text: #e0e0e0; --muted: #999; --accent: #a0b0d0; --accent2: #8899cc;
+      --glow: rgba(150,180,220,0.1); --card-bg: rgba(20,20,30,0.4);
+    }
+    [data-theme="chrome"] {
+      --bg: #1a1a1a; --panel: #1e1e1e; --border: #2a2a2a; --text: #e0e0e0;
+      --muted: #999; --accent: #bbb; --accent2: #aaa; --glow: rgba(200,200,220,0.08);
+      --card-bg: #1e1e1e;
+    }
+    [data-theme="white"] {
+      --bg: #f5f5f7; --panel: #fff; --border: #e5e5e5; --text: #1a1a1a;
+      --muted: #999; --accent: #0a84ff; --accent2: #0070e0; --glow: rgba(10,132,255,0.1);
+      --card-bg: #fff;
+    }
+
     .index-page {
-      background: #0b0b0a; color: #e8d5c4;
+      background: var(--bg); color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-      overflow-x: hidden; scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
+      overflow-x: hidden; overflow-y: auto; min-height: 100vh; height: auto;
+      scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+      transition: background 0.5s ease, color 0.5s ease;
     }
     .index-page::-webkit-scrollbar { width: 4px; }
     .index-page::-webkit-scrollbar-track { background: transparent; }
-    .index-page::-webkit-scrollbar-thumb { background: rgba(212,165,116,0.15); border-radius: 2px; }
+    .index-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    .index-bg-wrapper { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .index-bg-wrapper { position: fixed; inset: 0; z-index: 0; pointer-events: none; touch-action: none; }
     .index-bg-gif {
       position: absolute; inset: 0;
       background: url('chrome.gif') center/cover no-repeat;
@@ -36,10 +72,30 @@
     }
     .index-bg-gradient {
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(212,165,116,0.06) 0%, transparent 70%);
+      background: radial-gradient(ellipse at 50% 0%, var(--glow) 0%, transparent 70%);
     }
 
-    .index-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .index-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 24px; pointer-events: auto; }
+
+    /* Theme pill */
+    .index-theme-pill {
+      position: fixed; bottom: 24px; right: 24px; z-index: 100;
+      display: flex; gap: 6px; padding: 6px;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    .index-theme-dot {
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: all 0.2s;
+    }
+    .index-theme-dot:hover { transform: scale(1.15); border-color: var(--accent); }
+    .index-theme-dot.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
+    .index-theme-dot.gold { background: #0b0b0a; border-color: rgba(212,165,116,0.4); }
+    .index-theme-dot.midnight { background: #0a0a0a; }
+    .index-theme-dot.glass { background: rgba(20,20,30,0.8); backdrop-filter: blur(10px); }
+    .index-theme-dot.chrome { background: #1a1a1a; }
+    .index-theme-dot.white { background: #f5f5f7; }
 
     .index-nav {
       display: flex; align-items: center; justify-content: space-between;
@@ -49,7 +105,7 @@
     .index-nav-logo img { width: 32px; height: 32px; object-fit: contain; }
     .index-nav-logo span {
       font-size: 16px; font-weight: 700; letter-spacing: -0.3px;
-      background: linear-gradient(135deg, #c9956b, #d4a574, #c9956b);
+      background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent2));
       background-size: 200% 200%;
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       animation: goldShimmer 3s ease-in-out infinite;
@@ -58,34 +114,34 @@
       0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
     }
     .index-nav-links { display: flex; gap: 24px; align-items: center; }
-    .index-nav-link { color: #a09080; text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 0.3px; transition: color 0.2s; }
-    .index-nav-link:hover { color: #d4a574; }
+    .index-nav-link { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 0.3px; transition: color 0.2s; }
+    .index-nav-link:hover { color: var(--accent); }
     .index-discord-btn {
       display: flex; align-items: center; gap: 6px;
-      background: rgba(212,165,116,0.08); border: 1px solid rgba(212,165,116,0.15);
-      color: #d4a574; padding: 8px 16px; border-radius: 10px;
+      background: var(--panel); border: 1px solid var(--border);
+      color: var(--accent); padding: 8px 16px; border-radius: 10px;
       font-size: 13px; font-weight: 600; text-decoration: none;
       transition: all 0.2s ease; letter-spacing: 0.3px;
     }
-    .index-discord-btn:hover { background: rgba(212,165,116,0.15); border-color: rgba(212,165,116,0.3); box-shadow: 0 0 24px rgba(212,165,116,0.1); }
+    .index-discord-btn:hover { background: var(--card-bg); border-color: var(--accent); box-shadow: 0 0 24px var(--glow); }
     .index-discord-btn svg { width: 18px; height: 18px; }
 
     .index-hero { text-align: center; padding: 80px 0 60px; animation: fadeInUp 0.8s ease; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
     .index-hero-icon {
       width: 80px; height: 80px; margin: 0 auto 24px;
-      filter: drop-shadow(0 0 32px rgba(212,165,116,0.2)); animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 32px var(--glow)); animation: float 4s ease-in-out infinite;
     }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
     .index-hero-icon img { width: 100%; height: 100%; object-fit: contain; }
     .index-hero h1 {
       font-size: clamp(32px, 6vw, 48px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1;
-      background: linear-gradient(135deg, #d4a574, #e8c8a0, #c9956b, #d4a574);
+      background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent2));
       background-size: 300% 300%;
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       animation: goldShimmer 4s ease-in-out infinite; margin-bottom: 12px;
     }
-    .index-hero p { font-size: 16px; color: #8a7a6a; letter-spacing: 0.2px; max-width: 480px; margin: 0 auto 32px; line-height: 1.6; }
+    .index-hero p { font-size: 16px; color: var(--muted); letter-spacing: 0.2px; max-width: 480px; margin: 0 auto 32px; line-height: 1.6; }
     .index-hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
     .index-btn {
       padding: 14px 28px; border-radius: 14px; font-size: 14px; font-weight: 600;
@@ -93,59 +149,67 @@
       font-family: inherit; text-decoration: none; display: inline-block;
     }
     .index-btn.primary {
-      background: linear-gradient(135deg, #c9956b, #b8845e); color: #0b0b0a; border: none;
-      box-shadow: 0 4px 20px rgba(200,150,100,0.2), 0 0 40px rgba(212,165,116,0.08);
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: var(--bg); border: none;
+      box-shadow: 0 4px 20px var(--glow), 0 0 40px var(--glow);
     }
-    .index-btn.primary:hover { box-shadow: 0 6px 28px rgba(200,150,100,0.3), 0 0 60px rgba(212,165,116,0.15); transform: translateY(-2px); }
+    .index-btn.primary:hover { box-shadow: 0 6px 28px var(--glow), 0 0 60px var(--glow); transform: translateY(-2px); }
     .index-btn.primary:active { transform: scale(0.97); }
-    .index-btn.secondary { background: transparent; color: #d4a574; border: 1px solid rgba(212,165,116,0.2); }
-    .index-btn.secondary:hover { background: rgba(212,165,116,0.06); border-color: rgba(212,165,116,0.35); box-shadow: 0 0 20px rgba(212,165,116,0.06); }
+    .index-btn.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); }
+    .index-btn.secondary:hover { background: var(--panel); border-color: var(--accent); }
 
     .index-section { padding: 60px 0; }
-    .index-section-label { text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #6a5a4a; margin-bottom: 12px; font-weight: 600; }
-    .index-section-title { text-align: center; font-size: clamp(22px, 4vw, 28px); font-weight: 700; letter-spacing: -0.5px; color: #e8d5c4; margin-bottom: 40px; }
+    .index-section-label { text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
+    .index-section-title { text-align: center; font-size: clamp(22px, 4vw, 28px); font-weight: 700; letter-spacing: -0.5px; color: var(--text); margin-bottom: 40px; }
 
     .index-features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
     .index-feature-card {
-      background: rgba(18,18,16,0.8); border: 1px solid rgba(212,165,116,0.06);
+      background: var(--card-bg); border: 1px solid var(--border);
       border-radius: 16px; padding: 24px; text-align: center;
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
       transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
-    .index-feature-card:hover { border-color: rgba(212,165,116,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px rgba(212,165,116,0.04); transform: translateY(-2px); }
-    .index-feature-card h3 { font-size: 14px; font-weight: 600; color: #d4a574; margin-bottom: 6px; letter-spacing: 0.2px; }
-    .index-feature-card p { font-size: 12px; color: #8a7a6a; line-height: 1.5; }
+    .index-feature-card:hover { border-color: var(--accent); box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px var(--glow); transform: translateY(-2px); }
+    .index-feature-card h3 { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 6px; letter-spacing: 0.2px; }
+    .index-feature-card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
     .index-reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
     .index-review-card {
-      background: rgba(18,18,16,0.8); border: 1px solid rgba(212,165,116,0.08);
+      background: var(--card-bg); border: 1px solid var(--border);
       border-radius: 16px; padding: 24px;
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2); position: relative;
+      transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
-    .index-review-card:hover { border-color: rgba(212,165,116,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.3); transform: translateY(-2px); }
-    .index-review-stars { color: #d4a574; font-size: 14px; letter-spacing: 2px; margin-bottom: 10px; }
-    .index-review-text { font-size: 13px; color: #a09080; line-height: 1.6; margin-bottom: 14px; }
+    .index-review-card:hover { border-color: var(--accent); box-shadow: 0 8px 32px rgba(0,0,0,0.3); transform: translateY(-2px); }
+    .index-review-stars { color: var(--accent); font-size: 14px; letter-spacing: 2px; margin-bottom: 10px; font-weight: 600; }
+    .index-review-text { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
     .index-review-author { display: flex; align-items: center; gap: 8px; }
     .index-review-avatar {
       width: 28px; height: 28px; border-radius: 50%;
-      background: linear-gradient(135deg, #c9956b, #b8845e);
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
       display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700; color: #0b0b0a;
+      font-size: 12px; font-weight: 700; color: var(--bg);
     }
-    .index-review-name { font-size: 13px; font-weight: 600; color: #e8d5c4; letter-spacing: 0.2px; }
+    .index-review-name { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }
+
+    /* Surprise: live visitor counter */
+    .index-visitor-badge {
+      text-align: center; padding: 8px 0; font-size: 11px; color: var(--muted);
+      letter-spacing: 0.5px; opacity: 0.7;
+    }
+    .index-visitor-count { color: var(--accent); font-weight: 700; }
 
     .index-cta {
       text-align: center; padding: 80px 0;
-      background: radial-gradient(ellipse at 50% 50%, rgba(212,165,116,0.04) 0%, transparent 70%);
+      background: radial-gradient(ellipse at 50% 50%, var(--glow) 0%, transparent 70%);
       border-radius: 24px; margin: 40px 0 60px;
     }
-    .index-cta h2 { font-size: clamp(24px, 5vw, 32px); font-weight: 700; letter-spacing: -0.8px; color: #e8d5c4; margin-bottom: 10px; }
-    .index-cta p { font-size: 15px; color: #8a7a6a; margin-bottom: 28px; }
+    .index-cta h2 { font-size: clamp(24px, 5vw, 32px); font-weight: 700; letter-spacing: -0.8px; color: var(--text); margin-bottom: 10px; }
+    .index-cta p { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
     .index-cta .index-btn.primary { font-size: 15px; padding: 16px 36px; }
 
-    .index-footer { text-align: center; padding: 40px 0; border-top: 1px solid rgba(212,165,116,0.06); }
-    .index-footer p { font-size: 12px; color: #6a5a4a; letter-spacing: 0.5px; }
+    .index-footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--border); }
+    .index-footer p { font-size: 12px; color: var(--muted); letter-spacing: 0.5px; }
 
     /* Mobile */
     @media (max-width: 768px) {
@@ -165,19 +229,17 @@
       .index-feature-card h3 { font-size: 13px; }
       .index-feature-card p { font-size: 11px; }
       .index-reviews-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; display: flex; gap: 12px;
         overflow-x: auto; scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        display: flex; gap: 12px;
-        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch; padding-bottom: 8px;
+        touch-action: pan-x;
       }
       .index-reviews-grid::-webkit-scrollbar { display: none; }
-      .index-review-card {
-        min-width: 280px; flex-shrink: 0;
-        scroll-snap-align: start;
-      }
+      .index-review-card { min-width: 280px; flex-shrink: 0; scroll-snap-align: start; }
       .index-cta { padding: 48px 16px; margin: 24px 0 40px; }
       .index-cta h2 { font-size: 22px; }
+      .index-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; }
+      .index-theme-dot { width: 24px; height: 24px; }
     }
     @media (max-width: 400px) {
       .index-features-grid { grid-template-columns: 1fr; }
@@ -186,11 +248,20 @@
     }
   </style>
 </head>
-<body class="index-page">
+<body class="index-page" data-theme="gold">
   <div class="index-bg-wrapper">
     <div class="index-bg-gif" id="parallaxBg"></div>
     <div class="index-bg-texture"></div>
     <div class="index-bg-gradient"></div>
+  </div>
+
+  <!-- Theme Switcher Pill -->
+  <div class="index-theme-pill" id="themePill">
+    <div class="index-theme-dot gold active" data-theme="gold" title="Gold"></div>
+    <div class="index-theme-dot midnight" data-theme="midnight" title="Midnight"></div>
+    <div class="index-theme-dot glass" data-theme="glass" title="Glass"></div>
+    <div class="index-theme-dot chrome" data-theme="chrome" title="Chrome"></div>
+    <div class="index-theme-dot white" data-theme="white" title="Light"></div>
   </div>
 
   <div class="index-content">
@@ -213,7 +284,8 @@
       <div class="index-hero-icon"><img src="icon.png" alt="Chrxmaticc Copilot"></div>
       <h1>Chrxmaticc Copilot</h1>
       <p>Offbrand. Hyper-intelligent. No subscription. The chrome demon that codes, creates, and doesn't hold back.</p>
-      <div class="index-hero-buttons">
+      <div class="index-visitor-badge">Online right now: <span class="index-visitor-count" id="visitorCount">--</span></div>
+      <div class="index-hero-buttons" style="margin-top:16px;">
         <a href="accounts.html" class="index-btn primary" id="heroSignIn">Sign In</a>
         <a href="accounts.html?mode=signup" class="index-btn secondary">Create Account</a>
       </div>
@@ -224,11 +296,11 @@
       <h2 class="index-section-title">Everything you need. Nothing you don't.</h2>
       <div class="index-features-grid">
         <div class="index-feature-card"><h3>5 AI Personalities</h3><p>Conversational, Sonnet for coding, Vision for creativity, Intermediate, and Speed mode.</p></div>
-        <div class="index-feature-card"><h3>5 Premium Themes</h3><p>Midnight, Glass, Chrome, Light, and Gold. Each crafted with micro-interactions.</p></div>
+        <div class="index-feature-card"><h3>5 Premium Themes</h3><p>Midnight, Glass, Chrome, Light, and Gold. Swap themes anywhere, persists everywhere.</p></div>
         <div class="index-feature-card"><h3>Voice Input & TTS</h3><p>Speak your messages. Hear the AI respond. Hands-free when you need it.</p></div>
-        <div class="index-feature-card"><h3>Code Highlighting</h3><p>Syntax highlighting with one-click copy. Built for developers.</p></div>
-        <div class="index-feature-card"><h3>File Support</h3><p>Attach images, code files, documents. The AI reads and responds.</p></div>
-        <div class="index-feature-card"><h3>Saved Chats</h3><p>Everything stays in your browser. Pick up where you left off.</p></div>
+        <div class="index-feature-card"><h3>Code Highlighting</h3><p>Syntax highlighting with one-click copy. Built for developers who build.</p></div>
+        <div class="index-feature-card"><h3>File Support</h3><p>Attach images, code files, documents. The AI reads and responds intelligently.</p></div>
+        <div class="index-feature-card"><h3>Persistent Chats</h3><p>Everything saved locally. Pick up any conversation exactly where you left off.</p></div>
       </div>
     </section>
 
@@ -266,7 +338,28 @@
   <audio id="bgAudio" src="audio/MONEY SPREAD.wav" loop preload="auto"></audio>
 
   <script>
-    // Parallax
+    // ── Theme System ──
+    var currentTheme = localStorage.getItem('chrxmaticc_theme') || 'gold';
+    document.body.setAttribute('data-theme', currentTheme);
+    updateThemeDots();
+
+    document.querySelectorAll('.index-theme-dot').forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        var theme = this.getAttribute('data-theme');
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('chrxmaticc_theme', theme);
+        currentTheme = theme;
+        updateThemeDots();
+      });
+    });
+
+    function updateThemeDots() {
+      document.querySelectorAll('.index-theme-dot').forEach(function(d) {
+        d.classList.toggle('active', d.getAttribute('data-theme') === currentTheme);
+      });
+    }
+
+    // ── Parallax ──
     var parallaxBg = document.getElementById('parallaxBg');
     if (parallaxBg) {
       document.addEventListener('mousemove', function(e) {
@@ -276,37 +369,38 @@
       });
     }
 
-    // Audio — instant on any interaction
+    // ── Audio — instant on any interaction ──
     var bgAudio = document.getElementById('bgAudio');
     var audioUnlocked = false;
-
     function unlockAudio() {
       if (!audioUnlocked && bgAudio) {
         bgAudio.volume = 0.15;
-        bgAudio.play().then(function() {
-          audioUnlocked = true;
-        }).catch(function(){});
+        bgAudio.play().then(function() { audioUnlocked = true; }).catch(function(){});
         document.removeEventListener('click', unlockAudio);
         document.removeEventListener('touchstart', unlockAudio);
         document.removeEventListener('keydown', unlockAudio);
       }
     }
-
     document.addEventListener('click', unlockAudio);
     document.addEventListener('touchstart', unlockAudio);
     document.addEventListener('keydown', unlockAudio);
-
-    // Auto-play attempt on load (works on some mobile browsers)
     if (bgAudio) {
       bgAudio.volume = 0.15;
-      bgAudio.play().then(function() {
-        audioUnlocked = true;
-      }).catch(function() {
-        // Will retry on first interaction
-      });
+      bgAudio.play().then(function() { audioUnlocked = true; }).catch(function(){});
     }
 
-    // Existing user detection
+    // ── Surprise: Simulated visitor count ──
+    (function() {
+      var count = Math.floor(Math.random() * 30) + 5;
+      var el = document.getElementById('visitorCount');
+      if (el) el.textContent = count;
+      setInterval(function() {
+        count = Math.max(1, count + Math.floor(Math.random() * 5) - 2);
+        if (el) el.textContent = count;
+      }, 15000);
+    })();
+
+    // ── Existing user detection ──
     (function() {
       var existingUser = null;
       try { existingUser = JSON.parse(localStorage.getItem('chrxmaticc_user')); } catch(e) {}
