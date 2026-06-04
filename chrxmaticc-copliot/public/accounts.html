@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="accounts-page">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0a0a0a">
+  <meta name="theme-color" content="#0b0b0a">
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="/manifest.json">
@@ -13,181 +13,201 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="analytics.js"></script>
   <style>
-    .accounts-wrapper {
-      position: relative; width: 100%; height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
+    html.accounts-page, body.accounts-page {
+      height: auto !important; min-height: 100vh !important;
+      overflow-x: hidden !important; overflow-y: auto !important;
+      position: relative !important;
     }
-    .accounts-bg {
+    :root {
+      --bg: #0b0b0a; --panel: rgba(18,18,16,0.8); --border: rgba(212,165,116,0.1);
+      --text: #e8d5c4; --muted: #8a7a6a; --accent: #d4a574; --accent2: #c9956b;
+      --glow: rgba(212,165,116,0.15); --card-bg: rgba(18,18,16,0.8);
+    }
+    [data-theme="midnight"] {
+      --bg: #0a0a0a; --panel: #0d0d0d; --border: #1a1a1a; --text: #e0e0e0;
+      --muted: #8e8e93; --accent: #a0a0d0; --accent2: #8888bb; --glow: rgba(150,150,200,0.1);
+      --card-bg: #0d0d0d;
+    }
+    [data-theme="glass"] {
+      --bg: #0a0a0f; --panel: rgba(20,20,30,0.5); --border: rgba(255,255,255,0.06);
+      --text: #e0e0e0; --muted: #999; --accent: #a0b0d0; --accent2: #8899cc;
+      --glow: rgba(150,180,220,0.1); --card-bg: rgba(20,20,30,0.4);
+    }
+    [data-theme="chrome"] {
+      --bg: #1a1a1a; --panel: #1e1e1e; --border: #2a2a2a; --text: #e0e0e0;
+      --muted: #999; --accent: #bbb; --accent2: #aaa; --glow: rgba(200,200,220,0.08);
+      --card-bg: #1e1e1e;
+    }
+    [data-theme="white"] {
+      --bg: #f5f5f7; --panel: #fff; --border: #e5e5e5; --text: #1a1a1a;
+      --muted: #999; --accent: #0a84ff; --accent2: #0070e0; --glow: rgba(10,132,255,0.1);
+      --card-bg: #fff;
+    }
+
+    .accounts-page {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+    .accounts-page::-webkit-scrollbar { width: 4px; }
+    .accounts-page::-webkit-scrollbar-track { background: transparent; }
+    .accounts-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .accounts-bg-wrapper { position: fixed; inset: 0; z-index: 0; pointer-events: none; touch-action: none; }
+    .accounts-bg-gif {
       position: absolute; inset: 0;
       background: url('chrome.gif') center/cover no-repeat;
-      opacity: 0.06;
-      z-index: 0;
-      pointer-events: none;
+      opacity: 0.04; will-change: transform;
     }
     .accounts-bg-texture {
       position: absolute; inset: 0;
       background: url('chrome2.jpeg') center/cover no-repeat;
-      opacity: 0.03;
-      mix-blend-mode: overlay;
-      z-index: 1;
-      pointer-events: none;
+      opacity: 0.03; mix-blend-mode: overlay;
     }
+    .accounts-bg-gradient {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, var(--glow) 0%, transparent 70%);
+    }
+
+    .accounts-content { 
+      position: relative; z-index: 1; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; pointer-events: auto;
+    }
+
+    .accounts-theme-pill {
+      position: fixed; bottom: 24px; right: 24px; z-index: 100;
+      display: flex; gap: 6px; padding: 6px;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    .accounts-theme-dot {
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: all 0.2s;
+    }
+    .accounts-theme-dot:hover { transform: scale(1.15); border-color: var(--accent); }
+    .accounts-theme-dot.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
+    .accounts-theme-dot.gold { background: #0b0b0a; border-color: rgba(212,165,116,0.4); }
+    .accounts-theme-dot.midnight { background: #0a0a0a; }
+    .accounts-theme-dot.glass { background: rgba(20,20,30,0.8); backdrop-filter: blur(10px); }
+    .accounts-theme-dot.chrome { background: #1a1a1a; }
+    .accounts-theme-dot.white { background: #f5f5f7; }
+
     .accounts-card {
-      position: relative; z-index: 2;
-      background: rgba(13,13,13,0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 28px;
-      padding: 40px 28px;
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 0 60px rgba(0,0,0,0.5), 0 0 120px rgba(180,180,200,0.03);
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 24px; padding: 40px 32px; text-align: center;
+      max-width: 400px; width: 100%;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 80px var(--glow);
+      animation: fadeInUp 0.6s ease;
     }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
     .accounts-logo {
-      width: 56px; height: 56px;
-      margin: 0 auto 16px;
-      filter: drop-shadow(0 0 16px rgba(200,200,220,0.2));
+      width: 56px; height: 56px; margin: 0 auto 16px;
+      filter: drop-shadow(0 0 20px var(--glow));
     }
-    .accounts-logo img {
-      width: 100%; height: 100%;
-      object-fit: contain;
-    }
+    .accounts-logo img { width: 100%; height: 100%; object-fit: contain; }
+
     .accounts-title {
-      font-size: 22px; font-weight: 700;
-      letter-spacing: -0.4px;
-      background: linear-gradient(135deg, #a0a0a0, #d0d0d0, #b0b0b0, #c8c8c8);
+      font-size: 24px; font-weight: 700; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent2));
       background-size: 200% 200%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: chromeShimmer 3s ease-in-out infinite;
-      margin-bottom: 4px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: goldShimmer 3s ease-in-out infinite; margin-bottom: 4px;
     }
-    .accounts-subtitle {
-      font-size: 13px;
-      color: #777;
-      margin-bottom: 28px;
+    @keyframes goldShimmer {
+      0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
     }
+    .accounts-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 28px; letter-spacing: 0.2px; }
+
     .auth-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 13px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: #d0d0d0;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      margin-bottom: 8px;
-      font-family: inherit;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 14px; border-radius: 14px;
+      border: 1px solid var(--border); background: var(--panel);
+      color: var(--text); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.25s ease; margin-bottom: 10px;
+      font-family: inherit; letter-spacing: 0.2px;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     }
-    .auth-btn:hover {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.15);
-      color: #fff;
-      box-shadow: 0 0 30px rgba(180,180,200,0.06);
-    }
-    .auth-btn.discord {
-      border-color: rgba(88,101,242,0.3);
-      background: rgba(88,101,242,0.08);
-    }
-    .auth-btn.discord:hover {
-      border-color: rgba(88,101,242,0.5);
-      background: rgba(88,101,242,0.14);
-      box-shadow: 0 0 30px rgba(88,101,242,0.15);
-    }
-    .auth-btn.guest {
-      border-color: rgba(255,255,255,0.05);
-      background: transparent;
-    }
-    .auth-btn-icon {
-      width: 20px; height: 20px;
-      flex-shrink: 0;
-    }
+    .auth-btn:hover { background: var(--card-bg); border-color: var(--accent); box-shadow: 0 0 30px var(--glow); transform: translateY(-1px); }
+    .auth-btn:active { transform: scale(0.97); }
+    .auth-btn.discord { border-color: rgba(88,101,242,0.3); background: rgba(88,101,242,0.08); }
+    .auth-btn.discord:hover { border-color: rgba(88,101,242,0.5); background: rgba(88,101,242,0.14); box-shadow: 0 0 30px rgba(88,101,242,0.15); }
+    .auth-btn.guest { border-color: transparent; background: transparent; }
+    .auth-btn.guest:hover { background: var(--panel); border-color: var(--border); }
+    .auth-btn-icon { width: 20px; height: 20px; flex-shrink: 0; }
+
     .auth-divider {
       display: flex; align-items: center; gap: 12px;
-      margin: 16px 0;
-      color: #555;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      margin: 18px 0; color: var(--muted); font-size: 10px;
+      text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;
     }
-    .auth-divider::before,
-    .auth-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(255,255,255,0.06);
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
     }
-    .email-auth-section {
-      display: none;
-      margin-top: 4px;
-    }
-    .email-auth-section.visible {
-      display: block;
-    }
+
+    .email-auth-section { display: none; margin-top: 4px; }
+    .email-auth-section.visible { display: block; animation: fadeInUp 0.3s ease; }
+
     .auth-input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #d0d0d0;
-      font-size: 14px;
-      font-family: inherit;
-      margin-bottom: 8px;
-      transition: border-color 0.2s;
-      outline: none;
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      background: var(--panel); border: 1px solid var(--border);
+      color: var(--text); font-size: 14px; font-family: inherit;
+      margin-bottom: 8px; transition: border-color 0.2s; outline: none;
     }
-    .auth-input:focus {
-      border-color: rgba(255,255,255,0.2);
+    .auth-input:focus { border-color: var(--accent); }
+    .auth-input::placeholder { color: var(--muted); opacity: 0.6; }
+
+    .auth-error { color: #ff453a; font-size: 12px; margin-top: 8px; text-align: center; }
+
+    .accounts-back {
+      display: block; width: 100%; padding: 10px;
+      background: none; border: none; color: var(--muted);
+      font-size: 13px; cursor: pointer; margin-top: 16px;
+      font-family: inherit; transition: color 0.2s; letter-spacing: 0.2px;
     }
-    .auth-input::placeholder {
-      color: #555;
+    .accounts-back:hover { color: var(--accent); }
+
+    /* Surprise: particle spark on auth choice */
+    .spark {
+      position: fixed; pointer-events: none; z-index: 999;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--accent);
+      animation: sparkFly 0.8s ease-out forwards;
     }
-    .auth-error {
-      color: #ff453a;
-      font-size: 12px;
-      margin-top: 8px;
-      text-align: center;
+    @keyframes sparkFly {
+      0% { opacity: 1; transform: translate(0,0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(0); }
     }
-    .auth-back {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      background: none;
-      border: none;
-      color: #777;
-      font-size: 13px;
-      cursor: pointer;
-      margin-top: 12px;
-      font-family: inherit;
-      transition: color 0.2s;
-    }
-    .auth-back:hover {
-      color: #aaa;
-    }
-    @keyframes chromeShimmer {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+
+    @media (max-width: 480px) {
+      .accounts-card { padding: 28px 20px; }
+      .accounts-title { font-size: 20px; }
+      .auth-btn { padding: 12px; font-size: 13px; }
+      .accounts-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; }
+      .accounts-theme-dot { width: 24px; height: 24px; }
     }
   </style>
 </head>
-<body class="theme-midnight">
-  <div class="accounts-wrapper">
-    <div class="accounts-bg"></div>
+<body class="accounts-page" data-theme="gold">
+  <div class="accounts-bg-wrapper">
+    <div class="accounts-bg-gif" id="parallaxBg"></div>
     <div class="accounts-bg-texture"></div>
+    <div class="accounts-bg-gradient"></div>
+  </div>
+
+  <div class="accounts-theme-pill" id="themePill">
+    <div class="accounts-theme-dot gold active" data-theme="gold" title="Gold"></div>
+    <div class="accounts-theme-dot midnight" data-theme="midnight" title="Midnight"></div>
+    <div class="accounts-theme-dot glass" data-theme="glass" title="Glass"></div>
+    <div class="accounts-theme-dot chrome" data-theme="chrome" title="Chrome"></div>
+    <div class="accounts-theme-dot white" data-theme="white" title="Light"></div>
+  </div>
+
+  <div class="accounts-content">
     <div class="accounts-card">
       <div class="accounts-logo">
         <img src="icon.png" alt="Chrxmaticc">
@@ -225,96 +245,117 @@
         Continue as Guest
       </button>
 
-      <button class="auth-back" onclick="location.href='index.html'">← Back</button>
+      <button class="accounts-back" onclick="location.href='index.html'">Back</button>
     </div>
   </div>
 
-  <script src="auth.js"></script>
   <script>
-    // Auto open email form if ?mode=signup
-    (function() {
-      var params = new URLSearchParams(window.location.search);
-      if (params.get('mode') === 'signup') {
-        document.getElementById('accountsSubtitle').textContent = 'Create your account';
-        document.getElementById('emailSection').classList.add('visible');
-        document.getElementById('signupSecurityQuestion').style.display = 'block';
-        document.getElementById('signupSecurityAnswer').style.display = 'block';
-        document.getElementById('btnEmailSignIn').style.display = 'none';
+    // ── Theme System ──
+    var currentTheme = localStorage.getItem('chrxmaticc_theme') || 'gold';
+    document.body.setAttribute('data-theme', currentTheme);
+    updateThemeDots();
+
+    document.querySelectorAll('.accounts-theme-dot').forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        var theme = this.getAttribute('data-theme');
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('chrxmaticc_theme', theme);
+        currentTheme = theme;
+        updateThemeDots();
+        spawnSparks(this);
+      });
+    });
+
+    function updateThemeDots() {
+      document.querySelectorAll('.accounts-theme-dot').forEach(function(d) {
+        d.classList.toggle('active', d.getAttribute('data-theme') === currentTheme);
+      });
+    }
+
+    // ── Surprise: Particle sparks on theme/auth click ──
+    function spawnSparks(el) {
+      var rect = el.getBoundingClientRect();
+      var cx = rect.left + rect.width/2;
+      var cy = rect.top + rect.height/2;
+      for (var i = 0; i < 8; i++) {
+        var spark = document.createElement('div');
+        spark.className = 'spark';
+        spark.style.left = cx + 'px';
+        spark.style.top = cy + 'px';
+        spark.style.setProperty('--sx', (Math.random()-0.5)*80 + 'px');
+        spark.style.setProperty('--sy', (Math.random()-0.5)*80 + 'px');
+        spark.style.animationDuration = (0.4 + Math.random()*0.6) + 's';
+        document.body.appendChild(spark);
+        setTimeout(function() { spark.remove(); }, 900);
       }
+    }
 
-      document.getElementById('btnDiscord').addEventListener('click', function() {
-        location.href = '/api/auth/discord';
+    document.querySelectorAll('.auth-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { spawnSparks(btn); });
+    });
+
+    // ── Parallax ──
+    var parallaxBg = document.getElementById('parallaxBg');
+    if (parallaxBg) {
+      document.addEventListener('mousemove', function(e) {
+        var x = (e.clientX / window.innerWidth - 0.5) * 8;
+        var y = (e.clientY / window.innerHeight - 0.5) * 8;
+        parallaxBg.style.transform = 'scale(1.1) translate(' + x + 'px, ' + y + 'px)';
       });
+    }
 
-      document.getElementById('btnEmail').addEventListener('click', function() {
-        var section = document.getElementById('emailSection');
-        section.classList.toggle('visible');
-        if (section.classList.contains('visible')) {
-          document.getElementById('accountsSubtitle').textContent = 'Sign in with Email';
-        }
-      });
+    // ── Auth handlers ──
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'signup') {
+      document.getElementById('accountsSubtitle').textContent = 'Create your account';
+      document.getElementById('emailSection').classList.add('visible');
+      document.getElementById('signupSecurityQuestion').style.display = 'block';
+      document.getElementById('signupSecurityAnswer').style.display = 'block';
+      document.getElementById('btnEmailSignIn').style.display = 'none';
+    }
 
-      document.getElementById('btnGuest').addEventListener('click', function() {
-        // Clear any existing user but keep guest mode
-        localStorage.removeItem('chrxmaticc_user');
+    document.getElementById('btnDiscord').addEventListener('click', function() {
+      location.href = '/api/auth/discord';
+    });
+
+    document.getElementById('btnEmail').addEventListener('click', function() {
+      var section = document.getElementById('emailSection');
+      section.classList.toggle('visible');
+      if (section.classList.contains('visible')) {
+        document.getElementById('accountsSubtitle').textContent = 'Sign in with Email';
+      }
+    });
+
+    document.getElementById('btnGuest').addEventListener('click', function() {
+      localStorage.removeItem('chrxmaticc_user');
+      location.href = 'app.html';
+    });
+
+    function basicEmailAuth(mode) {
+      var email = document.getElementById('authEmail').value.trim();
+      var password = document.getElementById('authPassword').value.trim();
+      var errEl = document.getElementById('authError');
+      if (!email || !password) { errEl.textContent = 'Fill in all fields.'; return; }
+      var users = {};
+      try { users = JSON.parse(localStorage.getItem('chrxmaticc_users') || '{}'); } catch(e) {}
+      if (mode === 'signup') {
+        var question = document.getElementById('signupSecurityQuestion').value.trim();
+        var answer = document.getElementById('signupSecurityAnswer').value.trim();
+        if (!question || !answer) { errEl.textContent = 'Set a security question and answer.'; return; }
+        if (users[email]) { errEl.textContent = 'Account already exists.'; return; }
+        users[email] = { password: password, question: question, answer: answer };
+        localStorage.setItem('chrxmaticc_users', JSON.stringify(users));
+        localStorage.setItem('chrxmaticc_user', JSON.stringify({ email: email, displayName: email.split('@')[0], provider: 'email' }));
         location.href = 'app.html';
-      });
-
-      // Email auth handlers (reuse existing auth.js functions if available)
-      document.getElementById('btnEmailSignIn').addEventListener('click', function() {
-        if (typeof handleEmailAuth === 'function') {
-          handleEmailAuth('login');
-        } else {
-          basicEmailAuth('login');
-        }
-      });
-
-      document.getElementById('btnEmailSignUp').addEventListener('click', function() {
-        if (typeof handleEmailAuth === 'function') {
-          handleEmailAuth('signup');
-        } else {
-          basicEmailAuth('signup');
-        }
-      });
-
-      function basicEmailAuth(mode) {
-        var email = document.getElementById('authEmail').value.trim();
-        var password = document.getElementById('authPassword').value.trim();
-        var errEl = document.getElementById('authError');
-
-        if (!email || !password) {
-          errEl.textContent = 'Please fill in all fields.';
-          return;
-        }
-
-        var users = {};
-        try { users = JSON.parse(localStorage.getItem('chrxmaticc_users') || '{}'); } catch(e) {}
-
-        if (mode === 'signup') {
-          var question = document.getElementById('signupSecurityQuestion').value.trim();
-          var answer = document.getElementById('signupSecurityAnswer').value.trim();
-          if (!question || !answer) {
-            errEl.textContent = 'Please set a security question and answer.';
-            return;
-          }
-          if (users[email]) {
-            errEl.textContent = 'An account with this email already exists.';
-            return;
-          }
-          users[email] = { password: password, question: question, answer: answer };
-          localStorage.setItem('chrxmaticc_users', JSON.stringify(users));
-          localStorage.setItem('chrxmaticc_user', JSON.stringify({ email: email, displayName: email.split('@')[0], provider: 'email' }));
-          location.href = 'app.html';
-        } else {
-          if (!users[email] || users[email].password !== password) {
-            errEl.textContent = 'Invalid email or password.';
-            return;
-          }
-          localStorage.setItem('chrxmaticc_user', JSON.stringify({ email: email, displayName: email.split('@')[0], provider: 'email' }));
-          location.href = 'app.html';
-        }
+      } else {
+        if (!users[email] || users[email].password !== password) { errEl.textContent = 'Invalid email or password.'; return; }
+        localStorage.setItem('chrxmaticc_user', JSON.stringify({ email: email, displayName: email.split('@')[0], provider: 'email' }));
+        location.href = 'app.html';
       }
-    })();
+    }
+
+    document.getElementById('btnEmailSignIn').addEventListener('click', function() { basicEmailAuth('login'); });
+    document.getElementById('btnEmailSignUp').addEventListener('click', function() { basicEmailAuth('signup'); });
   </script>
 </body>
 </html>
