@@ -16,10 +16,10 @@ class Tokenizer:
         self.BOS = 2
         self.EOS = 3
         
-        self._add_special('<PAD>')
-        self._add_special('<UNK>')
-        self._add_special('<BOS>')
-        self._add_special('<EOS>')
+        self._add_special('<pad>')
+        self._add_special('<unk>')
+        self._add_special('<s>')
+        self._add_special('</s>')
     
     def _add_special(self, token):
         if token not in self.word_to_id:
@@ -71,11 +71,21 @@ class Tokenizer:
             step = seq_len
         ids = self.encode(text)
         chunks = []
-        for i in range(0, len(ids) - seq_len, step):
+        for i in range(0, max(1, len(ids)), step):
+            input_ids = ids[i:i + seq_len]
+            target_ids = ids[i + 1:i + seq_len + 1]
+            if not input_ids:
+                break
+            while len(input_ids) < seq_len:
+                input_ids.append(self.PAD)
+            while len(target_ids) < seq_len:
+                target_ids.append(self.PAD)
             chunks.append({
-                'input': ids[i:i + seq_len],
-                'target': ids[i + 1:i + seq_len + 1]
+                'input': input_ids,
+                'target': target_ids
             })
+            if i + seq_len >= len(ids):
+                break
         return chunks
     
     def build_mask(self, target_ids):
@@ -108,11 +118,20 @@ class Tokenizer:
         return mask[:len(target_ids)]
     
     def save(self, path):
-        """Export tokenizer to JSON (compatible with JS Tokenizer.deserialize)"""
+        """Export tokenizer to JSON (compatible with JS Tokenizer and model loader)"""
         data = {
             'wordToId': self.word_to_id,
             'idToWord': {str(k): v for k, v in self.id_to_word.items()},
-            'vocabSize': self.vocab_size
+            'vocabSize': self.vocab_size,
+            'model': {
+                'vocab': self.word_to_id,
+                'special_tokens': {
+                    '<pad>': self.PAD,
+                    '<unk>': self.UNK,
+                    '<s>': self.BOS,
+                    '</s>': self.EOS,
+                }
+            }
         }
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -124,8 +143,15 @@ class Tokenizer:
         with open(path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         t = cls()
-        t.word_to_id = data['wordToId']
-        t.id_to_word = {int(k): v for k, v in data['idToWord'].items()}
-        t.vocab_size = data['vocabSize']
+        if 'wordToId' in data:
+            t.word_to_id = data['wordToId']
+            t.id_to_word = {int(k): v for k, v in data['idToWord'].items()}
+            t.vocab_size = data['vocabSize']
+        elif 'model' in data and 'vocab' in data['model']:
+            t.word_to_id = data['model']['vocab']
+            t.id_to_word = {int(k): v for k, v in data.get('idToWord', {}).items()}
+            t.vocab_size = len(t.word_to_id)
+        else:
+            raise ValueError('Unsupported tokenizer format')
         print(f'[Tokenizer] Loaded — vocab size: {t.vocab_size}')
         return t

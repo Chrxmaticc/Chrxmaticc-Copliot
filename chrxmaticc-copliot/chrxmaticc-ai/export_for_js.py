@@ -27,7 +27,15 @@ def export():
         json.dump(weights, f)
     
     with open("export/model_config.json", "w") as f:
-        json.dump({**config, "vocab_size": vocab_size}, f, indent=2)
+        json.dump({
+            **config,
+            "vocab_size": vocab_size,
+            "hidden_dim": config.get("d_model", config.get("hidden_dim")),
+            "num_heads": config.get("n_heads", config.get("num_heads")),
+            "head_dim": config.get("d_model", config.get("hidden_dim")) // config.get("n_heads", config.get("num_heads", 1)),
+            "ff_multiplier": config.get("d_ff", config.get("hidden_dim")) // config.get("d_model", config.get("hidden_dim")),
+            "max_seq_len": config.get("max_len", config.get("max_seq_len")),
+        }, f, indent=2)
     
     print(" Exported model_weights.json")
     print(" Exported model_config.json")

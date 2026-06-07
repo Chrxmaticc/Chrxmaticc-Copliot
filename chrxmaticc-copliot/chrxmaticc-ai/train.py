@@ -205,6 +205,10 @@ def train():
     train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True, num_workers=0)
     val_loader = DataLoader(val_dataset, batch_size=config["batch_size"], shuffle=False, num_workers=0)
     
+    if len(train_loader) == 0:
+        print(' No training batches were created. Check that your data files contain enough text and that tokenizer chunks are generated correctly.')
+        return
+    
     # Model
     model = ChrxmaticcModel(tokenizer.vocab_size, config).to(device)
     total_params = sum(p.numel() for p in model.parameters())
@@ -218,12 +222,13 @@ def train():
         betas=(0.9, 0.95),
     )
     
-    total_steps = (len(train_loader) // config["grad_accum_steps"]) * config["epochs"]
+    steps_per_epoch = max(1, math.ceil(len(train_loader) / config["grad_accum_steps"]))
+    total_steps = steps_per_epoch * config["epochs"]
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
         optimizer,
         max_lr=config["learning_rate"],
         total_steps=total_steps,
-        pct_start=config["warmup_steps"] / total_steps if total_steps > 0 else 0.1,
+        pct_start=min(0.3, config["warmup_steps"] / total_steps) if total_steps > 0 else 0.1,
     )
     
     # Training loop

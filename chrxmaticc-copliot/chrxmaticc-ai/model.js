@@ -13,6 +13,11 @@ async function loadModel() {
   
   // Load config
   config = JSON.parse(fs.readFileSync(path.join(exportDir, 'model_config.json'), 'utf8'));
+  config.hidden_dim = config.hidden_dim || config.d_model;
+  config.num_heads = config.num_heads || config.n_heads;
+  config.head_dim = config.head_dim || Math.floor(config.hidden_dim / config.num_heads);
+  config.ff_multiplier = config.ff_multiplier || Math.floor((config.d_ff || config.hidden_dim) / config.hidden_dim);
+  config.max_seq_len = config.max_seq_len || config.max_len;
   
   // Build the same architecture in TF.js
   var input = tf.input({ shape: [config.max_seq_len], dtype: 'int32' });
@@ -56,6 +61,18 @@ async function loadModel() {
   
   // Load tokenizer
   tokenizer = JSON.parse(fs.readFileSync(path.join(exportDir, 'tokenizer.json'), 'utf8'));
+  if (tokenizer.model && tokenizer.model.vocab) {
+    tokenizer.vocab = tokenizer.model.vocab;
+    tokenizer.special_tokens = tokenizer.model.special_tokens;
+  } else {
+    tokenizer.vocab = tokenizer.wordToId || tokenizer.model?.vocab || {};
+    tokenizer.special_tokens = tokenizer.special_tokens || {
+      '<pad>': tokenizer.vocab['<pad>'] || 0,
+      '<unk>': tokenizer.vocab['<unk>'] || 1,
+      '<s>': tokenizer.vocab['<s>'] || 2,
+      '</s>': tokenizer.vocab['</s>'] || 3,
+    };
+  }
   
   console.log('Chrxmaticc Intelligence model loaded');
   return true;
@@ -72,7 +89,11 @@ async function generate(prompt, maxTokens, temperature) {
   var generated = tokens.slice();
   
   for (var i = 0; i < maxTokens; i++) {
-    var inputTensor = tf.tensor2d([generated.slice(-config.max_seq_len)], [1, Math.min(generated.length, config.max_seq_len)], 'int32');
+    var inputIds = generated.slice(-config.max_seq_len);
+    if (inputIds.length < config.max_seq_len) {
+      inputIds = new Array(config.max_seq_len - inputIds.length).fill(tokenizer.special_tokens['<pad>']).concat(inputIds);
+    }
+    var inputTensor = tf.tensor2d([inputIds], [1, config.max_seq_len], 'int32');
     var logits = model.predict(inputTensor);
     var nextLogits = logits.slice([0, logits.shape[1] - 1, 0], [1, 1, config.vocab_size]);
     
@@ -95,10 +116,10 @@ async function generate(prompt, maxTokens, temperature) {
 function tokenize(text) {
   // Simplified — uses the tokenizer.json vocab
   var tokens = [];
-  var words = text.toLowerCase().split(/(\s+)/);
+  var words = text.match(/\S+/g) || [];
   for (var w of words) {
-    if (tokenizer.vocab[w]) tokens.push(tokenizer.vocab[w]);
-    else tokens.push(0); // UNK
+    if (tokenizer.vocab[w] !== undefined) tokens.push(tokenizer.vocab[w]);
+    else tokens.push(tokenizer.special_tokens['<unk>']);
   }
   return [tokenizer.special_tokens['<s>']].concat(tokens);
 }
@@ -108,7 +129,7 @@ function detokenize(tokens) {
   for (var word in tokenizer.vocab) {
     reverseVocab[tokenizer.vocab[word]] = word;
   }
-  return tokens.map(function(t) { return reverseVocab[t] || ''; }).join('').replace(/<s>/g, '').replace(/<\/s>/g, '').replace(/<pad>/g, '').trim();
+  return tokens.map(function(t) { return reverseVocab[t] || ''; }).join(' ').replace(/<s>/g, '').replace(/<\/s>/g, '').replace(/<pad>/g, '').trim();
 }
 
 module.exports = { loadModel, generate, tokenize, detokenize };

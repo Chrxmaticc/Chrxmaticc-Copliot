@@ -7,11 +7,13 @@ from train import ChrxmaticcModel, CONFIG
 
 def export():
     device = torch.device("cpu")
-    config = CONFIG
     
-    # Load checkpoint
-    checkpoint = torch.load("export/best_model.pt", map_location=device)
-    model = ChrxmaticcModel(config)
+    # Load checkpoint from the standard export path
+    checkpoint = torch.load("export/model.pt", map_location=device)
+    config = checkpoint.get("config", CONFIG)
+    vocab_size = checkpoint.get("vocab_size", 0)
+    
+    model = ChrxmaticcModel(vocab_size, config)
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
     
@@ -27,7 +29,7 @@ def export():
         json.dump(weights, f)
     
     with open(export_dir / "model_config.json", "w") as f:
-        json.dump(config, f, indent=2)
+        json.dump({**config, "vocab_size": vocab_size}, f, indent=2)
     
     print("Model exported to export/model_weights.json")
     print("Config exported to export/model_config.json")

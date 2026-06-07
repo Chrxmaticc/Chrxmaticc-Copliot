@@ -1,4 +1,30 @@
+# Node.js
 node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.Python
+python-env/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Model export / training artifacts
+export/
+*.pt
+*.pth
+*.h5
+*.ckpt
+
+# Misc
 *.log
 .DS_Store
 Thumbs.db
