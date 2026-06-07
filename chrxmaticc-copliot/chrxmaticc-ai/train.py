@@ -1,7 +1,7 @@
 # chrxmaticc-ai/train.py
 # ╔══════════════════════════════════════════╗
 # ║  Chrxmaticc Intelligence — Training      ║
-# ║  Creative Architecture • Multi-Head      ║
+# ║  Pure PyTorch • Word-Level • [BOT] Mask  ║
 # ║  Author: Chrxmee-Midnightt              ║
 # ╚══════════════════════════════════════════╝
 
@@ -9,161 +9,87 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
-from tokenizers import Tokenizer, models, trainers, pre_tokenizers
-from transformers import get_cosine_schedule_with_warmup
+from tokenizer import Tokenizer
 import json, os, math, random
 from pathlib import Path
 
 # ═══════════════════════════════════════════
-#  CONFIG — Tweak these
+#  CONFIG
 # ═══════════════════════════════════════════
 CONFIG = {
-    "vocab_size": 16384,
-    "hidden_dim": 512,
-    "num_layers": 8,
-    "num_heads": 8,
-    "head_dim": 64,
-    "ff_multiplier": 3,        # 3x hidden_dim for FFN (richer than standard 4x but faster)
-    "max_seq_len": 2048,
-    "dropout": 0.08,
-    "batch_size": 16,
+    "d_model": 256,
+    "n_heads": 8,
+    "n_layers": 6,
+    "d_ff": 768,
+    "max_len": 256,
+    "dropout": 0.1,
+    "batch_size": 32,
     "learning_rate": 3e-4,
     "min_lr": 1e-5,
-    "warmup_steps": 500,
-    "grad_accum_steps": 4,     # Effective batch = 16 * 4 = 64
+    "warmup_steps": 400,
+    "grad_accum_steps": 2,
     "weight_decay": 0.01,
-    "epochs": 20,
-    "use_flash_attn": False,   # Set True if you have flash-attn installed
+    "epochs": 30,
+    "train_split": 0.9,
 }
 
 # ═══════════════════════════════════════════
-#  CREATIVE ARCHITECTURE
+#  MODEL
 # ═══════════════════════════════════════════
 
-class RotaryEmbedding(nn.Module):
-    """RoPE — Rotary Position Embeddings for better sequence handling"""
-    def __init__(self, dim, max_seq_len=2048):
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, max_len=256):
         super().__init__()
-        inv_freq = 1.0 / (10000 ** (torch.arange(0, dim, 2).float() / dim))
-        t = torch.arange(max_seq_len).float()
-        freqs = torch.einsum('i,j->ij', t, inv_freq)
-        self.register_buffer('cos', freqs.cos())
-        self.register_buffer('sin', freqs.sin())
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len).unsqueeze(1).float()
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe.unsqueeze(0))
 
-    def forward(self, x, offset=0):
-        seq_len = x.shape[1]
-        cos = self.cos[offset:offset+seq_len].unsqueeze(0).unsqueeze(2)
-        sin = self.sin[offset:offset+seq_len].unsqueeze(0).unsqueeze(2)
-        return cos, sin
-
-def rotate_half(x):
-    x1, x2 = x[..., :x.shape[-1]//2], x[..., x.shape[-1]//2:]
-    return torch.cat([-x2, x1], dim=-1)
-
-def apply_rotary(q, k, cos, sin):
-    return (q * cos) + (rotate_half(q) * sin), (k * cos) + (rotate_half(k) * sin)
-
-
-class SwiGLU(nn.Module):
-    """SwiGLU activation — better than GELU for language modeling"""
     def forward(self, x):
-        x, gate = x.chunk(2, dim=-1)
-        return F.silu(gate) * x
+        return x + self.pe[:, :x.size(1), :]
 
 
-class CreativeAttention(nn.Module):
-    """Multi-Head Attention with RoPE, creative bias, and optional flash"""
-    def __init__(self, dim, num_heads, head_dim, dropout=0.08):
+class TransformerBlock(nn.Module):
+    def __init__(self, d_model, n_heads, d_ff, dropout=0.1):
         super().__init__()
-        self.num_heads = num_heads
-        self.head_dim = head_dim
-        self.inner_dim = num_heads * head_dim
-        
-        self.q_proj = nn.Linear(dim, self.inner_dim, bias=False)
-        self.k_proj = nn.Linear(dim, self.inner_dim, bias=False)
-        self.v_proj = nn.Linear(dim, self.inner_dim, bias=False)
-        self.out_proj = nn.Linear(self.inner_dim, dim, bias=False)
-        
-        self.rotary = RotaryEmbedding(head_dim, 2048)
-        self.dropout = nn.Dropout(dropout)
-        
-        # Creative addition: learnable attention temperature per head
-        self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1) * math.sqrt(head_dim))
-
-    def forward(self, x, mask=None):
-        B, T, C = x.shape
-        
-        q = self.q_proj(x).view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
-        k = self.k_proj(x).view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
-        v = self.v_proj(x).view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
-        
-        cos, sin = self.rotary(x)
-        q, k = apply_rotary(q, k, cos, sin)
-        
-        attn = (q @ k.transpose(-2, -1)) / self.temperature
-        
-        if mask is not None:
-            attn = attn.masked_fill(mask == 0, float('-inf'))
-        
-        attn = F.softmax(attn, dim=-1)
-        attn = self.dropout(attn)
-        
-        out = attn @ v
-        out = out.transpose(1, 2).contiguous().view(B, T, self.inner_dim)
-        return self.out_proj(out)
-
-
-class CreativeTransformerBlock(nn.Module):
-    """Transformer block with pre-norm, SwiGLU, and creative attention"""
-    def __init__(self, dim, num_heads, head_dim, ff_multiplier, dropout=0.08):
-        super().__init__()
-        self.norm1 = nn.RMSNorm(dim)
-        self.attention = CreativeAttention(dim, num_heads, head_dim, dropout)
-        
-        self.norm2 = nn.RMSNorm(dim)
-        ffn_dim = int(dim * ff_multiplier)
+        self.attn = nn.MultiheadAttention(d_model, n_heads, dropout=dropout, batch_first=True)
         self.ffn = nn.Sequential(
-            nn.Linear(dim, ffn_dim * 2, bias=False),  # *2 for SwiGLU gate
-            SwiGLU(),
-            nn.Linear(ffn_dim, dim, bias=False),
+            nn.Linear(d_model, d_ff),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_ff, d_model),
             nn.Dropout(dropout),
         )
-        
-        self.dropout = nn.Dropout(dropout)
+        self.ln1 = nn.LayerNorm(d_model)
+        self.ln2 = nn.LayerNorm(d_model)
 
     def forward(self, x, mask=None):
-        x = x + self.dropout(self.attention(self.norm1(x), mask))
-        x = x + self.ffn(self.norm2(x))
+        attn_out, _ = self.attn(self.ln1(x), self.ln1(x), self.ln1(x), attn_mask=mask)
+        x = x + attn_out
+        x = x + self.ffn(self.ln2(x))
         return x
 
 
 class ChrxmaticcModel(nn.Module):
-    """The full Chrxmaticc Intelligence model"""
-    def __init__(self, config):
+    def __init__(self, vocab_size, config):
         super().__init__()
         self.config = config
-        
-        self.token_embed = nn.Embedding(config["vocab_size"], config["hidden_dim"])
+        self.embedding = nn.Embedding(vocab_size, config["d_model"])
+        self.pos_enc = PositionalEncoding(config["d_model"], config["max_len"])
         self.dropout = nn.Dropout(config["dropout"])
         
-        self.layers = nn.ModuleList([
-            CreativeTransformerBlock(
-                config["hidden_dim"],
-                config["num_heads"],
-                config["head_dim"],
-                config["ff_multiplier"],
-                config["dropout"],
-            ) for _ in range(config["num_layers"])
+        self.blocks = nn.ModuleList([
+            TransformerBlock(config["d_model"], config["n_heads"], config["d_ff"], config["dropout"])
+            for _ in range(config["n_layers"])
         ])
         
-        self.final_norm = nn.RMSNorm(config["hidden_dim"])
-        self.lm_head = nn.Linear(config["hidden_dim"], config["vocab_size"], bias=False)
+        self.ln_final = nn.LayerNorm(config["d_model"])
+        self.lm_head = nn.Linear(config["d_model"], vocab_size)
         
-        # Tie weights
-        self.token_embed.weight = self.lm_head.weight
-        
-        # Creative: learnable output blending — model learns to mix layers
-        self.layer_weights = nn.Parameter(torch.ones(config["num_layers"]) / config["num_layers"])
+        # Weight tying
+        self.lm_head.weight = self.embedding.weight
         
         self.apply(self._init_weights)
 
@@ -175,169 +101,133 @@ class ChrxmaticcModel(nn.Module):
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, input_ids, attention_mask=None, labels=None):
+    def _causal_mask(self, sz):
+        return torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=1)
+
+    def forward(self, input_ids):
         B, T = input_ids.shape
-        
-        x = self.token_embed(input_ids)
+        x = self.embedding(input_ids)
+        x = self.pos_enc(x)
         x = self.dropout(x)
         
-        if attention_mask is not None:
-            mask = attention_mask[:, None, None, :]
-        else:
-            mask = None
+        mask = self._causal_mask(T).to(input_ids.device)
         
-        # Layer blending — each layer contributes a weighted amount
-        layer_outputs = []
-        for layer in self.layers:
-            x = layer(x, mask)
-            layer_outputs.append(x)
+        for block in self.blocks:
+            x = block(x, mask)
         
-        # Weighted sum of all layer outputs
-        weights = F.softmax(self.layer_weights, dim=0)
-        blended = sum(w * out for w, out in zip(weights, layer_outputs))
-        
-        x = self.final_norm(blended)
-        logits = self.lm_head(x)
-        
-        loss = None
-        if labels is not None:
-            shift_logits = logits[..., :-1, :].contiguous()
-            shift_labels = labels[..., 1:].contiguous()
-            loss = F.cross_entropy(
-                shift_logits.view(-1, shift_logits.size(-1)),
-                shift_labels.view(-1),
-            )
-        
-        return {"loss": loss, "logits": logits}
-
-
-# ═══════════════════════════════════════════
-#  TOKENIZER
-# ═══════════════════════════════════════════
-def train_tokenizer(data_files, vocab_size=16384):
-    """Train a BPE tokenizer on your data"""
-    tokenizer = Tokenizer(models.BPE())
-    tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
-    
-    trainer = trainers.BpeTrainer(
-        vocab_size=vocab_size,
-        special_tokens=["<pad>", "<s>", "</s>", "<unk>", "<mask>"],
-        show_progress=True,
-    )
-    
-    tokenizer.train(files=data_files, trainer=trainer)
-    
-    os.makedirs("export", exist_ok=True)
-    tokenizer.save("export/tokenizer.json")
-    print(f" Tokenizer saved — vocab size: {tokenizer.get_vocab_size()}")
-    return tokenizer
+        x = self.ln_final(x)
+        return self.lm_head(x)
 
 
 # ═══════════════════════════════════════════
 #  DATASET
 # ═══════════════════════════════════════════
+
 class ConversationDataset(Dataset):
-    def __init__(self, data_paths, tokenizer, max_len=2048):
+    def __init__(self, data_paths, tokenizer, max_len=256):
         self.tokenizer = tokenizer
         self.max_len = max_len
-        self.samples = []
+        self.chunks = []
         
         for path in data_paths:
             with open(path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
             for convo in data:
-                text = f"<s>{convo['user']}</s><s>{convo['assistant']}</s>"
-                encoded = tokenizer.encode(text)
-                if len(encoded.ids) <= max_len:
-                    self.samples.append(encoded.ids)
+                text = f"<BOS>[USR] {convo['user']} [/USR] [BOT] {convo['assistant']} [/BOT]<EOS>"
+                chunks = tokenizer.make_chunks(text, max_len)
+                self.chunks.extend(chunks)
         
-        print(f" Loaded {len(self.samples)} samples")
+        print(f' Loaded {len(self.chunks)} training chunks from {len(data_paths)} files')
 
     def __len__(self):
-        return len(self.samples)
+        return len(self.chunks)
 
     def __getitem__(self, idx):
-        ids = self.samples[idx]
-        pad_len = self.max_len - len(ids)
+        chunk = self.chunks[idx]
+        input_ids = chunk['input']
+        target_ids = chunk['target']
         
-        input_ids = ids + [0] * pad_len
-        labels = ids + [0] * pad_len
-        attention_mask = [1] * len(ids) + [0] * pad_len
+        pad_len = self.max_len - len(input_ids)
+        input_ids = input_ids + [0] * pad_len
+        target_ids = target_ids + [0] * pad_len
+        
+        mask = self.tokenizer.build_mask(target_ids)
+        mask = mask + [0] * pad_len
         
         return {
-            "input_ids": torch.tensor(input_ids, dtype=torch.long),
-            "labels": torch.tensor(labels, dtype=torch.long),
-            "attention_mask": torch.tensor(attention_mask, dtype=torch.long),
+            'input_ids': torch.tensor(input_ids, dtype=torch.long),
+            'target_ids': torch.tensor(target_ids, dtype=torch.long),
+            'mask': torch.tensor(mask, dtype=torch.float),
         }
 
 
 # ═══════════════════════════════════════════
-#  TRAINING LOOP
+#  TRAINING
 # ═══════════════════════════════════════════
+
 def train():
     config = CONFIG
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f" Using device: {device}")
+    print(f' Device: {device}')
     
-    # Find data files
+    # Load data
     data_dir = Path("data")
     data_files = list(data_dir.glob("*.json"))
     
     if not data_files:
-        print(" No training data found in data/")
-        print(" Add .json files with format: [{\"user\": \"...\", \"assistant\": \"...\"}]")
+        print(' No .json files in data/ — add conversations to train')
         return
     
-    # Train or load tokenizer
+    # Build or load tokenizer
     tokenizer_path = Path("export/tokenizer.json")
     if tokenizer_path.exists():
-        from tokenizers import Tokenizer as TokLoader
-        tokenizer = TokLoader.from_file(str(tokenizer_path))
-        print(" Loaded existing tokenizer")
+        tokenizer = Tokenizer.load(str(tokenizer_path))
     else:
-        tokenizer = train_tokenizer([str(f) for f in data_files], config["vocab_size"])
+        texts = []
+        for f in data_files:
+            with open(f, 'r') as fp:
+                for c in json.load(fp):
+                    texts.append(f"<BOS>[USR] {c['user']} [/USR] [BOT] {c['assistant']} [/BOT]<EOS>")
+        tokenizer = Tokenizer()
+        tokenizer.build_vocab(texts)
+        os.makedirs("export", exist_ok=True)
+        tokenizer.save(str(tokenizer_path))
     
     # Dataset
-    dataset = ConversationDataset([str(f) for f in data_files], tokenizer, config["max_seq_len"])
-    dataloader = DataLoader(
-        dataset,
-        batch_size=config["batch_size"],
-        shuffle=True,
-        num_workers=2,
-        pin_memory=True,
+    full_dataset = ConversationDataset([str(f) for f in data_files], tokenizer, config["max_len"])
+    
+    split = int(len(full_dataset) * config["train_split"])
+    train_dataset, val_dataset = torch.utils.data.random_split(
+        full_dataset, [split, len(full_dataset) - split]
     )
+    
+    train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True, num_workers=0)
+    val_loader = DataLoader(val_dataset, batch_size=config["batch_size"], shuffle=False, num_workers=0)
     
     # Model
-    model = ChrxmaticcModel(config).to(device)
+    model = ChrxmaticcModel(tokenizer.vocab_size, config).to(device)
     total_params = sum(p.numel() for p in model.parameters())
-    print(f" Model params: {total_params:,} ({total_params/1e6:.1f}M)")
+    print(f' Params: {total_params:,} ({total_params/1e6:.1f}M)')
     
-    # Optimizer with weight decay separation
-    decay_params = []
-    no_decay_params = []
-    for name, param in model.named_parameters():
-        if param.requires_grad:
-            if 'norm' in name or 'bias' in name or 'temperature' in name or 'layer_weights' in name:
-                no_decay_params.append(param)
-            else:
-                decay_params.append(param)
-    
-    optimizer = torch.optim.AdamW([
-        {"params": decay_params, "weight_decay": config["weight_decay"]},
-        {"params": no_decay_params, "weight_decay": 0.0},
-    ], lr=config["learning_rate"], betas=(0.9, 0.95))
-    
-    # Scheduler
-    total_steps = (len(dataloader) // config["grad_accum_steps"]) * config["epochs"]
-    scheduler = get_cosine_schedule_with_warmup(
-        optimizer,
-        num_warmup_steps=config["warmup_steps"],
-        num_training_steps=total_steps,
+    # Optimizer
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=config["learning_rate"],
+        weight_decay=config["weight_decay"],
+        betas=(0.9, 0.95),
     )
     
-    # Training
-    best_loss = float('inf')
+    total_steps = (len(train_loader) // config["grad_accum_steps"]) * config["epochs"]
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer,
+        max_lr=config["learning_rate"],
+        total_steps=total_steps,
+        pct_start=config["warmup_steps"] / total_steps if total_steps > 0 else 0.1,
+    )
+    
+    # Training loop
+    best_val_loss = float('inf')
     os.makedirs("export", exist_ok=True)
     
     for epoch in range(config["epochs"]):
@@ -345,13 +235,25 @@ def train():
         total_loss = 0
         optimizer.zero_grad()
         
-        for step, batch in enumerate(dataloader):
-            input_ids = batch["input_ids"].to(device)
-            labels = batch["labels"].to(device)
-            attention_mask = batch["attention_mask"].to(device)
+        for step, batch in enumerate(train_loader):
+            input_ids = batch['input_ids'].to(device)
+            target_ids = batch['target_ids'].to(device)
+            mask = batch['mask'].to(device)
             
-            output = model(input_ids, attention_mask, labels)
-            loss = output["loss"] / config["grad_accum_steps"]
+            logits = model(input_ids)
+            
+            # Compute masked loss
+            shift_logits = logits[:, :-1, :].contiguous()
+            shift_targets = target_ids[:, 1:].contiguous()
+            shift_mask = mask[:, 1:].contiguous()
+            
+            loss = F.cross_entropy(
+                shift_logits.view(-1, tokenizer.vocab_size),
+                shift_targets.view(-1),
+                reduction='none',
+            )
+            loss = (loss * shift_mask.view(-1)).sum() / (shift_mask.sum() + 1e-10)
+            loss = loss / config["grad_accum_steps"]
             loss.backward()
             
             total_loss += loss.item()
@@ -362,27 +264,51 @@ def train():
                 scheduler.step()
                 optimizer.zero_grad()
             
-            if step % 100 == 0:
-                print(f"  Epoch {epoch+1} | Step {step} | Loss {loss.item()*config['grad_accum_steps']:.4f} | LR {scheduler.get_last_lr()[0]:.2e}")
+            if step % 50 == 0:
+                print(f'  Epoch {epoch+1}/{config["epochs"]} | Step {step} | Loss {loss.item()*config["grad_accum_steps"]:.4f}')
         
-        avg_loss = total_loss / len(dataloader) * config["grad_accum_steps"]
-        print(f" Epoch {epoch+1} complete — Avg Loss: {avg_loss:.4f}")
+        avg_train_loss = total_loss / len(train_loader) * config["grad_accum_steps"]
         
-        # Save best model
-        if avg_loss < best_loss:
-            best_loss = avg_loss
+        # Validation
+        model.eval()
+        val_loss = 0
+        with torch.no_grad():
+            for batch in val_loader:
+                input_ids = batch['input_ids'].to(device)
+                target_ids = batch['target_ids'].to(device)
+                mask = batch['mask'].to(device)
+                
+                logits = model(input_ids)
+                shift_logits = logits[:, :-1, :].contiguous()
+                shift_targets = target_ids[:, 1:].contiguous()
+                shift_mask = mask[:, 1:].contiguous()
+                
+                loss = F.cross_entropy(
+                    shift_logits.view(-1, tokenizer.vocab_size),
+                    shift_targets.view(-1),
+                    reduction='none',
+                )
+                val_loss += (loss * shift_mask.view(-1)).sum().item() / (shift_mask.sum() + 1e-10)
+        
+        avg_val_loss = val_loss / len(val_loader)
+        print(f' Epoch {epoch+1} — Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}')
+        
+        # Save best
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
             torch.save({
-                "epoch": epoch,
-                "model_state_dict": model.state_dict(),
-                "optimizer_state_dict": optimizer.state_dict(),
-                "loss": avg_loss,
-                "config": config,
-            }, "export/best_model.pt")
-            print(f" Saved best model (loss: {avg_loss:.4f})")
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': avg_val_loss,
+                'config': config,
+                'vocab_size': tokenizer.vocab_size,
+            }, 'export/model.pt')
+            print(f' Saved best model (val loss: {avg_val_loss:.4f})')
     
-    print(f"\n Training complete! Best loss: {best_loss:.4f}")
-    print(f" Model saved to export/best_model.pt")
-    print(f" Tokenizer saved to export/tokenizer.json")
+    print(f'\n Training complete! Best val loss: {best_val_loss:.4f}')
+    print(f' Model → export/model.pt')
+    print(f' Tokenizer → export/tokenizer.json')
 
 
 if __name__ == "__main__":
