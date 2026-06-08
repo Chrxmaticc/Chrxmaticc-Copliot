@@ -29,6 +29,7 @@
     "@sefinek/google-tts-api": "^2.1.8",
     "@vercel/analytics": "^2.0.1",
     "chalk": "4.1.2",
+    "chrxmaticc-framework": "^1.4.0",
     "clipboardy": "^5.3.1",
     "commander": "^14.0.3"
   }
