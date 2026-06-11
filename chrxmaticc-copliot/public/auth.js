@@ -1,3 +1,4 @@
+// auth.js — Updated with token rotation + toast
 // ╔══════════════════════════════════════════╗
 // ║  Chrxmaticc Copilot — Auth Logic        ║
 // ║  Discord • GitHub • Email • Token       ║
@@ -68,6 +69,11 @@
     }
   });
 
+  function generateToken() {
+    return 'CH_' + Array.from(crypto.getRandomValues(new Uint8Array(40)))
+      .map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+
   document.getElementById('btnEmailSignIn').addEventListener('click', function() {
     var email = document.getElementById('authEmail').value.trim();
     var password = document.getElementById('authPassword').value.trim();
@@ -81,11 +87,29 @@
       return;
     }
 
+    // Generate new token on every sign-in (token rotation)
+    var newToken = generateToken();
+    users[email].token = newToken;
+    localStorage.setItem('chrxmaticc_users', JSON.stringify(users));
+
     localStorage.setItem('chrxmaticc_user', JSON.stringify({
       email: email,
       displayName: email.split('@')[0],
-      provider: 'email'
+      provider: 'email',
+      token: newToken
     }));
+
+    // Save rotated token to DB
+    try {
+      fetch('/api/auth/token-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'signup', username: email.split('@')[0], token: newToken, displayName: email.split('@')[0] })
+      });
+    } catch(e) {}
+
+    // Store token for toast on app.html
+    sessionStorage.setItem('chrxmaticc_new_token', newToken);
     location.href = 'app.html';
   });
 
@@ -100,10 +124,7 @@
     try { users = JSON.parse(localStorage.getItem('chrxmaticc_users') || '{}'); } catch(e) {}
     if (users[email]) { errEl.textContent = 'Account already exists.'; return; }
 
-    // Generate token
-    var token = 'CH_' + Array.from(crypto.getRandomValues(new Uint8Array(40)))
-      .map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-
+    var token = generateToken();
     users[email] = { password: password, token: token };
     localStorage.setItem('chrxmaticc_users', JSON.stringify(users));
     localStorage.setItem('chrxmaticc_user', JSON.stringify({
@@ -113,23 +134,16 @@
       token: token
     }));
 
-    // Also save token to DB if available
     try {
       await fetch('/api/auth/token-auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'signup',
-          username: email.split('@')[0],
-          token: token,
-          displayName: email.split('@')[0]
-        })
+        body: JSON.stringify({ action: 'signup', username: email.split('@')[0], token: token, displayName: email.split('@')[0] })
       });
     } catch(e) {}
 
-    errEl.style.color = '#30d158';
-    errEl.textContent = 'Account created! Your token: ' + token.slice(0, 20) + '... (saved to your account)';
-    setTimeout(function() { location.href = 'app.html'; }, 2000);
+    sessionStorage.setItem('chrxmaticc_new_token', token);
+    location.href = 'app.html';
   });
 
   // ═══════════════════════════════════════
@@ -148,18 +162,31 @@
     var errEl = document.getElementById('tokenError');
     if (!token) { errEl.textContent = 'Enter your token.'; return; }
 
-    // Check localStorage first
     var users = {};
     try { users = JSON.parse(localStorage.getItem('chrxmaticc_users') || '{}'); } catch(e) {}
     var found = null;
+
     for (var email in users) {
       if (users[email].token === token) {
-        found = { email: email, displayName: email.split('@')[0], provider: 'token', token: token };
+        // Rotate token on login
+        var newToken = generateToken();
+        users[email].token = newToken;
+        localStorage.setItem('chrxmaticc_users', JSON.stringify(users));
+
+        found = { email: email, displayName: email.split('@')[0], provider: 'token', token: newToken };
+        sessionStorage.setItem('chrxmaticc_new_token', newToken);
+
+        try {
+          fetch('/api/auth/token-auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'signup', username: email.split('@')[0], token: newToken, displayName: email.split('@')[0] })
+          });
+        } catch(e) {}
         break;
       }
     }
 
-    // Try DB if not found locally
     if (!found) {
       try {
         var res = await fetch('/api/auth/token-auth', {
@@ -170,6 +197,7 @@
         var data = await res.json();
         if (data.success && data.user) {
           found = data.user;
+          sessionStorage.setItem('chrxmaticc_new_token', token);
         }
       } catch(e) {}
     }
