@@ -1,3 +1,4 @@
+// vercel.json
 {
   "rewrites": [
     { "source": "/api/chat", "destination": "/api/chat.js" },
@@ -6,9 +7,9 @@
     { "source": "/api/personal", "destination": "/api/personal.js" },
     { "source": "/api/auth/discord", "destination": "/api/auth/discord/discord.js" },
     { "source": "/api/auth/discord/callback", "destination": "/api/auth/discord/callback.js" },
-    { "source": "/forgot", "destination": "/public/forgot.html" },
     { "source": "/accounts", "destination": "/public/accounts.html" },
     { "source": "/settings", "destination": "/public/settings.html" },
+    { "source": "/app.html", "destination": "/public/app.html" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [
