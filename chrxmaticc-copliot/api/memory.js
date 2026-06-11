@@ -1,32 +1,86 @@
-var fs = require('fs');
-var path = require('path');
-var MEMORY_FILE = path.join('/tmp', 'chrxmaticc-memory.json');
+// api/memory.js
+// Chrxmaticc Copilot — Memory API (PostgreSQL)
+// Stores user facts + conversation history per user
 
-function load() {
-  try { if (fs.existsSync(MEMORY_FILE)) return JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8')); } catch (e) {}
-  return {};
+var { Client } = require('pg');
+var DB_URL = process.env.DATABASE_URL || '';
+
+async function getDB() {
+  var db = new Client({ connectionString: DB_URL });
+  await db.connect();
+  return db;
 }
-function save(data) { fs.writeFileSync(MEMORY_FILE, JSON.stringify(data, null, 2)); }
 
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  var memory = load();
-  var userId = (req.body && req.body.userId) || 'anonymous';
+  var body = req.body || {};
+  var action = body.action || 'get';
+  var userId = body.userId || 'anonymous';
+  var db;
 
-  if (req.method === 'GET') return res.status(200).json({ conversations: (memory[userId] || []).slice(-50) });
-  if (req.method === 'DELETE') { delete memory[userId]; save(memory); return res.status(200).json({ cleared: true }); }
+  try {
+    db = await getDB();
 
-  if (req.method === 'POST') {
-    if (!memory[userId]) memory[userId] = [];
-    memory[userId].push({ role: req.body.role, content: req.body.content, timestamp: Date.now() });
-    if (memory[userId].length > 200) memory[userId] = memory[userId].slice(-200);
-    save(memory);
-    return res.status(200).json({ saved: true });
+    // Auto-create table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS user_memory (
+        user_id TEXT PRIMARY KEY,
+        facts TEXT[] DEFAULT '{}',
+        history JSONB DEFAULT '[]',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    if (action === 'get') {
+      var result = await db.query('SELECT * FROM user_memory WHERE user_id = $1', [userId]);
+      if (result.rows.length === 0) {
+        await db.query('INSERT INTO user_memory (user_id) VALUES ($1)', [userId]);
+        res.status(200).json({ facts: [], history: [] });
+      } else {
+        res.status(200).json({
+          facts: result.rows[0].facts || [],
+          history: result.rows[0].history || []
+        });
+      }
+    }
+
+    else if (action === 'save') {
+      var facts = body.facts || [];
+      var history = body.history || [];
+      await db.query(
+        'INSERT INTO user_memory (user_id, facts, history, updated_at) VALUES ($1, $2, $3, NOW()) ON CONFLICT (user_id) DO UPDATE SET facts = $2, history = $3, updated_at = NOW()',
+        [userId, facts, JSON.stringify(history)]
+      );
+      res.status(200).json({ success: true });
+    }
+
+    else if (action === 'addFact') {
+      var fact = body.fact || '';
+      if (!fact) { res.status(400).json({ error: 'Missing fact' }); return; }
+      await db.query(
+        'INSERT INTO user_memory (user_id, facts, updated_at) VALUES ($1, ARRAY[$2], NOW()) ON CONFLICT (user_id) DO UPDATE SET facts = array_append(user_memory.facts, $2), updated_at = NOW()',
+        [userId, fact]
+      );
+      res.status(200).json({ success: true });
+    }
+
+    else if (action === 'clear') {
+      await db.query('DELETE FROM user_memory WHERE user_id = $1', [userId]);
+      res.status(200).json({ success: true });
+    }
+
+    else {
+      res.status(400).json({ error: 'Unknown action' });
+    }
+
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  } finally {
+    if (db) await db.end();
   }
-
-  res.status(405).json({ error: 'Method not allowed' });
 };
