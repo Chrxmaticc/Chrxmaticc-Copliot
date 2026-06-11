@@ -1,21 +1,315 @@
-MIT License
+╔══════════════════════════════════════════════════════════════════╗
+║         CHRXMATICC COPILOT CUSTOM LICENSE v1.0.0               ║
+║         Copyright (c) 2026 Chrxmee-Midnightt                   ║
+║         All Rights Reserved With Exceptions Below              ║
+╚══════════════════════════════════════════════════════════════════╝
 
-Copyright (c) 2026 Chrxmee_Midnightt
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, MODIFICATION,
+AND DISTRIBUTION OF CHRXMATICC COPILOT SOFTWARE AND SERVICES
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 1 — DEFINITIONS                                         ║
+╚══════════════════════════════════════════════════════════════════╝
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1.1 "Software" refers to all source code, compiled executables,
+    scripts, configuration files, assets, documentation, and
+    associated materials contained within the Chrxmaticc Copilot
+    repository, including but not limited to the web dashboard,
+    terminal client, API endpoints, Discord bot, AI training
+    pipeline, and any associated tools or utilities.
+
+1.2 "Executable" refers to any compiled, packaged, or runnable
+    binary or script form of the Software distributed for use on
+    personal computers, servers, or any computing device.
+
+1.3 "User," "You," or "Licensee" refers to any individual or
+    entity that uses, accesses, modifies, distributes, or
+    interacts with the Software in any capacity.
+
+1.4 "Author" or "Licensor" refers to Chrxmee-Midnightt, the
+    original creator and copyright holder of the Software.
+
+1.5 "Fork" refers to a copy of the Software repository created
+    through any version control platform (including but not
+    limited to GitHub) for the purpose of independent
+    modification or development.
+
+1.6 "Production Use" refers to any use of the Software in a live
+    environment serving real users, whether commercial or
+    non-commercial.
+
+1.7 "Emotional Damage" refers to any claim of psychological
+    distress, mental anguish, emotional suffering, offense taken,
+    hurt feelings, disappointment, anxiety, stress, or any
+    subjective emotional state allegedly caused by interaction
+    with the Software, its outputs, or its behavior.
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 2 — GRANT OF RIGHTS                                     ║
+╚══════════════════════════════════════════════════════════════════╝
+
+2.1 VIEWING AND USE
+    You are granted a worldwide, non-exclusive, royalty-free
+    license to view, access, and use the Software for personal,
+    educational, and non-commercial purposes without restriction.
+
+2.2 MODIFICATION AND FORKS
+    You are expressly permitted to fork the Software repository
+    and modify the source code for personal use, educational
+    purposes, or to contribute improvements back to the original
+    project. Any fork must retain this license in its entirety
+    and must clearly indicate that it is a modified version
+    derived from the original Chrxmaticc Copilot Software. The
+    Author must be credited in any fork. Modifications may be
+    distributed under this same license only.
+
+2.3 EXECUTABLE DISTRIBUTION
+    You may compile, package, and distribute Executables of the
+    Software provided that:
+    (a) This license is included with the distribution;
+    (b) Users are made aware that the Executable is derived from
+        Chrxmaticc Copilot;
+    (c) The source code remains publicly accessible;
+    (d) You do not charge for the Executable itself (though you
+        may charge for related services such as hosting).
+
+2.4 API USAGE
+    The API endpoints provided by the Software may be accessed
+    for personal and development purposes. Public API access
+    is subject to rate limits and terms set by the Author.
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 3 — EXECUTABLES AND SOFTWARE BEHAVIOR                   ║
+╚══════════════════════════════════════════════════════════════════╝
+
+3.1 EXECUTABLE NATURE
+    Executables of the Software are provided "AS IS" without
+    warranty of any kind, express or implied. Executables may
+    interact with your computer system including but not limited
+    to file system access, network communication, process
+    execution, and system configuration. By running any
+    Executable, you acknowledge and accept all risks associated
+    with executing software on your device.
+
+3.2 NO LIABILITY FOR SYSTEM DAMAGE
+    The Author shall not be held liable for any damage, loss of
+    data, system corruption, security breach, unauthorized
+    access, or any other harm allegedly caused by running
+    Executables of the Software. You are solely responsible for
+    verifying the safety and integrity of any Executable you
+    choose to run, regardless of its source.
+
+3.3 AI-GENERATED CONTENT
+    The Software utilizes artificial intelligence models
+    (including but not limited to Groq, and any locally-trained
+    models) that generate text responses. These responses are
+    generated algorithmically and do not represent the views,
+    opinions, or beliefs of the Author. The AI may produce
+    inaccurate, offensive, misleading, or otherwise problematic
+    content. You acknowledge that AI outputs are inherently
+    unpredictable and use them at your own risk.
+
+3.4 NO LIABILITY FOR AI ACTIONS
+    The Author is not liable for any actions taken based on AI-
+    generated responses, including but not limited to code
+    execution, financial decisions, legal advice, medical advice,
+    or any other consequential actions. The AI is a tool, not
+    a certified professional in any field. Treat its outputs
+    accordingly.
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 4 — EMOTIONAL DAMAGE AND PSYCHOLOGICAL HARM             ║
+╚══════════════════════════════════════════════════════════════════╝
+
+4.1 NO LIABILITY FOR EMOTIONAL DAMAGE
+    To the fullest extent permitted by applicable law, the Author
+    expressly disclaims any and all liability for Emotional
+    Damage of any kind allegedly arising from or related to the
+    use of, interaction with, or exposure to the Software. This
+    includes but is not limited to:
+
+    (a) Offense taken at AI-generated responses, regardless of
+        content, tone, or subject matter;
+    (b) Emotional distress caused by the AI's refusal to comply
+        with requests or its manner of response;
+    (c) Anxiety, stress, or emotional reactions to the Software's
+        behavior, performance, appearance, or themes;
+    (d) Feelings of inadequacy, frustration, or anger arising
+        from interaction with the AI;
+    (e) Any claim that the Software caused psychological harm,
+        mental anguish, or emotional suffering of any kind.
+
+4.2 ASSUMPTION OF EMOTIONAL RISK
+    By using the Software, you acknowledge that AI interactions
+    may be unpredictable, unfiltered, sarcastic, blunt, or
+    otherwise potentially offensive. You assume all emotional
+    risk associated with such interactions and agree not to hold
+    the Author liable for any emotional response you may
+    experience.
+
+4.3 WAIVER OF EMOTIONAL DAMAGE CLAIMS
+    You expressly waive any right to bring legal action against
+    the Author for Emotional Damage. This waiver applies
+    regardless of the nature, severity, or duration of the
+    alleged emotional harm. If any court or tribunal finds this
+    waiver unenforceable, you agree that damages for Emotional
+    Damage shall be limited to a maximum of one United States
+    Dollar ($1.00 USD).
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 5 — LIMITATION OF LIABILITY                             ║
+╚══════════════════════════════════════════════════════════════════╝
+
+5.1 GENERAL DISCLAIMER
+    THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY
+    KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+    WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+    PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR
+    BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER
+    IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
+    OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+5.2 MAXIMUM LIABILITY
+    Notwithstanding anything to the contrary in this License, the
+    Author's total aggregate liability for any and all claims
+    arising from or related to the Software shall not exceed the
+    amount paid by you (if any) for access to the Software in the
+    twelve (12) months preceding the claim. If no amount was
+    paid, the maximum liability shall be zero United States
+    Dollars ($0.00 USD).
+
+5.3 INDIRECT DAMAGES
+    The Author shall not be liable for any indirect, incidental,
+    special, consequential, or punitive damages, including but
+    not limited to loss of profits, data, use, goodwill, or other
+    intangible losses, resulting from your use of or inability to
+    use the Software.
+
+5.4 THIRD-PARTY SERVICES
+    The Software may integrate with or depend upon third-party
+    services including but not limited to Groq, Pollinations,
+    Neon PostgreSQL, Vercel, GitHub, Discord, and Resend. The
+    Author is not responsible for the availability, security, or
+    behavior of any third-party service. Use of such services is
+    subject to their respective terms and conditions.
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 6 — INTELLECTUAL PROPERTY                               ║
+╚══════════════════════════════════════════════════════════════════╝
+
+6.1 OWNERSHIP
+    The Software, including all source code, documentation,
+    design elements, branding, logos, and associated materials,
+    is the exclusive intellectual property of the Author,
+    protected by copyright law and international treaties.
+
+6.2 TRADEMARK
+    "Chrxmaticc Copilot," "Chrxmaticc," the chrome demon logo,
+    and all associated branding are trademarks of the Author.
+    You may not use these marks in any way that suggests
+    endorsement or affiliation without express written permission.
+
+6.3 ATTRIBUTION
+    Any use, modification, or distribution of the Software must
+    include clear and visible attribution to the Author. This
+    attribution must include the original project name and a link
+    to the original repository where reasonably possible.
+
+6.4 CONTRIBUTIONS
+    Any contributions made to the Software through pull requests,
+    patches, or other means become the property of the Author
+    upon acceptance. By submitting a contribution, you grant the
+    Author a perpetual, worldwide, royalty-free license to use,
+    modify, and distribute your contribution as part of the
+    Software.
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 7 — TERMINATION                                         ║
+╚══════════════════════════════════════════════════════════════════╝
+
+7.1 AUTOMATIC TERMINATION
+    This license terminates automatically if you violate any of
+    its terms. Upon termination, you must cease all use of the
+    Software and destroy all copies in your possession.
+
+7.2 SURVIVAL
+    Sections 3 (Executables and Software Behavior), 4 (Emotional
+    Damage), 5 (Limitation of Liability), and 6 (Intellectual
+    Property) survive termination of this license indefinitely.
+
+7.3 REINSTATEMENT
+    The Author may, at their sole discretion, reinstate this
+    license upon correction of the violation.
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 8 — GOVERNING LAW AND DISPUTE RESOLUTION                ║
+╚══════════════════════════════════════════════════════════════════╝
+
+8.1 GOVERNING LAW
+    This license shall be governed by and construed in accordance
+    with the laws of the United States of America, without regard
+    to conflict of law principles.
+
+8.2 DISPUTE RESOLUTION
+    Any dispute arising from this license shall first be
+    attempted to be resolved through informal negotiation. If
+    informal resolution fails, disputes shall be resolved through
+    binding arbitration in accordance with the rules of the
+    American Arbitration Association. You waive any right to
+    participate in a class action lawsuit or class-wide
+    arbitration.
+
+8.3 VENUE
+    Any legal action that is not subject to arbitration shall be
+    brought exclusively in the federal or state courts located in
+    the United States. You consent to the personal jurisdiction
+    of such courts.
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║ SECTION 9 — MISCELLANEOUS                                       ║
+╚══════════════════════════════════════════════════════════════════╝
+
+9.1 SEVERABILITY
+    If any provision of this license is found to be unenforceable
+    or invalid, that provision shall be limited or eliminated to
+    the minimum extent necessary so that this license shall
+    otherwise remain in full force and effect.
+
+9.2 WAIVER
+    The failure of the Author to enforce any right or provision
+    of this license shall not constitute a waiver of such right
+    or provision.
+
+9.3 ENTIRE AGREEMENT
+    This license constitutes the entire agreement between you and
+    the Author concerning the Software and supersedes all prior
+    agreements and understandings.
+
+9.4 AMENDMENTS
+    The Author reserves the right to update or modify this
+    license at any time. Continued use of the Software after any
+    such changes constitutes acceptance of the new terms.
+
+9.5 CONTACT
+    For questions, licensing inquiries, or permission requests,
+    contact the Author through the official project channels or
+    repository.
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║                    END OF LICENSE                                ║
+║                                                                  ║
+║  Chrxmaticc Copilot — Offbrand. Hyper-intelligent.              ║
+║  No Subscription. No Liability. No Emotional Damage Claims.     ║
+║  Copyright (c) 2026 Chrxmee-Midnightt.                          ║
+╚══════════════════════════════════════════════════════════════════╝
