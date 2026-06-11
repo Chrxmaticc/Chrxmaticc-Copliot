@@ -13,80 +13,31 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="analytics.js"></script>
   <style>
-    html.accounts-page, body.accounts-page {
-      height: auto !important; min-height: 100vh !important;
-      overflow-x: hidden !important; overflow-y: auto !important;
-      position: relative !important;
-    }
+    html.accounts-page, body.accounts-page { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; overflow-y: auto !important; position: relative !important; }
     :root {
       --bg: #0b0b0a; --panel: rgba(18,18,16,0.8); --border: rgba(212,165,116,0.1);
       --text: #e8d5c4; --muted: #8a7a6a; --accent: #d4a574; --accent2: #c9956b;
       --glow: rgba(212,165,116,0.15); --card-bg: rgba(18,18,16,0.8);
     }
-    [data-theme="midnight"] {
-      --bg: #0a0a0a; --panel: #0d0d0d; --border: #1a1a1a; --text: #e0e0e0;
-      --muted: #8e8e93; --accent: #a0a0d0; --accent2: #8888bb; --glow: rgba(150,150,200,0.1);
-      --card-bg: #0d0d0d;
-    }
-    [data-theme="glass"] {
-      --bg: #0a0a0f; --panel: rgba(20,20,30,0.5); --border: rgba(255,255,255,0.06);
-      --text: #e0e0e0; --muted: #999; --accent: #a0b0d0; --accent2: #8899cc;
-      --glow: rgba(150,180,220,0.1); --card-bg: rgba(20,20,30,0.4);
-    }
-    [data-theme="chrome"] {
-      --bg: #1a1a1a; --panel: #1e1e1e; --border: #2a2a2a; --text: #e0e0e0;
-      --muted: #999; --accent: #bbb; --accent2: #aaa; --glow: rgba(200,200,220,0.08);
-      --card-bg: #1e1e1e;
-    }
-    [data-theme="white"] {
-      --bg: #f5f5f7; --panel: #fff; --border: #e5e5e5; --text: #1a1a1a;
-      --muted: #999; --accent: #0a84ff; --accent2: #0070e0; --glow: rgba(10,132,255,0.1);
-      --card-bg: #fff;
-    }
+    [data-theme="midnight"] { --bg: #0a0a0a; --panel: #0d0d0d; --border: #1a1a1a; --text: #e0e0e0; --muted: #8e8e93; --accent: #a0a0d0; --accent2: #8888bb; --glow: rgba(150,150,200,0.1); --card-bg: #0d0d0d; }
+    [data-theme="glass"] { --bg: #0a0a0f; --panel: rgba(20,20,30,0.5); --border: rgba(255,255,255,0.06); --text: #e0e0e0; --muted: #999; --accent: #a0b0d0; --accent2: #8899cc; --glow: rgba(150,180,220,0.1); --card-bg: rgba(20,20,30,0.4); }
+    [data-theme="chrome"] { --bg: #1a1a1a; --panel: #1e1e1e; --border: #2a2a2a; --text: #e0e0e0; --muted: #999; --accent: #bbb; --accent2: #aaa; --glow: rgba(200,200,220,0.08); --card-bg: #1e1e1e; }
+    [data-theme="white"] { --bg: #f5f5f7; --panel: #fff; --border: #e5e5e5; --text: #1a1a1a; --muted: #999; --accent: #0a84ff; --accent2: #0070e0; --glow: rgba(10,132,255,0.1); --card-bg: #fff; }
 
-    .accounts-page {
-      background: var(--bg); color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-      scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-      transition: background 0.5s ease, color 0.5s ease;
-    }
+    .accounts-page { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; transition: background 0.5s ease, color 0.5s ease; }
     .accounts-page::-webkit-scrollbar { width: 4px; }
     .accounts-page::-webkit-scrollbar-track { background: transparent; }
     .accounts-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
     .accounts-bg-wrapper { position: fixed; inset: 0; z-index: 0; pointer-events: none; touch-action: none; }
-    .accounts-bg-gif {
-      position: absolute; inset: 0;
-      background: url('chrome.gif') center/cover no-repeat;
-      opacity: 0.04; will-change: transform;
-    }
-    .accounts-bg-texture {
-      position: absolute; inset: 0;
-      background: url('chrome2.jpeg') center/cover no-repeat;
-      opacity: 0.03; mix-blend-mode: overlay;
-    }
-    .accounts-bg-gradient {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 30%, var(--glow) 0%, transparent 70%);
-    }
+    .accounts-bg-gif { position: absolute; inset: 0; background: url('chrome.gif') center/cover no-repeat; opacity: 0.04; will-change: transform; }
+    .accounts-bg-texture { position: absolute; inset: 0; background: url('chrome2.jpeg') center/cover no-repeat; opacity: 0.03; mix-blend-mode: overlay; }
+    .accounts-bg-gradient { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, var(--glow) 0%, transparent 70%); }
 
-    .accounts-content { 
-      position: relative; z-index: 1; min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px; pointer-events: auto;
-    }
+    .accounts-content { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; pointer-events: auto; }
 
-    .accounts-theme-pill {
-      position: fixed; bottom: 24px; right: 24px; z-index: 100;
-      display: flex; gap: 6px; padding: 6px;
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    }
-    .accounts-theme-dot {
-      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: all 0.2s;
-    }
+    .accounts-theme-pill { position: fixed; bottom: 24px; right: 24px; z-index: 100; display: flex; gap: 6px; padding: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    .accounts-theme-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
     .accounts-theme-dot:hover { transform: scale(1.15); border-color: var(--accent); }
     .accounts-theme-dot.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
     .accounts-theme-dot.gold { background: #0b0b0a; border-color: rgba(212,165,116,0.4); }
@@ -95,101 +46,45 @@
     .accounts-theme-dot.chrome { background: #1a1a1a; }
     .accounts-theme-dot.white { background: #f5f5f7; }
 
-    .accounts-card {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 24px; padding: 40px 32px; text-align: center;
-      max-width: 400px; width: 100%;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 80px var(--glow);
-      animation: fadeInUp 0.6s ease;
-    }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-    .accounts-logo {
-      width: 56px; height: 56px; margin: 0 auto 16px;
-      filter: drop-shadow(0 0 20px var(--glow));
-    }
+    .accounts-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 40px 32px; text-align: center; max-width: 420px; width: 100%; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 80px var(--glow); animation: fadeInUp 0.6s ease; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .accounts-logo { width: 56px; height: 56px; margin: 0 auto 16px; filter: drop-shadow(0 0 20px var(--glow)); }
     .accounts-logo img { width: 100%; height: 100%; object-fit: contain; }
-
-    .accounts-title {
-      font-size: 24px; font-weight: 700; letter-spacing: -0.5px;
-      background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent2));
-      background-size: 200% 200%;
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      animation: goldShimmer 3s ease-in-out infinite; margin-bottom: 4px;
-    }
-    @keyframes goldShimmer {
-      0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
-    }
+    .accounts-title { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent2)); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: goldShimmer 3s ease-in-out infinite; margin-bottom: 4px; }
+    @keyframes goldShimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
     .accounts-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 28px; letter-spacing: 0.2px; }
 
-    .auth-btn {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      width: 100%; padding: 14px; border-radius: 14px;
-      border: 1px solid var(--border); background: var(--panel);
-      color: var(--text); font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: all 0.25s ease; margin-bottom: 10px;
-      font-family: inherit; letter-spacing: 0.2px;
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    }
+    .auth-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; margin-bottom: 10px; font-family: inherit; letter-spacing: 0.2px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
     .auth-btn:hover { background: var(--card-bg); border-color: var(--accent); box-shadow: 0 0 30px var(--glow); transform: translateY(-1px); }
     .auth-btn:active { transform: scale(0.97); }
     .auth-btn.discord { border-color: rgba(88,101,242,0.3); background: rgba(88,101,242,0.08); }
     .auth-btn.discord:hover { border-color: rgba(88,101,242,0.5); background: rgba(88,101,242,0.14); box-shadow: 0 0 30px rgba(88,101,242,0.15); }
+    .auth-btn.github { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); }
+    .auth-btn.github:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); }
+    .auth-btn.token-btn { border-color: rgba(212,165,116,0.2); background: rgba(212,165,116,0.05); }
+    .auth-btn.token-btn:hover { border-color: rgba(212,165,116,0.4); background: rgba(212,165,116,0.1); box-shadow: 0 0 30px rgba(212,165,116,0.15); }
     .auth-btn.guest { border-color: transparent; background: transparent; }
     .auth-btn.guest:hover { background: var(--panel); border-color: var(--border); }
     .auth-btn-icon { width: 20px; height: 20px; flex-shrink: 0; }
 
-    .auth-divider {
-      display: flex; align-items: center; gap: 12px;
-      margin: 18px 0; color: var(--muted); font-size: 10px;
-      text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;
-    }
-    .auth-divider::before, .auth-divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
+    .auth-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    .email-auth-section { display: none; margin-top: 4px; }
-    .email-auth-section.visible { display: block; animation: fadeInUp 0.3s ease; }
-
-    .auth-input {
-      width: 100%; padding: 12px 14px; border-radius: 12px;
-      background: var(--panel); border: 1px solid var(--border);
-      color: var(--text); font-size: 14px; font-family: inherit;
-      margin-bottom: 8px; transition: border-color 0.2s; outline: none;
-    }
+    .auth-section { display: none; margin-top: 4px; }
+    .auth-section.visible { display: block; animation: fadeInUp 0.3s ease; }
+    .auth-input { width: 100%; padding: 12px 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); color: var(--text); font-size: 14px; font-family: inherit; margin-bottom: 8px; transition: border-color 0.2s; outline: none; }
     .auth-input:focus { border-color: var(--accent); }
     .auth-input::placeholder { color: var(--muted); opacity: 0.6; }
-
     .auth-error { color: #ff453a; font-size: 12px; margin-top: 8px; text-align: center; }
+    .auth-success { color: #30d158; font-size: 12px; margin-top: 8px; text-align: center; }
+    .auth-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .auth-row { display: flex; gap: 8px; }
+    .auth-row .auth-btn { flex: 1; font-size: 12px; padding: 10px; }
 
-    .accounts-back {
-      display: block; width: 100%; padding: 10px;
-      background: none; border: none; color: var(--muted);
-      font-size: 13px; cursor: pointer; margin-top: 16px;
-      font-family: inherit; transition: color 0.2s; letter-spacing: 0.2px;
-    }
+    .accounts-back { display: block; width: 100%; padding: 10px; background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; margin-top: 16px; font-family: inherit; transition: color 0.2s; letter-spacing: 0.2px; }
     .accounts-back:hover { color: var(--accent); }
 
-    /* Surprise: particle spark on auth choice */
-    .spark {
-      position: fixed; pointer-events: none; z-index: 999;
-      width: 4px; height: 4px; border-radius: 50%;
-      background: var(--accent);
-      animation: sparkFly 0.8s ease-out forwards;
-    }
-    @keyframes sparkFly {
-      0% { opacity: 1; transform: translate(0,0) scale(1); }
-      100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(0); }
-    }
-
-    @media (max-width: 480px) {
-      .accounts-card { padding: 28px 20px; }
-      .accounts-title { font-size: 20px; }
-      .auth-btn { padding: 12px; font-size: 13px; }
-      .accounts-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; }
-      .accounts-theme-dot { width: 24px; height: 24px; }
-    }
+    @media (max-width: 480px) { .accounts-card { padding: 28px 20px; } .accounts-title { font-size: 20px; } .auth-btn { padding: 12px; font-size: 13px; } .accounts-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; } .accounts-theme-dot { width: 24px; height: 24px; } }
   </style>
 </head>
 <body class="accounts-page" data-theme="gold">
@@ -209,153 +104,56 @@
 
   <div class="accounts-content">
     <div class="accounts-card">
-      <div class="accounts-logo">
-        <img src="icon.png" alt="Chrxmaticc">
-      </div>
+      <div class="accounts-logo"><img src="icon.png" alt="Chrxmaticc"></div>
       <h1 class="accounts-title">Chrxmaticc Copilot</h1>
       <p class="accounts-subtitle" id="accountsSubtitle">Sign in to continue</p>
 
-      <!-- Discord -->
       <button class="auth-btn discord" id="btnDiscord">
         <svg class="auth-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
         Continue with Discord
       </button>
 
-      <!-- Email -->
+      <button class="auth-btn github" id="btnGitHub">
+        <svg class="auth-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        Continue with GitHub
+      </button>
+
       <button class="auth-btn" id="btnEmail">
         <svg class="auth-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13L2 4"/></svg>
         Sign in with Email
       </button>
 
-      <!-- Email form -->
-      <div class="email-auth-section" id="emailSection">
+      <div class="auth-section" id="emailSection">
         <input type="email" class="auth-input" id="authEmail" placeholder="Email">
         <input type="password" class="auth-input" id="authPassword" placeholder="Password">
-        <input type="text" class="auth-input" id="signupSecurityQuestion" placeholder="Security Question (e.g. Pet's name?)" style="display:none">
-        <input type="text" class="auth-input" id="signupSecurityAnswer" placeholder="Security Answer" style="display:none">
-        <button class="auth-btn" id="btnEmailSignIn" style="margin-bottom:4px;">Sign In</button>
-        <button class="auth-btn" id="btnEmailSignUp">Create Account</button>
-        <div class="auth-error" id="authError"></div>
+        <div class="auth-row">
+          <button class="auth-btn" id="btnEmailSignIn">Sign In</button>
+          <button class="auth-btn" id="btnEmailSignUp">Create Account</button>
+        </div>
+        <div class="auth-hint">Token is created automatically on signup. Save it.</div>
+        <div class="auth-error" id="emailError"></div>
       </div>
 
       <div class="auth-divider">or</div>
 
-      <!-- Guest -->
-      <button class="auth-btn guest" id="btnGuest">
-        Continue as Guest
+      <button class="auth-btn token-btn" id="btnToken">
+        <svg class="auth-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7v3a1 1 0 01-1 1h-1.586a1 1 0 00-.707.293l-4.414 4.414A1 1 0 006 16.414V18a1 1 0 001 1h1.586a1 1 0 00.707-.293l4.414-4.414A1 1 0 0014 13.586V12a1 1 0 011-1h3a1 1 0 011 1v4a9 9 0 11-5.636-8.364"/></svg>
+        Sign in with Token
       </button>
 
+      <div class="auth-section" id="tokenSection">
+        <input type="text" class="auth-input" id="tokenInput" placeholder="Paste your connection token">
+        <button class="auth-btn" id="btnTokenLogin">Sign In</button>
+        <div class="auth-error" id="tokenError"></div>
+      </div>
+
+      <div class="auth-divider">or</div>
+
+      <button class="auth-btn guest" id="btnGuest">Continue as Guest</button>
       <button class="accounts-back" onclick="location.href='index.html'">Back</button>
     </div>
   </div>
 
-  <script>
-    // ── Theme System ──
-    var currentTheme = localStorage.getItem('chrxmaticc_theme') || 'gold';
-    document.body.setAttribute('data-theme', currentTheme);
-    updateThemeDots();
-
-    document.querySelectorAll('.accounts-theme-dot').forEach(function(dot) {
-      dot.addEventListener('click', function() {
-        var theme = this.getAttribute('data-theme');
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('chrxmaticc_theme', theme);
-        currentTheme = theme;
-        updateThemeDots();
-        spawnSparks(this);
-      });
-    });
-
-    function updateThemeDots() {
-      document.querySelectorAll('.accounts-theme-dot').forEach(function(d) {
-        d.classList.toggle('active', d.getAttribute('data-theme') === currentTheme);
-      });
-    }
-
-    // ── Surprise: Particle sparks on theme/auth click ──
-    function spawnSparks(el) {
-      var rect = el.getBoundingClientRect();
-      var cx = rect.left + rect.width/2;
-      var cy = rect.top + rect.height/2;
-      for (var i = 0; i < 8; i++) {
-        var spark = document.createElement('div');
-        spark.className = 'spark';
-        spark.style.left = cx + 'px';
-        spark.style.top = cy + 'px';
-        spark.style.setProperty('--sx', (Math.random()-0.5)*80 + 'px');
-        spark.style.setProperty('--sy', (Math.random()-0.5)*80 + 'px');
-        spark.style.animationDuration = (0.4 + Math.random()*0.6) + 's';
-        document.body.appendChild(spark);
-        setTimeout(function() { spark.remove(); }, 900);
-      }
-    }
-
-    document.querySelectorAll('.auth-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() { spawnSparks(btn); });
-    });
-
-    // ── Parallax ──
-    var parallaxBg = document.getElementById('parallaxBg');
-    if (parallaxBg) {
-      document.addEventListener('mousemove', function(e) {
-        var x = (e.clientX / window.innerWidth - 0.5) * 8;
-        var y = (e.clientY / window.innerHeight - 0.5) * 8;
-        parallaxBg.style.transform = 'scale(1.1) translate(' + x + 'px, ' + y + 'px)';
-      });
-    }
-
-    // ── Auth handlers ──
-    var params = new URLSearchParams(window.location.search);
-    if (params.get('mode') === 'signup') {
-      document.getElementById('accountsSubtitle').textContent = 'Create your account';
-      document.getElementById('emailSection').classList.add('visible');
-      document.getElementById('signupSecurityQuestion').style.display = 'block';
-      document.getElementById('signupSecurityAnswer').style.display = 'block';
-      document.getElementById('btnEmailSignIn').style.display = 'none';
-    }
-
-    document.getElementById('btnDiscord').addEventListener('click', function() {
-      location.href = '/api/auth/discord';
-    });
-
-    document.getElementById('btnEmail').addEventListener('click', function() {
-      var section = document.getElementById('emailSection');
-      section.classList.toggle('visible');
-      if (section.classList.contains('visible')) {
-        document.getElementById('accountsSubtitle').textContent = 'Sign in with Email';
-      }
-    });
-
-    document.getElementById('btnGuest').addEventListener('click', function() {
-      localStorage.removeItem('chrxmaticc_user');
-      location.href = 'app.html';
-    });
-
-    function basicEmailAuth(mode) {
-      var email = document.getElementById('authEmail').value.trim();
-      var password = document.getElementById('authPassword').value.trim();
-      var errEl = document.getElementById('authError');
-      if (!email || !password) { errEl.textContent = 'Fill in all fields.'; return; }
-      var users = {};
-      try { users = JSON.parse(localStorage.getItem('chrxmaticc_users') || '{}'); } catch(e) {}
-      if (mode === 'signup') {
-        var question = document.getElementById('signupSecurityQuestion').value.trim();
-        var answer = document.getElementById('signupSecurityAnswer').value.trim();
-        if (!question || !answer) { errEl.textContent = 'Set a security question and answer.'; return; }
-        if (users[email]) { errEl.textContent = 'Account already exists.'; return; }
-        users[email] = { password: password, question: question, answer: answer };
-        localStorage.setItem('chrxmaticc_users', JSON.stringify(users));
-        localStorage.setItem('chrxmaticc_user', JSON.stringify({ email: email, displayName: email.split('@')[0], provider: 'email' }));
-        location.href = 'app.html';
-      } else {
-        if (!users[email] || users[email].password !== password) { errEl.textContent = 'Invalid email or password.'; return; }
-        localStorage.setItem('chrxmaticc_user', JSON.stringify({ email: email, displayName: email.split('@')[0], provider: 'email' }));
-        location.href = 'app.html';
-      }
-    }
-
-    document.getElementById('btnEmailSignIn').addEventListener('click', function() { basicEmailAuth('login'); });
-    document.getElementById('btnEmailSignUp').addEventListener('click', function() { basicEmailAuth('signup'); });
-  </script>
+  <script src="auth.js"></script>
 </body>
 </html>
