@@ -1,3 +1,4 @@
+<!-- public/app.html -->
 <!DOCTYPE html>
 <html lang="en" class="app-page">
 <head>
@@ -44,6 +45,7 @@
     .sidebar-avatar img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
     .sidebar-title { font-size: 22px; font-weight: 700; }
     .sidebar-close { margin-left: auto; background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; color: var(--muted); }
+    .sidebar-close:hover { color: var(--text); }
     .sidebar-actions-row { display: flex; gap: 8px; padding: 0 0 12px 0; }
     .sidebar-new-chat { width: 36px; height: 36px; border-radius: 50%; border: none; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--accent2), var(--accent)); color: var(--bg); }
     .sidebar-fold { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--card-bg); color: var(--muted); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
@@ -123,7 +125,9 @@
     .input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
     #userInput { background: transparent; border: none; outline: none; color: var(--text); font-size: 14px; font-family: inherit; width: 100%; resize: none; max-height: 100px; padding: 9px 0; line-height: 1.4; }
     #userInput::placeholder { color: var(--muted); opacity: 0.5; }
-    .input-btn { background: none; border: none; font-size: 17px; cursor: pointer; padding: 5px; color: var(--muted); }
+    .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+    .icon-btn:hover { opacity: 0.7; }
+    .icon-btn img, .icon-btn svg { width: 18px; height: 18px; filter: invert(0.6); }
     .typing-speed-select { border-radius: 10px; padding: 4px 5px; font-size: 10px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--card-bg); color: var(--muted); font-family: inherit; max-width: 50px; text-align: center; -webkit-appearance: none; appearance: none; }
     .typing-speed-select:hover { border-color: var(--accent); }
     .typing-speed-select:focus { outline: none; border-color: var(--accent); }
@@ -158,14 +162,7 @@
     @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
     @keyframes toastOut { from{opacity:1;transform:translateX(-50%) translateY(0)} to{opacity:0;transform:translateX(-50%) translateY(-6px)} }
 
-    @media (max-width: 480px) {
-      .topbar { padding: 10px 12px; }
-      .bubble { font-size: 13px; padding: 10px 14px; }
-      .quick-cmd { font-size: 11px; padding: 6px 10px; }
-      .personality-select { max-width: 90px; font-size: 10px; }
-      .app-theme-pill { bottom: 80px; right: 8px; }
-      .typing-speed-select { max-width: 44px; font-size: 9px; }
-    }
+    @media (max-width: 480px) { .topbar { padding: 10px 12px; } .bubble { font-size: 13px; padding: 10px 14px; } .quick-cmd { font-size: 11px; padding: 6px 10px; } .personality-select { max-width: 90px; font-size: 10px; } .app-theme-pill { bottom: 80px; right: 8px; } .typing-speed-select { max-width: 44px; font-size: 9px; } .icon-btn img, .icon-btn svg { width: 16px; height: 16px; } }
   </style>
 </head>
 <body class="app-page" data-theme="gold">
@@ -177,48 +174,29 @@
 
   <div id="app">
     <div id="sidebar" class="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-avatar" id="sidebarAvatar"><img src="icon.png" alt="Avatar"></div>
-        <div class="sidebar-title">Chats</div>
-        <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
-      </div>
-      <div class="sidebar-actions-row">
-        <button class="sidebar-new-chat" onclick="newChat()">+</button>
-        <button class="sidebar-fold" onclick="foldSidebar()">&lt;</button>
-      </div>
+      <div class="sidebar-header"><div class="sidebar-avatar" id="sidebarAvatar"><img src="icon.png" alt="Avatar"></div><div class="sidebar-title">Chats</div><button class="sidebar-close" onclick="toggleSidebar()">&times;</button></div>
+      <div class="sidebar-actions-row"><button class="sidebar-new-chat" onclick="newChat()">+</button><button class="sidebar-fold" onclick="foldSidebar()">&lt;</button></div>
       <div class="sidebar-search"><input type="text" placeholder="Search chats..." class="sidebar-search-input" id="chatSearch" oninput="filterChats()"></div>
       <div class="sidebar-chats" id="savedChatsList"></div>
-      <div class="sidebar-footer">
-        <div class="sidebar-profile" onclick="location.href='settings.html'">
-          <div class="sidebar-profile-avatar" id="profileAvatar"><img src="icon.png" alt="Profile"></div>
-          <div class="sidebar-profile-info"><div class="sidebar-profile-name" id="profileName">Guest</div><div class="sidebar-profile-status">Settings</div></div>
-        </div>
-      </div>
+      <div class="sidebar-footer"><div class="sidebar-profile" onclick="location.href='settings.html'"><div class="sidebar-profile-avatar" id="profileAvatar"><img src="icon.png" alt="Profile"></div><div class="sidebar-profile-info"><div class="sidebar-profile-name" id="profileName">Guest</div><div class="sidebar-profile-status">Settings</div></div></div></div>
     </div>
     <div id="miniSidebar" class="mini-sidebar">
       <button class="mini-sidebar-expand" onclick="unfoldSidebar()">&gt;</button>
       <button class="mini-new-chat" onclick="newChat()">+</button>
       <div class="mini-avatars" id="miniAvatars"></div>
-      <button class="mini-settings" onclick="location.href='settings.html'">&#9881;</button>
+      <button class="mini-settings" onclick="location.href='settings.html'"><img src="search.svg" style="width:16px;height:16px;filter:invert(0.5);" alt="Settings"></button>
     </div>
     <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
 
     <div id="main" class="main">
       <div class="topbar">
         <button class="topbar-btn" onclick="toggleSidebar()"><span class="topbar-back">&lsaquo;</span><span class="topbar-logo-sm"><img src="chrome.gif" alt="Chrxmaticc"></span></button>
-        <div class="topbar-center" ondblclick="doubleTapTopbar()">
-          <div class="topbar-name">Chrxmaticc Copilot</div>
-          <div class="topbar-status"><span id="statusDot" class="status-dot"></span><span id="statusText">Online</span></div>
-        </div>
+        <div class="topbar-center" ondblclick="doubleTapTopbar()"><div class="topbar-name">Chrxmaticc Copilot</div><div class="topbar-status"><span id="statusDot" class="status-dot"></span><span id="statusText">Online</span></div></div>
         <select id="personalitySelect" class="personality-select" onchange="changePersonality(this.value)">
-          <option value="conversational">Conversational</option>
-          <option value="sonnet">Sonnet</option>
-          <option value="vision">Vision</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="speed">Speed</option>
+          <option value="conversational">Conversational</option><option value="sonnet">Sonnet</option><option value="vision">Vision</option><option value="intermediate">Intermediate</option><option value="speed">Speed</option>
         </select>
-        <button class="input-btn" id="searchToggle" onclick="toggleChatSearch()" title="Search">&#128269;</button>
-        <button class="input-btn" id="ttsBtn" onclick="toggleTTS()">&#128266;</button>
+        <button class="icon-btn" id="searchToggle" onclick="toggleChatSearch()" title="Search"><img src="search.svg" alt="Search"></button>
+        <button class="icon-btn" id="ttsBtn" onclick="toggleTTS()" title="Text to Speech"><img src="speaker.svg" id="ttsIcon" alt="TTS"></button>
       </div>
       <div class="chat-search-container" id="chatSearchContainer"><input type="text" class="chat-search-bar" id="chatSearchBar" placeholder="Search messages..." oninput="searchChat()"></div>
       <div class="messages" id="messages">
@@ -232,23 +210,14 @@
         </div>
         <div class="typing-indicator" id="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
       </div>
-      <div class="file-preview" id="filePreview">
-        <img id="filePreviewImg" src="" style="display:none" alt="Preview">
-        <span class="file-preview-info" id="filePreviewInfo"></span>
-        <button onclick="clearFile()">&times;</button>
-      </div>
+      <div class="file-preview" id="filePreview"><img id="filePreviewImg" src="" style="display:none" alt="Preview"><span class="file-preview-info" id="filePreviewInfo"></span><button onclick="clearFile()">&times;</button></div>
       <div class="inputbar">
-        <button class="input-btn" id="micBtn" onclick="toggleMic()">&#127908;</button>
+        <button class="icon-btn" id="micBtn" onclick="toggleMic()" title="Voice Input"><img src="upload.svg" id="micIcon" alt="Mic"></button>
         <div class="input-wrap"><textarea id="userInput" rows="1" placeholder="Message"></textarea></div>
-        <button class="input-btn" id="attachBtn" onclick="triggerFileUpload()">&#128279;</button>
+        <button class="icon-btn" id="attachBtn" onclick="triggerFileUpload()" title="Attach File"><img src="upload.svg" alt="Upload"></button>
         <input type="file" id="fileInput" style="display:none" accept="image/*,.js,.json,.html,.css,.md,.txt,.py,.glsl,.yml,.yaml,.xml,.svg" onchange="handleFileUpload(event)">
         <select id="typingSpeedSelect" class="typing-speed-select" onchange="changeTypingSpeed(this.value)">
-          <option value="0">Off</option>
-          <option value="10" selected>1x</option>
-          <option value="20">2x</option>
-          <option value="30">3x</option>
-          <option value="40">4x</option>
-          <option value="50">5x</option>
+          <option value="0">Off</option><option value="10" selected>1x</option><option value="20">2x</option><option value="30">3x</option><option value="40">4x</option><option value="50">5x</option>
         </select>
         <button class="send-btn" id="sendBtn" onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
       </div>
@@ -262,7 +231,6 @@
     <div class="app-theme-dot chrome" data-theme="chrome" title="Chrome"></div>
     <div class="app-theme-dot white" data-theme="white" title="Light"></div>
   </div>
-
   <canvas id="confettiCanvas" style="position:fixed;inset:0;z-index:999;pointer-events:none;display:none;"></canvas>
   <script src="app.js"></script>
 </body>
