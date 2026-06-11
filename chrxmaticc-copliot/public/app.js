@@ -1,11 +1,11 @@
 // ╔══════════════════════════════════════════╗
 // ║  Chrxmaticc Copilot — Complete App       ║
-// ║  SVGs • Memory • Typing Speed • Mic     ║
+// ║  SVGs • Memory • Typing Speed • Token   ║
 // ║  Themes • Surprises • Chrome Edition     ║
 // ║  Author: Chrxmee-Midnightt               ║
 // ╚══════════════════════════════════════════╝
 
-var messagesEl, inputEl, sendBtn, typingEl, statusDot, statusText, micBtn, micStatus, ttsBtn;
+var messagesEl, inputEl, sendBtn, typingEl, statusDot, statusText, micBtn, ttsBtn;
 var sidebar, miniSidebar, overlay, savedChatsList, chatSearch, profileName, profileAvatar;
 var personalitySelect, confettiCanvas, fileInput, filePreview, attachBtn;
 var conversation = [], savedChats = {}, currentChatId = 'main';
@@ -26,7 +26,7 @@ var memoryUserId = 'anonymous';
 function initUserId() {
   var user = null;
   try { user = JSON.parse(localStorage.getItem('chrxmaticc_user')); } catch(e) {}
-  memoryUserId = (user && user.email) || (user && user.discordId) || 'guest_' + Math.random().toString(36).slice(2, 8);
+  memoryUserId = (user && user.email) || (user && user.discordId) || (user && user.githubId) || 'guest_' + Math.random().toString(36).slice(2, 8);
 }
 
 async function loadMemory() {
@@ -140,6 +140,13 @@ function init() {
   if (logo) logo.addEventListener('click', function(e) { e.stopPropagation(); sneakLevel++; if (sneakLevel === 7) { sneakLevel = 0; launchConfetti(); toast('The chrome demon awakens...'); } });
 
   if (surpriseMode && Math.random() > 0.5) { setTimeout(function() { var greetings = ['Yo!', 'Hey!', 'Welcome back!', 'Sup!', 'Ready to build?']; var firstBubble = document.querySelector('.bubble-row.ai .bubble'); if (firstBubble) firstBubble.innerHTML = '<strong>' + greetings[Math.floor(Math.random()*greetings.length)] + '</strong><br><br>I\'m Chrxmaticc Copilot. Offbrand. Hyper-intelligent. No subscription.'; }, 2400); }
+
+  // Show token toast if coming from login
+  var newToken = sessionStorage.getItem('chrxmaticc_new_token');
+  if (newToken) {
+    sessionStorage.removeItem('chrxmaticc_new_token');
+    setTimeout(function() { showTokenToast(newToken); }, 1200);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -160,10 +167,6 @@ function changeTypingSpeed(speed) { typingSpeed = parseInt(speed); localStorage.
 function setAvatar(a) { selectedAvatar = a; localStorage.setItem('chrxmaticc_avatar', a); updateAllAvatars(); }
 function updateAllAvatars() { ['sidebarAvatar','profileAvatar'].forEach(function(id) { var el = document.getElementById(id); if (!el) return; if (selectedAvatar === 'icon.png' || selectedAvatar.indexOf('.png')!==-1 || selectedAvatar.indexOf('.jpg')!==-1 || selectedAvatar.indexOf('http')===0) { el.innerHTML = '<img src="'+selectedAvatar+'" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" alt="Avatar">'; } else { el.textContent = selectedAvatar; } }); updateMiniAvatars(); }
 function updateSidebarProfile() { var user = null; try { user = JSON.parse(localStorage.getItem('chrxmaticc_user')); } catch(e) {} if (profileName) profileName.textContent = (user&&user.displayName)||userProfile.displayName||'Guest'; if (profileAvatar) { if (user&&user.avatar) profileAvatar.innerHTML = '<img src="'+user.avatar+'" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" alt="Avatar">'; else profileAvatar.innerHTML = '<img src="icon.png" style="width:100%;height:100%;object-fit:contain;border-radius:50%;" alt="Avatar">'; } }
-
-// ═══════════════════════════════════════════
-//  SVG ICON UPDATES
-// ═══════════════════════════════════════════
 function updateTTSIcon() { var icon = document.getElementById('ttsIcon'); if (icon) icon.src = ttsEnabled ? 'speaker.svg' : 'speaker-cross.svg'; }
 function updateMicIcon() { var icon = document.getElementById('micIcon'); if (icon) icon.src = isListening ? 'speaker.svg' : 'upload.svg'; }
 
@@ -302,6 +305,25 @@ function launchConfetti() { if(confettiActive)return;confettiActive=true; var ct
 //  TOAST
 // ═══════════════════════════════════════════
 function toast(msg) { var t = document.createElement('div'); t.className = 'app-toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(function() { if(t.parentNode) t.remove(); }, 2500); }
+
+// ═══════════════════════════════════════════
+//  TOKEN TOAST
+// ═══════════════════════════════════════════
+function showTokenToast(token) {
+  var toastEl = document.createElement('div');
+  toastEl.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--card-bg);border:1px solid var(--accent);border-radius:16px;padding:16px 20px;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);animation:slideUp 0.3s ease;';
+  toastEl.innerHTML = '<div style="color:var(--accent);font-weight:700;margin-bottom:6px;">Your New Token</div>' +
+    '<div style="background:rgba(212,165,116,0.08);border:1px solid rgba(212,165,116,0.2);border-radius:8px;padding:8px;font-family:monospace;font-size:11px;word-break:break-all;color:var(--text);margin-bottom:10px;">' + token + '</div>' +
+    '<div style="color:#ff9f0a;font-size:10px;margin-bottom:8px;">Save this. It rotates every login.</div>' +
+    '<button onclick="this.parentElement.remove()" style="background:var(--panel);border:1px solid var(--border);color:var(--text);padding:6px 16px;border-radius:8px;cursor:pointer;font-size:11px;font-family:inherit;">Close</button>';
+  document.body.appendChild(toastEl);
+  setTimeout(function() { if (toastEl.parentElement) toastEl.remove(); }, 30000);
+}
+
+// Add slideUp animation
+var animStyle = document.createElement('style');
+animStyle.textContent = '@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+document.head.appendChild(animStyle);
 
 // ═══════════════════════════════════════════
 //  SETTINGS SHARED
