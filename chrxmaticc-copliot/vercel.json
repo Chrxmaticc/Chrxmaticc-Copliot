@@ -9,6 +9,7 @@
     { "source": "/accounts", "destination": "/public/accounts.html" },
     { "source": "/settings", "destination": "/public/settings.html" },
     { "source": "/app.html", "destination": "/public/app.html" },
+    { "source": "/api/agent", "destination": "/api/agent.js" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [
