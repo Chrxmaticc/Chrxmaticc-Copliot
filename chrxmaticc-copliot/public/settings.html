@@ -11,160 +11,38 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="analytics.js"></script>
   <style>
-    html.settings-page, body.settings-page {
-      height: auto !important; min-height: 100vh !important;
-      overflow-x: hidden !important; overflow-y: auto !important;
-      position: relative !important;
-    }
-    :root {
-      --bg: #0b0b0a; --panel: rgba(18,18,16,0.8); --border: rgba(212,165,116,0.1);
-      --text: #e8d5c4; --muted: #8a7a6a; --accent: #d4a574; --accent2: #c9956b;
-      --glow: rgba(212,165,116,0.15); --card-bg: rgba(18,18,16,0.8);
-    }
-    [data-theme="midnight"] {
-      --bg: #0a0a0a; --panel: #0d0d0d; --border: #1a1a1a; --text: #e0e0e0;
-      --muted: #8e8e93; --accent: #a0a0d0; --accent2: #8888bb; --glow: rgba(150,150,200,0.1);
-      --card-bg: #0d0d0d;
-    }
-    [data-theme="glass"] {
-      --bg: #0a0a0f; --panel: rgba(20,20,30,0.5); --border: rgba(255,255,255,0.06);
-      --text: #e0e0e0; --muted: #999; --accent: #a0b0d0; --accent2: #8899cc;
-      --glow: rgba(150,180,220,0.1); --card-bg: rgba(20,20,30,0.4);
-    }
-    [data-theme="chrome"] {
-      --bg: #1a1a1a; --panel: #1e1e1e; --border: #2a2a2a; --text: #e0e0e0;
-      --muted: #999; --accent: #bbb; --accent2: #aaa; --glow: rgba(200,200,220,0.08);
-      --card-bg: #1e1e1e;
-    }
-    [data-theme="white"] {
-      --bg: #f5f5f7; --panel: #fff; --border: #e5e5e5; --text: #1a1a1a;
-      --muted: #999; --accent: #0a84ff; --accent2: #0070e0; --glow: rgba(10,132,255,0.1);
-      --card-bg: #fff;
-    }
-
-    .settings-page {
-      background: var(--bg); color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-      scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-      transition: background 0.5s ease, color 0.5s ease;
-    }
-    .settings-page::-webkit-scrollbar { width: 4px; }
-    .settings-page::-webkit-scrollbar-track { background: transparent; }
-    .settings-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    .settings-bg-wrapper { position: fixed; inset: 0; z-index: 0; pointer-events: none; touch-action: none; }
-    .settings-bg-gif {
-      position: absolute; inset: 0;
-      background: url('chrome.gif') center/cover no-repeat;
-      opacity: 0.03; will-change: transform;
-    }
-    .settings-bg-texture {
-      position: absolute; inset: 0;
-      background: url('chrome2.jpeg') center/cover no-repeat;
-      opacity: 0.02; mix-blend-mode: overlay;
-    }
-    .settings-bg-gradient {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, var(--glow) 0%, transparent 70%);
-    }
-
-    .settings-content { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 24px 20px 60px; pointer-events: auto; }
-
-    .settings-theme-pill {
-      position: fixed; bottom: 24px; right: 24px; z-index: 100;
-      display: flex; gap: 6px; padding: 6px;
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    }
-    .settings-theme-dot {
-      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: all 0.2s;
-    }
-    .settings-theme-dot:hover { transform: scale(1.15); border-color: var(--accent); }
-    .settings-theme-dot.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
-    .settings-theme-dot.gold { background: #0b0b0a; border-color: rgba(212,165,116,0.4); }
-    .settings-theme-dot.midnight { background: #0a0a0a; }
-    .settings-theme-dot.glass { background: rgba(20,20,30,0.8); backdrop-filter: blur(10px); }
-    .settings-theme-dot.chrome { background: #1a1a1a; }
-    .settings-theme-dot.white { background: #f5f5f7; }
-
-    .settings-header {
-      display: flex; align-items: center; gap: 14px; margin-bottom: 28px;
-      animation: fadeInUp 0.5s ease;
-    }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    .settings-back {
-      background: var(--panel); border: 1px solid var(--border);
-      color: var(--text); padding: 8px 14px; border-radius: 10px;
-      font-size: 13px; cursor: pointer; font-weight: 500;
-      transition: all 0.2s; font-family: inherit; letter-spacing: 0.2px;
-    }
+    html.settings-page, body.settings-page { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; overflow-y: auto !important; position: relative !important; }
+    :root { --bg: #0b0b0a; --panel: rgba(18,18,16,0.9); --border: rgba(212,165,116,0.12); --text: #e8d5c4; --muted: #8a7a6a; --accent: #d4a574; --accent2: #c9956b; --glow: rgba(212,165,116,0.15); --card-bg: rgba(18,18,16,0.9); }
+    [data-theme="midnight"] { --bg: #0a0a0a; --panel: rgba(13,13,13,0.95); --border: #1a1a1a; --text: #e0e0e0; --muted: #8e8e93; --accent: #a0a0d0; --accent2: #8888bb; --glow: rgba(150,150,200,0.1); --card-bg: #0d0d0d; }
+    [data-theme="glass"] { --bg: #0a0a0f; --panel: rgba(20,20,30,0.5); --border: rgba(255,255,255,0.06); --text: #e0e0e0; --muted: #999; --accent: #a0b0d0; --accent2: #8899cc; --glow: rgba(150,180,220,0.1); --card-bg: rgba(20,20,30,0.4); }
+    [data-theme="chrome"] { --bg: #1a1a1a; --panel: rgba(30,30,30,0.95); --border: #2a2a2a; --text: #e0e0e0; --muted: #999; --accent: #bbb; --accent2: #aaa; --glow: rgba(200,200,220,0.08); --card-bg: #1e1e1e; }
+    [data-theme="white"] { --bg: #f5f5f7; --panel: #fff; --border: #e5e5e5; --text: #1a1a1a; --muted: #999; --accent: #0a84ff; --accent2: #0070e0; --glow: rgba(10,132,255,0.1); --card-bg: #fff; }
+    .settings-page { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; transition: background 0.5s ease, color 0.5s ease; }
+    .settings-page::-webkit-scrollbar { width: 4px; } .settings-page::-webkit-scrollbar-track { background: transparent; } .settings-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .settings-content { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 24px 20px 60px; }
+    .settings-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; animation: fadeInUp 0.5s ease; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .settings-back { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: 500; transition: all 0.2s; font-family: inherit; }
     .settings-back:hover { border-color: var(--accent); box-shadow: 0 0 16px var(--glow); }
     .settings-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
-
     .settings-section { margin-bottom: 28px; animation: fadeInUp 0.5s ease forwards; opacity: 0; }
-    .settings-section:nth-child(1) { animation-delay: 0.05s; }
-    .settings-section:nth-child(2) { animation-delay: 0.1s; }
-    .settings-section:nth-child(3) { animation-delay: 0.15s; }
-    .settings-section:nth-child(4) { animation-delay: 0.2s; }
-    .settings-section:nth-child(5) { animation-delay: 0.25s; }
-    .settings-section:nth-child(6) { animation-delay: 0.3s; }
-    .settings-section:nth-child(7) { animation-delay: 0.35s; }
-    .settings-section:nth-child(8) { animation-delay: 0.4s; }
-    .settings-section-title {
-      font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
-      color: var(--muted); margin-bottom: 10px; font-weight: 600;
-    }
-    .settings-card {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 16px; padding: 4px 0; overflow: hidden;
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .settings-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 15px 18px; cursor: pointer; font-size: 14px;
-      transition: background 0.15s; border-bottom: 1px solid var(--border);
-    }
+    .settings-section:nth-child(1){animation-delay:0.05s}.settings-section:nth-child(2){animation-delay:0.1s}.settings-section:nth-child(3){animation-delay:0.15s}.settings-section:nth-child(4){animation-delay:0.2s}.settings-section:nth-child(5){animation-delay:0.25s}.settings-section:nth-child(6){animation-delay:0.3s}.settings-section:nth-child(7){animation-delay:0.35s}.settings-section:nth-child(8){animation-delay:0.4s}
+    .settings-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 10px; font-weight: 600; }
+    .settings-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 4px 0; overflow: hidden; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px; cursor: pointer; font-size: 14px; transition: background 0.15s; border-bottom: 1px solid var(--border); }
     .settings-row:last-child { border-bottom: none; }
     .settings-row:hover { background: rgba(255,255,255,0.02); }
     .settings-value { color: var(--muted); font-size: 13px; }
-    .settings-input {
-      padding: 8px 12px; border-radius: 8px; font-size: 13px; width: 170px;
-      text-align: right; font-family: inherit; transition: all 0.2s;
-      background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    }
-    .settings-input:focus { border-color: var(--accent); outline: none; }
-    .settings-textarea {
-      width: 100%; padding: 12px; border-radius: 10px; font-size: 13px;
-      resize: vertical; min-height: 80px; font-family: inherit; line-height: 1.5;
-      background: var(--panel); border: 1px solid var(--border); color: var(--text);
-      transition: all 0.2s;
-    }
-    .settings-textarea:focus { border-color: var(--accent); outline: none; }
-    .settings-btn {
-      width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border);
-      background: var(--panel); color: var(--text); font-size: 14px; font-weight: 600;
-      cursor: pointer; margin-top: 8px; font-family: inherit;
-      transition: all 0.2s; letter-spacing: 0.2px;
-    }
+    .settings-input { padding: 8px 12px; border-radius: 8px; font-size: 13px; width: 170px; text-align: right; font-family: inherit; background: var(--panel); border: 1px solid var(--border); color: var(--text); }
+    .settings-textarea { width: 100%; padding: 12px; border-radius: 10px; font-size: 13px; resize: vertical; min-height: 80px; font-family: inherit; line-height: 1.5; background: var(--panel); border: 1px solid var(--border); color: var(--text); }
+    .settings-btn { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; font-family: inherit; transition: all 0.2s; }
     .settings-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
     .settings-btn.danger { background: rgba(255,69,58,0.08); border-color: rgba(255,69,58,0.2); color: #ff453a; }
     .settings-btn.danger:hover { background: rgba(255,69,58,0.15); border-color: rgba(255,69,58,0.4); box-shadow: 0 0 20px rgba(255,69,58,0.1); }
-    .settings-select {
-      width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
-      background: var(--panel); color: var(--text); font-size: 14px; cursor: pointer;
-      font-family: inherit; transition: all 0.2s;
-    }
+    .settings-select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 14px; cursor: pointer; font-family: inherit; }
     .settings-disclaimer { font-size: 11px; color: #ff9f0a; margin-top: 4px; line-height: 1.4; padding: 4px 0; }
-
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 4px 0; }
-    .theme-option {
-      padding: 14px 10px; border-radius: 12px; border: 2px solid transparent;
-      cursor: pointer; font-size: 12px; font-weight: 600; text-align: center;
-      transition: all 0.2s; letter-spacing: -0.2px; font-family: inherit;
-    }
+    .theme-option { padding: 14px 10px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; font-size: 12px; font-weight: 600; text-align: center; transition: all 0.2s; font-family: inherit; }
     .theme-option:hover { border-color: var(--accent); transform: translateY(-1px); }
     .theme-option.active { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
     .theme-option.gold { background: #0b0b0a; color: #d4a574; border-color: rgba(212,165,116,0.3); }
@@ -172,72 +50,25 @@
     .theme-option.glass { background: rgba(20,20,30,0.6); color: #e0e0e0; backdrop-filter: blur(10px); }
     .theme-option.chrome { background: #1a1a1a; color: #e0e0e0; }
     .theme-option.white { background: #f5f5f7; color: #1a1a1a; }
-
-    .avatar-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; padding: 4px 0; }
-    .avatar-option {
-      font-size: 24px; padding: 8px; border-radius: 10px; border: 2px solid transparent;
-      cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
-      justify-content: center; background: var(--panel);
-    }
-    .avatar-option:hover { border-color: var(--accent); transform: scale(1.08); }
-    .avatar-option.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
-
-    .background-presets { display: flex; gap: 8px; padding: 8px 0; }
-    .bg-preset {
-      width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .bg-preset:hover { border-color: var(--accent); transform: scale(1.15); }
-
-    /* Surprise: streak counter */
-    .streak-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: linear-gradient(135deg, var(--accent2), var(--accent));
-      color: var(--bg); padding: 4px 10px; border-radius: 20px;
-      font-size: 11px; font-weight: 700; margin-left: 8px;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-
-    /* Surprise: secret toggle reveal */
-    .secret-hint {
-      font-size: 10px; color: var(--muted); opacity: 0.5;
-      text-align: center; padding: 8px; cursor: default;
-      user-select: none; transition: opacity 0.3s;
-    }
-    .secret-hint:hover { opacity: 1; }
-
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-      background: var(--card-bg); border: 1px solid var(--border);
-      color: var(--text); padding: 10px 20px; border-radius: 12px;
-      font-size: 13px; font-weight: 500; z-index: 200;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards;
-      pointer-events: none;
-    }
-    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-    @keyframes toastOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(-8px); } }
-
-    @media (max-width: 480px) {
-      .settings-content { padding: 16px 12px 80px; }
-      .settings-title { font-size: 22px; }
-      .theme-grid { grid-template-columns: repeat(2, 1fr); }
-      .avatar-grid { grid-template-columns: repeat(4, 1fr); }
-      .settings-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; }
-      .settings-theme-dot { width: 24px; height: 24px; }
-    }
+    .roast-slider { width: 100%; margin: 8px 0; accent-color: var(--accent); }
+    .roast-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+    .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px 0; }
+    .badge-item { text-align: center; padding: 12px 8px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); font-size: 10px; color: var(--muted); transition: all 0.2s; }
+    .badge-item.earned { border-color: var(--accent); color: var(--accent); }
+    .badge-icon { font-size: 22px; margin-bottom: 4px; display: block; }
+    .settings-theme-pill { position: fixed; bottom: 24px; right: 24px; z-index: 100; display: flex; gap: 6px; padding: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    .settings-theme-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .settings-theme-dot:hover { transform: scale(1.15); border-color: var(--accent); }
+    .settings-theme-dot.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
+    .settings-theme-dot.gold { background: #0b0b0a; border-color: rgba(212,165,116,0.4); }
+    .settings-theme-dot.midnight { background: #0a0a0a; }
+    .settings-theme-dot.glass { background: rgba(20,20,30,0.8); backdrop-filter: blur(10px); }
+    .settings-theme-dot.chrome { background: #1a1a1a; }
+    .settings-theme-dot.white { background: #f5f5f7; }
+    @media (max-width: 480px) { .settings-content { padding: 16px 12px 80px; } .settings-title { font-size: 22px; } .theme-grid { grid-template-columns: repeat(2, 1fr); } .badge-grid { grid-template-columns: repeat(3, 1fr); } .settings-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; } .settings-theme-dot { width: 24px; height: 24px; } }
   </style>
 </head>
 <body class="settings-page" data-theme="gold">
-  <div class="settings-bg-wrapper">
-    <div class="settings-bg-gif" id="parallaxBg"></div>
-    <div class="settings-bg-texture"></div>
-    <div class="settings-bg-gradient"></div>
-  </div>
-
   <div class="settings-theme-pill" id="themePill">
     <div class="settings-theme-dot gold active" data-theme="gold" title="Gold"></div>
     <div class="settings-theme-dot midnight" data-theme="midnight" title="Midnight"></div>
@@ -249,69 +80,19 @@
   <div class="settings-content">
     <div class="settings-header">
       <button class="settings-back" onclick="history.back()">Back</button>
-      <h1 class="settings-title">Settings <span class="streak-badge" id="streakBadge" style="display:none;"></span></h1>
+      <h1 class="settings-title">Settings</h1>
     </div>
 
-    <!-- Profile -->
     <div class="settings-section">
       <div class="settings-section-title">Profile</div>
       <div class="settings-card">
-        <div class="settings-row" onclick="document.getElementById('avatarPicker').scrollIntoView({behavior:'smooth'})">
-          <span>Avatar</span>
-          <span class="settings-value" id="settingsAvatar"></span>
-        </div>
-        <div class="settings-row">
-          <span>Username</span>
-          <input class="settings-input" id="settingsUsername" placeholder="username" onchange="saveProfile()">
-        </div>
-        <div class="settings-row">
-          <span>Display Name</span>
-          <input class="settings-input" id="settingsDisplayName" placeholder="What AI calls you" onchange="saveProfile()">
-        </div>
-        <div class="settings-row">
-          <span>Bio</span>
-          <input class="settings-input" id="settingsBio" placeholder="Short bio" onchange="saveProfile()">
-        </div>
+        <div class="settings-row"><span>Avatar</span><span class="settings-value" id="settingsAvatar"></span></div>
+        <div class="settings-row"><span>Username</span><input class="settings-input" id="settingsUsername" placeholder="username" onchange="saveProfile()"></div>
+        <div class="settings-row"><span>Display Name</span><input class="settings-input" id="settingsDisplayName" placeholder="What AI calls you" onchange="saveProfile()"></div>
         <button class="settings-btn" onclick="location.href='accounts.html'">Account Settings</button>
       </div>
     </div>
 
-    <!-- Personal Context -->
-    <div class="settings-section">
-      <div class="settings-section-title">Personal Context</div>
-      <div class="settings-card">
-        <div class="settings-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
-          <span>About You</span>
-          <textarea class="settings-textarea" id="settingsPersonalInfo" placeholder="Tell the AI about yourself. It remembers this context.&#10;&#10;Example: I'm a developer, prefer dark themes, favorite language is JavaScript..." onchange="saveProfile()"></textarea>
-          <div class="settings-disclaimer">The AI uses this to personalize responses. No passwords or sensitive data.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Avatar Picker -->
-    <div class="settings-section" id="avatarPicker">
-      <div class="settings-section-title">Avatar</div>
-      <div class="avatar-grid">
-        <button class="avatar-option active" onclick="setAvatar('icon.png')"><img src="icon.png" style="width:20px;height:20px;object-fit:contain;" alt="Chrxmaticc"></button>
-        <button class="avatar-option" onclick="setAvatar('🦊')">🦊</button>
-        <button class="avatar-option" onclick="setAvatar('⚡')">⚡</button>
-        <button class="avatar-option" onclick="setAvatar('🌑')">🌑</button>
-        <button class="avatar-option" onclick="setAvatar('💜')">💜</button>
-        <button class="avatar-option" onclick="setAvatar('🖤')">🖤</button>
-        <button class="avatar-option" onclick="setAvatar('🔥')">🔥</button>
-        <button class="avatar-option" onclick="setAvatar('🌟')">🌟</button>
-        <button class="avatar-option" onclick="setAvatar('👑')">👑</button>
-        <button class="avatar-option" onclick="setAvatar('🐉')">🐉</button>
-        <button class="avatar-option" onclick="setAvatar('💀')">💀</button>
-        <button class="avatar-option" onclick="setAvatar('🤖')">🤖</button>
-        <button class="avatar-option" onclick="setAvatar('👽')">👽</button>
-        <button class="avatar-option" onclick="setAvatar('🦾')">🦾</button>
-        <button class="avatar-option" onclick="setAvatar('🎯')">🎯</button>
-        <button class="avatar-option" onclick="setAvatar('💎')">💎</button>
-      </div>
-    </div>
-
-    <!-- Theme -->
     <div class="settings-section">
       <div class="settings-section-title">Theme</div>
       <div class="theme-grid">
@@ -323,49 +104,31 @@
       </div>
     </div>
 
-    <!-- Background -->
     <div class="settings-section">
-      <div class="settings-section-title">Chat Background</div>
+      <div class="settings-section-title">Roast Intensity</div>
       <div class="settings-card">
-        <div class="settings-row" onclick="promptBackground()">
-          <span>Custom URL</span>
-          <span class="settings-value">Paste image URL</span>
-        </div>
-        <div class="background-presets">
-          <button class="bg-preset" style="background:linear-gradient(135deg,#0b0b0a,#1a1410)" onclick="setBackgroundGradient('0b0b0a','1a1410')" title="Gold Void"></button>
-          <button class="bg-preset" style="background:linear-gradient(135deg,#0a0a0a,#0d0d14)" onclick="setBackgroundGradient('0a0a0a','0d0d14')" title="Midnight"></button>
-          <button class="bg-preset" style="background:linear-gradient(135deg,#0a0a0f,#141428)" onclick="setBackgroundGradient('0a0a0f','141428')" title="Deep Glass"></button>
-          <button class="bg-preset" style="background:linear-gradient(135deg,#1a1a1a,#222228)" onclick="setBackgroundGradient('1a1a1a','222228')" title="Chrome"></button>
-          <button class="bg-preset" style="background:linear-gradient(135deg,#f5f5f7,#e8e8ed)" onclick="setBackgroundGradient('f5f5f7','e8e8ed')" title="Light"></button>
-        </div>
-        <button class="settings-btn danger" onclick="removeBackground()">Remove Background</button>
-      </div>
-    </div>
-
-    <!-- Surprise Mode -->
-    <div class="settings-section">
-      <div class="settings-section-title">Surprise Mode</div>
-      <div class="settings-card">
-        <div class="settings-row" onclick="toggleSurpriseMode()">
-          <span>Random Fun Events</span>
-          <span class="settings-value" id="surpriseStatus">OFF</span>
+        <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+          <span>How hard Chrxmaticc roasts you</span>
+          <input type="range" min="0" max="100" value="50" step="25" class="roast-slider" id="roastSlider" onchange="updateRoastLevel(this.value)">
+          <div class="roast-label"><span>Helpful</span><span>Standard</span><span>Brutal</span><span>Crying</span></div>
         </div>
       </div>
     </div>
 
-    <!-- Secret: Easter egg counter -->
     <div class="settings-section">
-      <div class="settings-section-title">Secret</div>
+      <div class="settings-section-title">Badges</div>
       <div class="settings-card">
-        <div class="settings-row" id="easterRow" onclick="triggerSecret()">
-          <span>Easter Eggs Found</span>
-          <span class="settings-value" id="easterCount">0</span>
+        <div class="badge-grid" id="badgeGrid">
+          <div class="badge-item" id="badge-awakened"><span class="badge-icon">&#9670;</span>Awakened</div>
+          <div class="badge-item" id="badge-versatile"><span class="badge-icon">&#9733;</span>Versatile</div>
+          <div class="badge-item" id="badge-masochist"><span class="badge-icon">&#9760;</span>Masochist</div>
+          <div class="badge-item" id="badge-essayist"><span class="badge-icon">&#9998;</span>Essayist</div>
+          <div class="badge-item" id="badge-perfectionist"><span class="badge-icon">&#9830;</span>Perfectionist</div>
+          <div class="badge-item" id="badge-indecisive"><span class="badge-icon">&#9925;</span>Indecisive</div>
         </div>
-        <div class="secret-hint">tap 5 times to unlock something</div>
       </div>
     </div>
 
-    <!-- Danger Zone -->
     <div class="settings-section">
       <div class="settings-section-title">Data</div>
       <div class="settings-card">
@@ -374,193 +137,19 @@
       </div>
     </div>
 
-    <!-- About -->
     <div class="settings-section">
       <div class="settings-section-title">About</div>
       <div class="settings-card">
-        <div class="settings-row"><span>Version</span><span class="settings-value">v1.2.0</span></div>
+        <div class="settings-row"><span>Version</span><span class="settings-value">v1.3.0</span></div>
         <div class="settings-row"><span>Author</span><span class="settings-value">Chrxmee-Midnightt</span></div>
         <div class="settings-row"><span>AI Provider</span><span class="settings-value">Groq</span></div>
         <div class="settings-row"><span>Themes</span><span class="settings-value">5</span></div>
+        <div class="settings-row"><span>Workflows</span><span class="settings-value">6</span></div>
+        <div class="settings-row"><span>Personalities</span><span class="settings-value">5</span></div>
       </div>
     </div>
   </div>
 
-  <script>
-    // ── Theme System ──
-    var currentTheme = localStorage.getItem('chrxmaticc_theme') || 'gold';
-    document.body.setAttribute('data-theme', currentTheme);
-    updateAllThemeUI();
-
-    function updateAllThemeUI() {
-      document.querySelectorAll('.settings-theme-dot').forEach(function(d) {
-        d.classList.toggle('active', d.getAttribute('data-theme') === currentTheme);
-      });
-      document.querySelectorAll('.theme-option').forEach(function(o) {
-        o.classList.toggle('active', o.classList.contains(currentTheme));
-      });
-    }
-
-    document.querySelectorAll('.settings-theme-dot').forEach(function(dot) {
-      dot.addEventListener('click', function() {
-        currentTheme = this.getAttribute('data-theme');
-        document.body.setAttribute('data-theme', currentTheme);
-        localStorage.setItem('chrxmaticc_theme', currentTheme);
-        updateAllThemeUI();
-      });
-    });
-
-    window.changeTheme = function(t) {
-      currentTheme = t;
-      document.body.setAttribute('data-theme', t);
-      localStorage.setItem('chrxmaticc_theme', t);
-      updateAllThemeUI();
-    };
-
-    // ── Parallax ──
-    var parallaxBg = document.getElementById('parallaxBg');
-    if (parallaxBg) {
-      document.addEventListener('mousemove', function(e) {
-        var x = (e.clientX / window.innerWidth - 0.5) * 6;
-        var y = (e.clientY / window.innerHeight - 0.5) * 6;
-        parallaxBg.style.transform = 'scale(1.1) translate(' + x + 'px, ' + y + 'px)';
-      });
-    }
-
-    // ── Load saved state ──
-    var savedAvatar = localStorage.getItem('chrxmaticc_avatar') || 'icon.png';
-    var profile = {};
-    try { profile = JSON.parse(localStorage.getItem('chrxmaticc_profile') || '{}'); } catch(e) {}
-    var surpriseMode = localStorage.getItem('chrxmaticc_surprise') === 'true';
-    var easterCount = parseInt(localStorage.getItem('chrxmaticc_easter_count') || '0');
-    var secretTapCount = 0;
-
-    document.getElementById('settingsAvatar').textContent = savedAvatar;
-    document.getElementById('settingsUsername').value = profile.username || '';
-    document.getElementById('settingsDisplayName').value = profile.displayName || '';
-    document.getElementById('settingsBio').value = profile.bio || '';
-    document.getElementById('settingsPersonalInfo').value = profile.personalInfo || '';
-    document.getElementById('surpriseStatus').textContent = surpriseMode ? 'ON' : 'OFF';
-    document.getElementById('easterCount').textContent = easterCount;
-
-    // Streak
-    var lastVisit = localStorage.getItem('chrxmaticc_last_visit');
-    var streak = parseInt(localStorage.getItem('chrxmaticc_streak') || '0');
-    var today = new Date().toDateString();
-    if (lastVisit !== today) {
-      var yesterday = new Date(Date.now() - 86400000).toDateString();
-      streak = (lastVisit === yesterday) ? streak + 1 : 1;
-      localStorage.setItem('chrxmaticc_streak', streak);
-      localStorage.setItem('chrxmaticc_last_visit', today);
-    }
-    if (streak >= 3) {
-      var badge = document.getElementById('streakBadge');
-      badge.textContent = streak + 'd streak';
-      badge.style.display = 'inline-flex';
-    }
-
-    // Update avatar active state
-    document.querySelectorAll('.avatar-option').forEach(function(o) {
-      if (o.textContent === savedAvatar || (savedAvatar === 'icon.png' && o.querySelector('img'))) {
-        o.classList.add('active');
-      }
-    });
-
-    // ── Settings functions ──
-    window.setAvatar = function(a) {
-      savedAvatar = a;
-      localStorage.setItem('chrxmaticc_avatar', a);
-      document.querySelectorAll('.avatar-option').forEach(function(o) { o.classList.remove('active'); });
-      event.target.closest('.avatar-option').classList.add('active');
-      document.getElementById('settingsAvatar').textContent = a;
-      toast('Avatar updated');
-    };
-
-    window.saveProfile = function() {
-      profile.username = document.getElementById('settingsUsername').value;
-      profile.displayName = document.getElementById('settingsDisplayName').value;
-      profile.bio = document.getElementById('settingsBio').value;
-      profile.personalInfo = document.getElementById('settingsPersonalInfo').value;
-      localStorage.setItem('chrxmaticc_profile', JSON.stringify(profile));
-      toast('Profile saved');
-    };
-
-    window.toggleSurpriseMode = function() {
-      surpriseMode = !surpriseMode;
-      localStorage.setItem('chrxmaticc_surprise', surpriseMode);
-      document.getElementById('surpriseStatus').textContent = surpriseMode ? 'ON' : 'OFF';
-      toast(surpriseMode ? 'Surprise mode ON' : 'Surprise mode OFF');
-    };
-
-    window.promptBackground = function() {
-      var url = prompt('Paste an image URL:');
-      if (url) {
-        localStorage.setItem('chrxmaticc_background', url);
-        toast('Background set');
-      }
-    };
-
-    window.setBackgroundGradient = function(c1, c2) {
-      localStorage.setItem('chrxmaticc_background', 'gradient:' + c1 + ',' + c2);
-      toast('Gradient applied');
-    };
-
-    window.removeBackground = function() {
-      localStorage.removeItem('chrxmaticc_background');
-      toast('Background removed');
-    };
-
-    window.clearAllData = function() {
-      if (confirm('Clear all chats, settings, and cache?')) {
-        localStorage.removeItem('chrxmaticc_chats');
-        localStorage.removeItem('chrxmaticc_profile');
-        localStorage.removeItem('chrxmaticc_background');
-        localStorage.removeItem('chrxmaticc_easter_count');
-        toast('All data cleared');
-        setTimeout(function() { location.reload(); }, 800);
-      }
-    };
-
-    // ── Secret: tap easter egg row 5 times ──
-    window.triggerSecret = function() {
-      secretTapCount++;
-      if (secretTapCount >= 5) {
-        secretTapCount = 0;
-        easterCount++;
-        localStorage.setItem('chrxmaticc_easter_count', easterCount);
-        document.getElementById('easterCount').textContent = easterCount;
-        toast('Secret unlocked!');
-        // Surprise: confetti burst via tiny spark shower
-        for (var i = 0; i < 20; i++) {
-          setTimeout(function() {
-            var spark = document.createElement('div');
-            spark.style.cssText = 'position:fixed;pointer-events:none;z-index:999;width:6px;height:6px;border-radius:50%;background:var(--accent);left:'+(Math.random()*window.innerWidth)+'px;top:'+(Math.random()*window.innerHeight)+'px;animation:sparkPop 0.6s ease-out forwards;';
-            document.body.appendChild(spark);
-            setTimeout(function() { spark.remove(); }, 700);
-          }, i * 30);
-        }
-      }
-    };
-
-    // Add spark animation
-    var sparkStyle = document.createElement('style');
-    sparkStyle.textContent = '@keyframes sparkPop{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0)translateY(-40px)}}';
-    document.head.appendChild(sparkStyle);
-
-    // ── Toast ──
-    function toast(msg) {
-      var t = document.createElement('div');
-      t.className = 'toast';
-      t.textContent = msg;
-      document.body.appendChild(t);
-      setTimeout(function() { t.remove(); }, 2500);
-    }
-
-    // ── Save profile on any input change ──
-    ['settingsUsername','settingsDisplayName','settingsBio','settingsPersonalInfo'].forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el) el.addEventListener('input', window.saveProfile);
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
