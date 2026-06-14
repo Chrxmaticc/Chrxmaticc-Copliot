@@ -16,6 +16,7 @@ var messageCount = 0, lastChatId = null, confettiActive = false;
 var pendingFile = null, surpriseMode = false, userProfile = {};
 var chatSearchOpen = false, typingSpeed = 10;
 var sneakLevel = 0, roastLevel = 50;
+var planHistory = [];
 
 var WORKFLOWS = ['code', 'think', 'plan', 'review', 'surprise', 'cancel'];
 var WORKFLOW_LABELS = { code:'Code', think:'Think', plan:'Plan', review:'Review', surprise:'Surprise', cancel:'Chat' };
@@ -32,9 +33,6 @@ var PERSONALITY_LABELS = { conversational:'Conversational', sonnet:'Sonnet', vis
 var currentWorkflow = 'code';
 var currentEffort = 'medium';
 var activeButtons = {};
-var planState = null;
-var pendingRejectCode = null;
-var rejectCount = 0;
 
 // Memory
 var userMemory = { facts:[], history:[] };
@@ -176,7 +174,7 @@ function init() {
 // ═══════════════════════════════════════════
 function cycleWorkflow() {
   var idx=WORKFLOWS.indexOf(currentWorkflow); idx=(idx+1)%WORKFLOWS.length; currentWorkflow=WORKFLOWS[idx];
-  updateWorkflowPill(); planState=null; hideQAStrip();
+  updateWorkflowPill(); planHistory=[]; hideQAStrip();
   if(currentWorkflow==='code')setPresence('locked'); else if(currentWorkflow==='review')setPresence('judging'); else setPresence('online');
   toast('Workflow: '+WORKFLOW_LABELS[currentWorkflow]);
 }
@@ -298,7 +296,7 @@ function showQAStrip(data) {
     chip.className = 'qa-option-chip';
     if (opt === 'Custom') chip.classList.add('custom');
     chip.textContent = opt;
-    chip.onclick = function() { sendQAResponse(opt); };
+    chip.onclick = function() { sendQAResponse(data.question, opt); };
     strip.appendChild(chip);
   });
   strip.classList.add('visible');
@@ -309,13 +307,21 @@ function hideQAStrip() {
   if (strip) strip.classList.remove('visible');
 }
 
-function sendQAResponse(answer) {
+function sendQAResponse(question, answer) {
   hideQAStrip();
+  // Track plan history
+  planHistory.push({ question: question, answer: answer });
+  
   if (answer === 'Custom') {
     if (inputEl) { inputEl.value = ''; inputEl.focus(); inputEl.placeholder = 'Type your custom answer...'; }
     return;
   }
-  if (inputEl) { inputEl.value = answer; sendMessage(); }
+  
+  // Send the answer as a message to continue the plan
+  if (inputEl) { 
+    inputEl.value = answer; 
+    sendMessage(); 
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -415,7 +421,15 @@ async function sendMessage() {
   phaseToast(thinkingToasts[Math.floor(Math.random()*thinkingToasts.length)],'think');
 
   try {
-    var body={message:text,personality:currentPersonality,workflow:currentWorkflow,effort:currentEffort,roastLevel:roastLevel,buttons:activeButtons};
+    var body={
+      message:text,
+      personality:currentPersonality,
+      workflow:currentWorkflow,
+      effort:currentEffort,
+      roastLevel:roastLevel,
+      buttons:activeButtons,
+      planHistory:planHistory
+    };
     if(pendingFile){body.fileName=pendingFile.name;body.fileType=pendingFile.type;if(pendingFile.type.startsWith('image/')){body.imageUrl=URL.createObjectURL(pendingFile);}else{body.fileContent=await readFileContent(pendingFile);}}
     try{var prof=JSON.parse(localStorage.getItem('chrxmaticc_profile')||'{}');var parts=[];if(prof.displayName)parts.push('Call me '+prof.displayName);if(prof.personalInfo)parts.push('About me: '+prof.personalInfo);if(parts.length)body.personalInfo=parts.join('. ');}catch(e){}
     var memCtx=getMemoryContext();if(memCtx)body.personalInfo=(body.personalInfo||'')+'\n\n'+memCtx;
@@ -423,7 +437,10 @@ async function sendMessage() {
     var buildingToasts=['writing code that would make your professor weep','structuring this better than your last projects','adding comments so your future self doesn\'t hate you'];
     phaseToast(buildingToasts[Math.floor(Math.random()*buildingToasts.length)],'code');
 
-    var res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    // ═══════════════════════════════════════
+    //  CALL AGENT API
+    // ═══════════════════════════════════════
+    var res=await fetch('/api/agent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var data=await res.json();
     if(typingEl)typingEl.classList.remove('visible');
 
@@ -438,11 +455,42 @@ async function sendMessage() {
       if(ttsEnabled)speakText(data.response);
       saveCurrentChat();
       if(messageCount%10===0&&surpriseMode)randomCompliment();
+      // If plan complete, show it in a plan doc
+      if(data.planComplete){
+        addPlanDocument(data.response);
+      }
+      // Reset plan history if plan is complete or workflow changed
+      if(data.planComplete) planHistory = [];
     } else { setPresence('online');addError(data.error||'Brain hiccup.'); }
   } catch(e) { if(typingEl)typingEl.classList.remove('visible');setPresence('offline');addError('Offline.'); }
   if(sendBtn)sendBtn.disabled=false;
   if(inputEl)inputEl.focus();
   clearFile();
+}
+
+function addPlanDocument(text) {
+  if(!messagesEl)return;
+  if(typingEl?.parentNode)typingEl.remove();
+  var doc=document.createElement('div');
+  doc.className='plan-doc';
+  doc.innerHTML='<div class="plan-doc-title">Plan Complete</div><div style="font-size:12px;color:var(--text);line-height:1.6;">'+text.replace(/\n/g,'<br>')+'</div>'+
+    '<div class="plan-actions"><button class="plan-btn primary" onclick="approvePlan()">Approve Plan</button><button class="plan-btn" onclick="modifyPlan()">Modify</button></div>';
+  messagesEl.appendChild(doc);
+  if(typingEl)messagesEl.appendChild(typingEl);
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+
+function approvePlan() {
+  currentWorkflow='code';
+  updateWorkflowPill();
+  planHistory=[];
+  hideQAStrip();
+  setPresence('locked');
+  toast('Plan approved! Switched to Code mode.');
+}
+
+function modifyPlan() {
+  if(inputEl){inputEl.value='Modify the plan: ';inputEl.focus();}
 }
 
 function quickSend(text) { if(inputEl){inputEl.value=text;sendMessage();} }
