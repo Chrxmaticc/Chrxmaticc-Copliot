@@ -1,15 +1,19 @@
 {
   "rewrites": [
     { "source": "/api/chat", "destination": "/api/chat.js" },
+    { "source": "/api/agent", "destination": "/api/agent.js" },
     { "source": "/api/memory", "destination": "/api/memory.js" },
     { "source": "/api/auth", "destination": "/api/auth.js" },
     { "source": "/api/personal", "destination": "/api/personal.js" },
     { "source": "/api/auth/discord", "destination": "/api/auth/discord/discord.js" },
     { "source": "/api/auth/discord/callback", "destination": "/api/auth/discord/callback.js" },
+    { "source": "/api/auth/github", "destination": "/api/auth/github.js" },
+    { "source": "/api/auth/github/callback", "destination": "/api/auth/github/callback.js" },
+    { "source": "/api/github/repos", "destination": "/api/github/repos.js" },
+    { "source": "/api/github/commit", "destination": "/api/github/commit.js" },
     { "source": "/accounts", "destination": "/public/accounts.html" },
     { "source": "/settings", "destination": "/public/settings.html" },
     { "source": "/app.html", "destination": "/public/app.html" },
-    { "source": "/api/agent", "destination": "/api/agent.js" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [
