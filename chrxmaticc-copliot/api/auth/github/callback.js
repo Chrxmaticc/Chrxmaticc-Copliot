@@ -1,4 +1,4 @@
-// api/auth/github/callback.js — Handle GitHub OAuth callback
+// api/auth/github/callback.js — Handle GitHub OAuth callback with token pass
 var https = require('https');
 
 module.exports = function(req, res) {
@@ -83,7 +83,8 @@ function fetchGitHubUser(accessToken, res) {
           displayName: user.name || user.login,
           username: user.login,
           avatar: user.avatar_url,
-          email: user.email || null
+          email: user.email || null,
+          githubToken: accessToken
         };
 
         if (!userData.email) {
