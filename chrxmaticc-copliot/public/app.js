@@ -59,11 +59,21 @@ function loadSavedChats(){
     var id=ids[i],c=savedChats[id];
     var d=document.createElement('div');
     d.className='chat-item'+(id===currentChatId?' active':'');
-    d.onclick=function(cid){return function(){loadChat(cid);};}(id);
-    d.innerHTML='<div class="chat-item-name">'+(c.name||'Chat')+'</div><div class="chat-item-time">'+new Date(c.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div>';
+    d.innerHTML='<img src="icon.png" alt="Chat"><div class="chat-item-name" onclick="loadChat(\''+id+'\')">'+(c.name||'Chat')+'</div><button class="chat-item-settings" onclick="event.stopPropagation();showChatMenu(\''+id+'\',event)" title="Chat Settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>';
     savedChatsList.appendChild(d);
   }
 }
+function showChatMenu(id,ev){
+  var ex=document.querySelector('.chat-menu');if(ex)ex.remove();
+  var m=document.createElement('div');m.className='chat-menu';
+  m.innerHTML='<button onclick="renameChat(\''+id+'\')">Rename</button><button onclick="exportChatJSON(\''+id+'\')">Export JSON</button><button class="danger" onclick="deleteChatPerm(\''+id+'\')">Delete</button>';
+  m.style.left=ev.clientX+'px';m.style.top=ev.clientY+'px';
+  document.body.appendChild(m);
+  setTimeout(function(){document.addEventListener('click',function close(){m.remove();document.removeEventListener('click',close);});},10);
+}
+function renameChat(id){var n=prompt('New name:',savedChats[id]?.name||'Chat');if(n){savedChats[id].name=n;localStorage.setItem('chrxmaticc_chats',JSON.stringify(savedChats));loadSavedChats();}}
+function exportChatJSON(id){var c=savedChats[id];if(!c)return;var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(c.conversation||[],null,2)],{type:'application/json'}));a.download=(c.name||'chat')+'.json';a.click();}
+function deleteChatPerm(id){if(confirm('Delete this chat?')){delete savedChats[id];localStorage.setItem('chrxmaticc_chats',JSON.stringify(savedChats));if(currentChatId===id){var ids=Object.keys(savedChats);currentChatId=ids.length>0?ids[0]:null;conversation=[];if(messagesEl){messagesEl.innerHTML='';messagesEl.appendChild(typingEl);}}loadSavedChats();}}
 function newChat(){
   saveCurrentChat();
   var id='chat_'+Date.now();
@@ -81,8 +91,7 @@ function loadChat(id){
   currentChatId=id;
   conversation=savedChats[id]?.conversation||[];
   if(messagesEl){messagesEl.innerHTML='';conversation.forEach(function(m){addBubbleNoSave(m.content,m.role==='user'?'user':'ai');});messagesEl.appendChild(typingEl);}
-  loadSavedChats();
-  toggleSidebar();
+  loadSavedChats();toggleSidebar();
 }
 function saveCurrentChat(){
   if(!currentChatId||!conversation.length)return;
@@ -90,7 +99,10 @@ function saveCurrentChat(){
   savedChats[currentChatId].conversation=conversation.slice(-50);
   savedChats[currentChatId].timestamp=Date.now();
   var preview=conversation[0]?.content?.slice(0,30)||'Chat';
-  savedChats[currentChatId].name=preview;
+  // Only auto-name if still default
+  if(!savedChats[currentChatId].name||savedChats[currentChatId].name==='New Chat'||savedChats[currentChatId].name==='Chat'){
+    savedChats[currentChatId].name=preview;
+  }
   localStorage.setItem('chrxmaticc_chats',JSON.stringify(savedChats));
   loadSavedChats();
 }
@@ -155,7 +167,10 @@ function whatWouldChrxmaticcDo(){var quips=['start typing. i don\'t have all day
 //  MESSAGING
 // ═══════════════════════════════════════════
 async function sendMessage(){if(!inputEl)return;var text=inputEl.value.trim();if(!text&&!pendingFile)return;if(text==='/easter'){triggerEasterEgg();inputEl.value='';return;}if(text.toLowerCase().indexOf('/image')===0){var p=text.replace('/image','').trim();generateImage(p||'image');inputEl.value='';clearFile();return;}var displayText=text||(pendingFile?pendingFile.name:'');addBubble(displayText,'user');if(pendingFile&&pendingFile.type.startsWith('image/'))addMediaBubble(URL.createObjectURL(pendingFile),'image',pendingFile.name);conversation.push({role:'user',content:displayText});extractFacts(text);addToHistory('user',displayText);inputEl.value='';inputEl.style.height='auto';if(sendBtn)sendBtn.disabled=true;if(typingEl)typingEl.classList.add('visible');setPresence('thinking');if(messagesEl)messagesEl.scrollTop=messagesEl.scrollHeight;messageCount++;phaseToast('analyzing...','think');
-  try{var body={message:text,personality:currentPersonality,workflow:currentWorkflow,effort:currentEffort,roastLevel:roastLevel,buttons:activeButtons,planHistory:planHistory};if(pendingFile){body.fileName=pendingFile.name;body.fileType=pendingFile.type;if(pendingFile.type.startsWith('image/')){body.imageUrl=URL.createObjectURL(pendingFile);}else{body.fileContent=await readFileContent(pendingFile);}}try{var prof=JSON.parse(localStorage.getItem('chrxmaticc_profile')||'{}');var parts=[];if(prof.displayName)parts.push('Call me '+prof.displayName);if(prof.personalInfo)parts.push('About me: '+prof.personalInfo);if(parts.length)body.personalInfo=parts.join('. ');}catch(e){}var memCtx=getMemoryContext();if(memCtx)body.personalInfo=(body.personalInfo||'')+'\n\n'+memCtx;var endpoint=(currentWorkflow==='cancel')?'/api/chat':'/api/agent';var res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var data=await res.json();if(typingEl)typingEl.classList.remove('visible');if(data.type==='qa'){showQAGrid(data);setPresence('online');}else if(data.response){setPresence('online');lastAIResponse=data.response;lastGeneratedCode=data.response;typeBubble(data.response,'ai',data.provider,data.codePreview);conversation.push({role:'assistant',content:data.response});addToHistory('assistant',data.response);if(ttsEnabled)speakText(data.response);saveCurrentChat();if(data.planComplete){addPlanDocument(data.response);planHistory=[];}}else{setPresence('online');addError(data.error||'Brain hiccup.');}}catch(e){if(typingEl)typingEl.classList.remove('visible');setPresence('offline');addError('Offline.');}if(sendBtn)sendBtn.disabled=false;if(inputEl)inputEl.focus();clearFile();}
+  try{var body={message:text,personality:currentPersonality,workflow:currentWorkflow,effort:currentEffort,roastLevel:roastLevel,buttons:activeButtons,planHistory:planHistory};if(pendingFile){body.fileName=pendingFile.name;body.fileType=pendingFile.type;if(pendingFile.type.startsWith('image/')){body.imageUrl=URL.createObjectURL(pendingFile);}else{body.fileContent=await readFileContent(pendingFile);}}try{var prof=JSON.parse(localStorage.getItem('chrxmaticc_profile')||'{}');var parts=[];if(prof.displayName)parts.push('Call me '+prof.displayName);if(prof.personalInfo)parts.push('About me: '+prof.personalInfo);if(parts.length)body.personalInfo=parts.join('. ');}catch(e){}var memCtx=getMemoryContext();if(memCtx)body.personalInfo=(body.personalInfo||'')+'\n\n'+memCtx;
+  // Only inject repo context if user connected a repo
+  if(githubConnected&&githubRepo){body.personalInfo=(body.personalInfo||'')+'\n\nConnected GitHub repository: '+githubRepo+'. You can commit code to this repo. When asked about the repo, you know its name and purpose.';}
+  var endpoint=(currentWorkflow==='cancel')?'/api/chat':'/api/agent';var res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var data=await res.json();if(typingEl)typingEl.classList.remove('visible');if(data.type==='qa'){showQAGrid(data);setPresence('online');}else if(data.response){setPresence('online');lastAIResponse=data.response;lastGeneratedCode=data.response;typeBubble(data.response,'ai',data.provider,data.codePreview);conversation.push({role:'assistant',content:data.response});addToHistory('assistant',data.response);if(ttsEnabled)speakText(data.response);saveCurrentChat();if(data.planComplete){addPlanDocument(data.response);planHistory=[];}}else{setPresence('online');addError(data.error||'Brain hiccup.');}}catch(e){if(typingEl)typingEl.classList.remove('visible');setPresence('offline');addError('Offline.');}if(sendBtn)sendBtn.disabled=false;if(inputEl)inputEl.focus();clearFile();}
 function addPlanDocument(text){if(!messagesEl)return;if(typingEl?.parentNode)typingEl.remove();var doc=document.createElement('div');doc.className='plan-doc';doc.innerHTML='<div class="plan-doc-title">Plan Complete</div><div style="font-size:12px;color:var(--text);line-height:1.6;">'+text.replace(/\n/g,'<br>')+'</div><div class="plan-actions"><button class="plan-btn primary" onclick="approvePlan()">Approve Plan</button><button class="plan-btn" onclick="modifyPlan()">Modify</button></div>';messagesEl.appendChild(doc);if(typingEl)messagesEl.appendChild(typingEl);messagesEl.scrollTop=messagesEl.scrollHeight;}
 function approvePlan(){currentWorkflow='code';updateWorkflowPill();planHistory=[];hideQAGrid();setPresence('locked');toast('Plan approved! Switched to Code mode.');}
 function modifyPlan(){if(inputEl){inputEl.value='Modify the plan: ';inputEl.focus();}}
