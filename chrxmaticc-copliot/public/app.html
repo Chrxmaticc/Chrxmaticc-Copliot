@@ -33,7 +33,7 @@
     .sidebar { position: fixed; left: -300px; top: 0; bottom: 0; width: 280px; z-index: 100; transition: left 0.3s cubic-bezier(0.25,0.8,0.25,1.2); display: flex; flex-direction: column; padding: 16px; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--border); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
     .sidebar.open { left: 0; }
     .sidebar-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; }
+    .sidebar-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
     .sidebar-avatar img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
     .sidebar-title { font-size: 18px; font-weight: 700; flex: 1; }
     .sidebar-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); padding: 4px; }
@@ -43,7 +43,7 @@
     .sidebar-chats { flex: 1; overflow-y: auto; }
     .chat-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 10px; cursor: pointer; margin-bottom: 2px; transition: background 0.15s; }
     .chat-item:hover, .chat-item.active { background: var(--card-bg); }
-    .chat-item img { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; flex-shrink: 0; }
+    .chat-item-icon { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; flex-shrink: 0; }
     .chat-item-name { font-size: 13px; font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     .chat-item-settings { background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
     .chat-item:hover .chat-item-settings { opacity: 1; }
@@ -51,7 +51,7 @@
     .sidebar-footer { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 8px; }
     .sidebar-profile { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 10px; cursor: pointer; font-size: 13px; }
     .sidebar-profile:hover { background: var(--card-bg); }
-    .sidebar-profile-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; }
+    .sidebar-profile-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
     .sidebar-profile-avatar img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
     .sidebar-profile-name { font-weight: 500; }
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
