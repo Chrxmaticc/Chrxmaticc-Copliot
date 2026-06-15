@@ -20,28 +20,24 @@
     .settings-page { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; transition: background 0.5s ease, color 0.5s ease; }
     .settings-page::-webkit-scrollbar { width: 4px; } .settings-page::-webkit-scrollbar-track { background: transparent; } .settings-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
     .settings-content { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 24px 20px 60px; }
-    .settings-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; animation: fadeInUp 0.5s ease; }
-    @keyframes fadeInUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .settings-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
     .settings-back { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: 500; transition: all 0.2s; font-family: inherit; }
     .settings-back:hover { border-color: var(--accent); box-shadow: 0 0 16px var(--glow); }
     .settings-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
-    .settings-section { margin-bottom: 28px; animation: fadeInUp 0.5s ease forwards; opacity: 0; }
-    .settings-section:nth-child(1){animation-delay:0.05s}.settings-section:nth-child(2){animation-delay:0.1s}.settings-section:nth-child(3){animation-delay:0.15s}.settings-section:nth-child(4){animation-delay:0.2s}.settings-section:nth-child(5){animation-delay:0.25s}.settings-section:nth-child(6){animation-delay:0.3s}.settings-section:nth-child(7){animation-delay:0.35s}.settings-section:nth-child(8){animation-delay:0.4s}
+    .settings-section { margin-bottom: 28px; }
     .settings-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 10px; font-weight: 600; }
     .settings-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 4px 0; overflow: hidden; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
     .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px; cursor: pointer; font-size: 14px; transition: background 0.15s; border-bottom: 1px solid var(--border); }
     .settings-row:last-child { border-bottom: none; }
     .settings-row:hover { background: rgba(255,255,255,0.02); }
+    .settings-row-left { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+    .settings-row-right { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
     .settings-value { color: var(--muted); font-size: 13px; }
     .settings-input { padding: 8px 12px; border-radius: 8px; font-size: 13px; width: 170px; text-align: right; font-family: inherit; background: var(--panel); border: 1px solid var(--border); color: var(--text); }
-    .settings-textarea { width: 100%; padding: 12px; border-radius: 10px; font-size: 13px; resize: vertical; min-height: 80px; font-family: inherit; line-height: 1.5; background: var(--panel); border: 1px solid var(--border); color: var(--text); }
     .settings-btn { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; font-family: inherit; transition: all 0.2s; }
     .settings-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
     .settings-btn.danger { background: rgba(255,69,58,0.08); border-color: rgba(255,69,58,0.2); color: #ff453a; }
-    .settings-btn.danger:hover { background: rgba(255,69,58,0.15); border-color: rgba(255,69,58,0.4); box-shadow: 0 0 20px rgba(255,69,58,0.1); }
-    .settings-select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 14px; cursor: pointer; font-family: inherit; }
-    .settings-disclaimer { font-size: 11px; color: #ff9f0a; margin-top: 4px; line-height: 1.4; padding: 4px 0; }
-    .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 4px 0; }
+    .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .theme-option { padding: 14px 10px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; font-size: 12px; font-weight: 600; text-align: center; transition: all 0.2s; font-family: inherit; }
     .theme-option:hover { border-color: var(--accent); transform: translateY(-1px); }
     .theme-option.active { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
@@ -94,6 +90,29 @@
     </div>
 
     <div class="settings-section">
+      <div class="settings-section-title">GitHub Integration</div>
+      <div class="settings-card" id="githubSettings">
+        <div class="settings-row" id="githubConnectRow" onclick="connectGitHub()">
+          <div class="settings-row-left">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span id="githubConnectLabel">Connect GitHub</span>
+          </div>
+          <div class="settings-row-right" id="githubStatus">Disconnected</div>
+        </div>
+        <div class="settings-row" id="githubRepoRow" style="display:none;" onclick="selectRepo()">
+          <div class="settings-row-left">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span id="githubRepoLabel">Connect Repository</span>
+          </div>
+          <div class="settings-row-right">Select</div>
+        </div>
+        <button class="settings-btn danger" id="githubDisconnectBtn" style="display:none;" onclick="disconnectGitHub()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px;"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg> Disconnect Repository
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <div class="settings-section-title">Theme</div>
       <div class="theme-grid">
         <button class="theme-option gold active" onclick="changeTheme('gold')">Gold</button>
@@ -117,39 +136,25 @@
 
     <div class="settings-section">
       <div class="settings-section-title">Badges</div>
-      <div class="settings-card">
-        <div class="badge-grid" id="badgeGrid">
-          <div class="badge-item" id="badge-awakened"><span class="badge-icon">&#9670;</span>Awakened</div>
-          <div class="badge-item" id="badge-versatile"><span class="badge-icon">&#9733;</span>Versatile</div>
-          <div class="badge-item" id="badge-masochist"><span class="badge-icon">&#9760;</span>Masochist</div>
-          <div class="badge-item" id="badge-essayist"><span class="badge-icon">&#9998;</span>Essayist</div>
-          <div class="badge-item" id="badge-perfectionist"><span class="badge-icon">&#9830;</span>Perfectionist</div>
-          <div class="badge-item" id="badge-indecisive"><span class="badge-icon">&#9925;</span>Indecisive</div>
-        </div>
-      </div>
+      <div class="settings-card"><div class="badge-grid" id="badgeGrid">
+        <div class="badge-item" id="badge-awakened"><span class="badge-icon">&#9670;</span>Awakened</div>
+        <div class="badge-item" id="badge-versatile"><span class="badge-icon">&#9733;</span>Versatile</div>
+        <div class="badge-item" id="badge-masochist"><span class="badge-icon">&#9760;</span>Masochist</div>
+        <div class="badge-item" id="badge-essayist"><span class="badge-icon">&#9998;</span>Essayist</div>
+        <div class="badge-item" id="badge-perfectionist"><span class="badge-icon">&#9830;</span>Perfectionist</div>
+        <div class="badge-item" id="badge-indecisive"><span class="badge-icon">&#9925;</span>Indecisive</div>
+      </div></div>
     </div>
 
-    <div class="settings-section">
-      <div class="settings-section-title">Data</div>
-      <div class="settings-card">
-        <button class="settings-btn danger" onclick="clearAllData()">Clear All Local Data</button>
-        <div class="settings-disclaimer" style="padding:8px 16px;">Clears chats, settings, and cache. Account stays intact.</div>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-section-title">About</div>
-      <div class="settings-card">
-        <div class="settings-row"><span>Version</span><span class="settings-value">v1.3.0</span></div>
-        <div class="settings-row"><span>Author</span><span class="settings-value">Chrxmee-Midnightt</span></div>
-        <div class="settings-row"><span>AI Provider</span><span class="settings-value">Groq</span></div>
-        <div class="settings-row"><span>Themes</span><span class="settings-value">5</span></div>
-        <div class="settings-row"><span>Workflows</span><span class="settings-value">6</span></div>
-        <div class="settings-row"><span>Personalities</span><span class="settings-value">5</span></div>
-      </div>
-    </div>
+    <div class="settings-section"><div class="settings-section-title">Data</div><div class="settings-card"><button class="settings-btn danger" onclick="clearAllData()">Clear All Local Data</button></div></div>
+    <div class="settings-section"><div class="settings-section-title">About</div><div class="settings-card">
+      <div class="settings-row"><span>Version</span><span class="settings-value">v1.3.0</span></div>
+      <div class="settings-row"><span>Author</span><span class="settings-value">Chrxmee-Midnightt</span></div>
+      <div class="settings-row"><span>AI</span><span class="settings-value">Groq</span></div>
+      <div class="settings-row"><span>Themes</span><span class="settings-value">5</span></div>
+      <div class="settings-row"><span>Workflows</span><span class="settings-value">6</span></div>
+    </div></div>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
