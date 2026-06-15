@@ -14,6 +14,7 @@
     { "source": "/accounts", "destination": "/public/accounts.html" },
     { "source": "/settings", "destination": "/public/settings.html" },
     { "source": "/app.html", "destination": "/public/app.html" },
+    { "source": "/api/github/files", "destination": "/api/auth/github/files.js" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [
