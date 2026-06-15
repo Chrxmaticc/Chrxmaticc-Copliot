@@ -1,11 +1,9 @@
-// ╔══════════════════════════════════════════╗
-// ║  Chrxmaticc Copilot — Agentic API       ║
-// ║  Workflows • AI QA • Tools • Memory     ║
-// ║  Author: Chrxmee-Midnightt              ║
-// ╚══════════════════════════════════════════╝
-
+// api/agent.js
+// Chrxmaticc Copilot — Agentic API (Dual Provider: Groq + Claude)
 var GROQ_KEY = process.env.GROQ_KEY || '';
+var CLAUDE_KEY = process.env.CLAUDE_KEY || '';
 var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+var CLAUDE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 var VISION_URL = 'https://image.pollinations.ai/describe';
 
 var path = require('path');
@@ -23,9 +21,10 @@ if (fs.existsSync(personalitiesDir)) {
 var DEFAULT_PERSONALITY = PERSONALITIES['conversational'] || {
   name: 'Copilot Conversational',
   systemPrompt: 'You are Chrxmaticc Copilot. Be helpful, casual, and concise.',
-  temperature: 0.8,
+  temperature: 0.85,
   maxTokens: 650,
-  model: 'llama-3.3-70b-versatile'
+  model: 'llama-3.3-70b-versatile',
+  provider: 'groq'
 };
 
 var IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.ico', '.tiff', '.avif'];
@@ -33,7 +32,7 @@ var IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'
 var WORKFLOW_PROMPTS = {
   code: '',
   think: '\n\n[system: think deeply before answering. break logic down step-by-step in a thinking block before writing code. show your reasoning.]',
-  plan: '\n\n[system: PLAN MODE. you are helping the user plan something. ask ONE question at a time. present 3-5 clickable options AND a "Custom" option. questions must be relevant to what the user asked. after gathering enough info (4-6 questions), present the complete plan as a structured document and offer to switch to code mode.]',
+  plan: '\n\n[system: PLAN MODE. you are helping the user plan something. ask ONE question at a time. present 3-5 clickable options AND a "Custom" option. questions must be relevant. after 4-6 questions, present the complete plan and offer to switch to code mode.]',
   review: '\n\n[system: REVIEW MODE. analyze the code for bugs, security issues, performance problems. rate each issue by severity. give overall rating out of 10. be brutally honest.]',
   surprise: '\n\n[system: CHAOS MODE. over-engineer with features nobody asked for. add animations, particle effects, easter eggs. code must work but be absurdly over-the-top. roast the user.]',
   cancel: ''
@@ -47,63 +46,24 @@ var EFFORT_LEVELS = {
 };
 
 var BUTTON_PROMPTS = {
-  types: '\n\n[use TypeScript for all code]',
-  docs: '\n\n[generate JSDoc/documentation for every function]',
-  optimize: '\n\n[after writing code, suggest 3 performance optimizations]',
-  explain: '\n\n[explain every decision as you code]',
-  compare: '\n\n[after coding, show 2 alternative approaches with tradeoffs]',
-  test: '\n\n[auto-generate test cases for the code]',
-  animate: '\n\n[add CSS animations and transitions]',
-  theme: '\n\n[generate light + dark mode variants]',
-  accessible: '\n\n[ensure WCAG compliance and screen reader support]',
-  minimal: '\n\n[strip code to bare essentials]',
-  reuse: '\n\n[prefer existing libraries over custom code]',
-  ship: '\n\n[add build config and deployment notes]',
-  inline: '\n\n[single-file output only]',
-  nocomments: '\n\n[strip all comments]',
-  instant: '\n\n[skip explanation, just the code]',
-  security: '\n\n[focus on security vulnerabilities]',
-  performance: '\n\n[focus on performance bottlenecks]',
-  patterns: '\n\n[check design pattern usage]',
-  readability: '\n\n[focus on readability and naming]',
-  clarity: '\n\n[ensure code is self-documenting]',
-  architecture: '\n\n[focus on architecture tradeoffs]',
-  deep: '\n\n[provide deep technical analysis]',
-  guided: '\n\n[guided walkthrough style]',
-  beginner: '\n\n[beginner-friendly explanations]',
-  examples: '\n\n[include practical examples]',
-  creative: '\n\n[inject creative chaos]',
-  wholesome: '\n\n[be encouraging and supportive]',
-  overengineer: '\n\n[over-engineer to absurd levels]',
-  polyglot: '\n\n[show solutions in multiple languages]',
-  design: '\n\n[focus on visual design]',
-  ux: '\n\n[focus on user experience]',
-  experimental: '\n\n[try experimental approaches]',
-  glitch: '\n\n[embrace glitch art and chaos]',
-  efficient: '\n\n[prioritize efficiency]',
-  practical: '\n\n[focus on practical solutions]',
-  useful: '\n\n[make the chaos useful]',
-  shortcuts: '\n\n[use clever shortcuts]',
-  rapid: '\n\n[plan rapidly]',
-  bullet: '\n\n[bullet points only]',
-  quick: '\n\n[quick review, major issues only]',
-  critical: '\n\n[critical issues only]',
-  snap: '\n\n[snap judgment]',
-  random: '\n\n[completely random]',
-  speedrun: '\n\n[speedrun mode]',
-  scalability: '\n\n[focus on scalability]',
-  tradeoffs: '\n\n[show tradeoffs between approaches]',
-  moodboard: '\n\n[create visual mood board]',
-  mood: '\n\n[analyze mood and tone]',
-  a11y: '\n\n[audit accessibility]',
-  simplicity: '\n\n[simplify the code]',
-  alternatives: '\n\n[explore alternatives]',
-  visual: '\n\n[use visual thinking]'
+  types:'\n\n[use TypeScript for all code]', docs:'\n\n[generate JSDoc/documentation for every function]', optimize:'\n\n[after writing code, suggest 3 performance optimizations]',
+  explain:'\n\n[explain every decision as you code]', compare:'\n\n[after coding, show 2 alternative approaches with tradeoffs]', test:'\n\n[auto-generate test cases for the code]',
+  animate:'\n\n[add CSS animations and transitions]', theme:'\n\n[generate light + dark mode variants]', accessible:'\n\n[ensure WCAG compliance and screen reader support]',
+  minimal:'\n\n[strip code to bare essentials]', reuse:'\n\n[prefer existing libraries over custom code]', ship:'\n\n[add build config and deployment notes]',
+  inline:'\n\n[single-file output only]', nocomments:'\n\n[strip all comments]', instant:'\n\n[skip explanation, just the code]',
+  security:'\n\n[focus on security vulnerabilities]', performance:'\n\n[focus on performance bottlenecks]', patterns:'\n\n[check design pattern usage]',
+  readability:'\n\n[focus on readability and naming]', clarity:'\n\n[ensure code is self-documenting]', architecture:'\n\n[focus on architecture tradeoffs]',
+  deep:'\n\n[provide deep technical analysis]', guided:'\n\n[guided walkthrough style]', beginner:'\n\n[beginner-friendly explanations]',
+  examples:'\n\n[include practical examples]', creative:'\n\n[inject creative chaos]', wholesome:'\n\n[be encouraging and supportive]',
+  overengineer:'\n\n[over-engineer to absurd levels]', polyglot:'\n\n[show solutions in multiple languages]',
+  design:'\n\n[focus on visual design]', ux:'\n\n[focus on user experience]', experimental:'\n\n[try experimental approaches]',
+  glitch:'\n\n[embrace glitch art and chaos]', efficient:'\n\n[prioritize efficiency]', practical:'\n\n[focus on practical solutions]',
+  useful:'\n\n[make the chaos useful]', shortcuts:'\n\n[use clever shortcuts]', rapid:'\n\n[plan rapidly]', bullet:'\n\n[bullet points only]',
+  quick:'\n\n[quick review, major issues only]', critical:'\n\n[critical issues only]', snap:'\n\n[snap judgment]',
+  random:'\n\n[completely random]', speedrun:'\n\n[speedrun mode]', scalability:'\n\n[focus on scalability]',
+  tradeoffs:'\n\n[show tradeoffs between approaches]', moodboard:'\n\n[create visual mood board]', mood:'\n\n[analyze mood and tone]',
+  a11y:'\n\n[audit accessibility]', simplicity:'\n\n[simplify the code]', alternatives:'\n\n[explore alternatives]', visual:'\n\n[use visual thinking]'
 };
-
-// ═══════════════════════════════════════════
-//  MAIN EXPORT
-// ═══════════════════════════════════════════
 
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -133,24 +93,21 @@ module.exports = async function(req, res) {
   var model = selectedPersonality.model || 'llama-3.3-70b-versatile';
   var temperature = selectedPersonality.temperature || 0.8;
   var maxTokens = selectedPersonality.maxTokens || 650;
+  var provider = selectedPersonality.provider || 'groq';
 
-  // Apply effort
   var effortConfig = EFFORT_LEVELS[effort] || EFFORT_LEVELS.medium;
   if (workflow === 'code') {
     maxTokens = effortConfig.maxTokens;
-    temperature = effortConfig.temperature;
+    temperature = Math.min(temperature, effortConfig.temperature);
     systemPrompt += effortConfig.addition;
   }
 
-  // Apply workflow prompt
   systemPrompt += WORKFLOW_PROMPTS[workflow] || '';
 
-  // Apply button toggles
   for (var btn in buttons) {
     if (buttons[btn] && BUTTON_PROMPTS[btn]) systemPrompt += BUTTON_PROMPTS[btn];
   }
 
-  // Roast level
   if (roastLevel > 0) {
     systemPrompt += '\n\n[roast level: ' + roastLevel + '%. ' + (roastLevel >= 75 ? 'brutally honest, roast hard.' : roastLevel >= 50 ? 'keep madman tone, light roasts.' : roastLevel >= 25 ? 'mildly sarcastic.' : 'helpful, minimal roasts.') + ']';
   }
@@ -159,7 +116,6 @@ module.exports = async function(req, res) {
     systemPrompt += '\n\nUser context: ' + body.personalInfo;
   }
 
-  // ── IMAGE HANDLING ──
   var isImage = false;
   if (fileType && fileType.startsWith('image/')) isImage = true;
   if (fileName) { var ext = '.' + fileName.split('.').pop().toLowerCase(); if (IMAGE_EXTENSIONS.indexOf(ext) !== -1) isImage = true; }
@@ -176,14 +132,10 @@ module.exports = async function(req, res) {
     } catch(e) {}
   }
 
-  // ── TEXT FILE HANDLING ──
   if (body.fileContent && !isImage) {
     message = '[File: ' + (fileName || 'unknown') + ']\nContent:\n' + String(body.fileContent).slice(0, 3000) + '\n\nUser: ' + (message || 'See attached file.');
   }
 
-  // ═══════════════════════════════════════
-  //  PLAN WORKFLOW — AI asks the questions
-  // ═══════════════════════════════════════
   if (workflow === 'plan') {
     var planContext = '';
     if (planHistory.length > 0) {
@@ -192,45 +144,21 @@ module.exports = async function(req, res) {
       }).join('\n');
     }
 
-    var planSystemPrompt = systemPrompt + '\n\n' +
-      'CRITICAL INSTRUCTIONS FOR PLAN MODE:\n' +
-      '1. You are in an interactive planning session. Do NOT write code.\n' +
-      '2. Ask the user ONE question at a time about their project.\n' +
-      '3. Present exactly 3-5 clickable options plus a "Custom" option.\n' +
-      '4. Format your response EXACTLY like this:\n' +
-      'QUESTION: [your one-sentence question here]\n' +
-      'OPTIONS:\n' +
-      '- [Option 1]\n' +
-      '- [Option 2]\n' +
-      '- [Option 3]\n' +
-      '- Custom\n' +
-      '5. Make questions relevant to the project being planned.\n' +
-      '6. After 5-6 questions, present the COMPLETE PLAN as a structured document.\n' +
-      '7. When presenting the final plan, start with "PLAN COMPLETE:"' + planContext;
+    var planSystemPrompt = systemPrompt + '\n\nCRITICAL INSTRUCTIONS FOR PLAN MODE:\n1. You are in an interactive planning session. Do NOT write code.\n2. Ask the user ONE question at a time about their project.\n3. Present exactly 3-5 clickable options plus a "Custom" option.\n4. Format your response EXACTLY like this:\nQUESTION: [your one-sentence question here]\nOPTIONS:\n- [Option 1]\n- [Option 2]\n- [Option 3]\n- Custom\n5. Make questions relevant to the project being planned.\n6. After 5-6 questions, present the COMPLETE PLAN as a structured document.\n7. When presenting the final plan, start with "PLAN COMPLETE:"' + planContext;
 
     var planMessage = planHistory.length === 0 ? message : 'Continue the planning. Ask the next question.';
-
     if (planHistory.length >= 5) {
       planMessage += '\n\n[You have enough information. Present the COMPLETE PLAN now. Start with PLAN COMPLETE:]';
     }
 
     try {
-      var planResponse = await askGroq(planSystemPrompt, planMessage, model, 0.7, 800);
+      var planResponse = await askAI(planSystemPrompt, planMessage, model, 0.7, 800, provider);
       var parsed = parsePlanOutput(planResponse);
 
       if (parsed.type === 'qa') {
-        res.status(200).json({
-          type: 'qa',
-          question: parsed.question,
-          options: parsed.options
-        });
+        res.status(200).json({ type: 'qa', question: parsed.question, options: parsed.options });
       } else {
-        res.status(200).json({
-          response: parsed.text || planResponse,
-          provider: 'groq',
-          model: model,
-          planComplete: true
-        });
+        res.status(200).json({ response: parsed.text || planResponse, provider: provider, model: model, planComplete: true });
       }
     } catch(e) {
       res.status(200).json({ response: getFallback(message), provider: 'offline' });
@@ -238,79 +166,53 @@ module.exports = async function(req, res) {
     return;
   }
 
-  // ═══════════════════════════════════════
-  //  ALL OTHER WORKFLOWS
-  // ═══════════════════════════════════════
   try {
-    var reply = await askGroq(systemPrompt, message, model, temperature, maxTokens);
+    var reply = await askAI(systemPrompt, message, model, temperature, maxTokens, provider);
     var isCode = workflow === 'code' && (reply.indexOf('```') !== -1 || reply.indexOf('function') !== -1 || reply.indexOf('const') !== -1 || reply.indexOf('import') !== -1 || reply.indexOf('<!DOCTYPE') !== -1 || reply.indexOf('<html') !== -1);
-    res.status(200).json({
-      response: reply,
-      provider: 'groq',
-      model: model,
-      codePreview: isCode
-    });
+    res.status(200).json({ response: reply, provider: provider, model: model, codePreview: isCode });
   } catch(e) {
     res.status(200).json({ response: getFallback(message), provider: 'offline' });
   }
 };
 
-// ═══════════════════════════════════════════
-//  PARSE PLAN OUTPUT
-// ═══════════════════════════════════════════
 function parsePlanOutput(text) {
-  // Check if plan is complete
   if (text.indexOf('PLAN COMPLETE') !== -1) {
     return { type: 'plan', text: text.replace('PLAN COMPLETE:', '').trim() };
   }
-
-  // Extract QUESTION
   var questionMatch = text.match(/QUESTION:\s*(.+?)(?:\n|$)/i);
-  if (!questionMatch) {
-    // Maybe the AI just wrote a plan or answered normally
-    return { type: 'text', text: text };
-  }
-
+  if (!questionMatch) return { type: 'text', text: text };
   var question = questionMatch[1].trim();
-
-  // Extract OPTIONS
   var optionsMatch = text.match(/OPTIONS:\s*([\s\S]+?)(?:\n\n|$)/i);
   var options = [];
   if (optionsMatch) {
     var optionLines = optionsMatch[1].split('\n');
     for (var line of optionLines) {
       var cleaned = line.replace(/^[-•*]\s*/, '').trim();
-      if (cleaned && cleaned !== 'OPTIONS:' && options.length < 6) {
-        options.push(cleaned);
-      }
+      if (cleaned && cleaned !== 'OPTIONS:' && options.length < 6) options.push(cleaned);
     }
   }
-
-  // Ensure we have options
-  if (options.length === 0) {
-    options = ['Yes', 'No', 'Custom'];
-  }
-
-  // Ensure Custom is always an option
-  if (options.indexOf('Custom') === -1 && options.indexOf('custom') === -1) {
-    options.push('Custom');
-  }
-
+  if (options.length === 0) options = ['Yes', 'No', 'Custom'];
+  if (options.indexOf('Custom') === -1 && options.indexOf('custom') === -1) options.push('Custom');
   return { type: 'qa', question: question, options: options };
 }
 
-// ═══════════════════════════════════════════
-//  GROQ CALL
-// ═══════════════════════════════════════════
-async function askGroq(systemPrompt, userMessage, model, temperature, maxTokens) {
-  if (!GROQ_KEY) throw new Error('no key');
+async function askAI(systemPrompt, userMessage, model, temperature, maxTokens, provider) {
+  var key = provider === 'openrouter' ? CLAUDE_KEY : GROQ_KEY;
+  var url = provider === 'openrouter' ? CLAUDE_URL : GROQ_URL;
+  if (!key) throw new Error('no key for ' + provider);
 
-  var response = await fetch(GROQ_URL, {
+  var headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + key
+  };
+  if (provider === 'openrouter') {
+    headers['HTTP-Referer'] = 'https://chrxmaticc-copliot.vercel.app';
+    headers['X-Title'] = 'Chrxmaticc Copilot';
+  }
+
+  var response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + GROQ_KEY
-    },
+    headers: headers,
     body: JSON.stringify({
       model: model,
       messages: [
@@ -326,13 +228,10 @@ async function askGroq(systemPrompt, userMessage, model, temperature, maxTokens)
   if (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) {
     return json.choices[0].message.content;
   }
-  if (json.error) throw new Error(json.error.message || 'groq error');
-  throw new Error('empty response');
+  if (json.error) throw new Error(json.error.message || provider + ' error');
+  throw new Error('empty response from ' + provider);
 }
 
-// ═══════════════════════════════════════════
-//  IMAGE DESCRIPTION (Pollinations)
-// ═══════════════════════════════════════════
 async function describeImage(imageUrl) {
   if (!imageUrl || imageUrl.indexOf('blob:') === 0 || imageUrl.indexOf('data:') === 0) return null;
   try {
@@ -343,9 +242,6 @@ async function describeImage(imageUrl) {
   } catch(e) { return null; }
 }
 
-// ═══════════════════════════════════════════
-//  FALLBACK
-// ═══════════════════════════════════════════
 function getFallback(input) {
   var lower = (input || '').toLowerCase();
   if (lower.indexOf('hello') !== -1) return 'Yo! What\'s good?';
