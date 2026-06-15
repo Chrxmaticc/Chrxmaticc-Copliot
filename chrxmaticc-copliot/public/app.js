@@ -1,7 +1,6 @@
 // ╔══════════════════════════════════════════╗
 // ║  Chrxmaticc Copilot — Complete Engine    ║
-// ║  Workflows • QA Grid • Memory • Toasts   ║
-// ║  Adaptive Settings • Presence • Badges   ║
+// ║  Workflows • QA Grid • GitHub • Memory  ║
 // ║  Author: Chrxmee-Midnightt               ║
 // ╚══════════════════════════════════════════╝
 
@@ -18,6 +17,10 @@ var chatSearchOpen = false, typingSpeed = 10;
 var sneakLevel = 0, roastLevel = 50;
 var planHistory = [];
 var rejectCount = 0;
+var githubConnected = false;
+var githubRepo = null;
+var githubToken = null;
+var lastGeneratedCode = null;
 
 var WORKFLOWS = ['code', 'think', 'plan', 'review', 'surprise', 'cancel'];
 var WORKFLOW_LABELS = { code:'Code', think:'Think', plan:'Plan', review:'Review', surprise:'Surprise', cancel:'Chat' };
@@ -42,7 +45,7 @@ var presenceState = 'online';
 var presenceTimer = null;
 
 // ═══════════════════════════════════════════
-//  MEMORY
+//  MEMORY / BADGES / PRESENCE
 // ═══════════════════════════════════════════
 function initUserId() { var u=null; try{u=JSON.parse(localStorage.getItem('chrxmaticc_user'));}catch(e){} memoryUserId=(u&&u.email)||(u&&u.discordId)||(u&&u.githubId)||'guest_'+Math.random().toString(36).slice(2,8); }
 async function loadMemory() { initUserId(); try{var r=await fetch('/api/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'get',userId:memoryUserId})});var d=await r.json();userMemory.facts=d.facts||[];userMemory.history=d.history||[];}catch(e){} }
@@ -52,18 +55,109 @@ function extractFacts(msg) { var p=[{regex:/(?:i am|i'm|call me|my name is)\s+([
 function addToHistory(r,c) { userMemory.history.push({role:r,content:c});if(userMemory.history.length>20)userMemory.history=userMemory.history.slice(-20);saveMemory(); }
 function getMemoryContext() { var parts=[];if(userMemory.facts.length>0)parts.push('Facts: '+userMemory.facts.join('; '));if(userMemory.history.length>0){var recent=userMemory.history.slice(-6);parts.push('Recent:\n'+recent.map(function(h){return(h.role==='user'?'User':'Copilot')+': '+(h.content||'').slice(0,150);}).join('\n'));}return parts.join('\n\n'); }
 function checkMemoryEcho(msg) { for(var f of userMemory.facts){if(msg.toLowerCase().indexOf(f.toLowerCase().replace(/^[^:]+:\s*/,''))!==-1)return f;}return null; }
-
-// ═══════════════════════════════════════════
-//  BADGES
-// ═══════════════════════════════════════════
 function loadBadges() { try{badges=JSON.parse(localStorage.getItem('chrxmaticc_badges')||'{}');}catch(e){badges={};} }
 function saveBadges() { localStorage.setItem('chrxmaticc_badges',JSON.stringify(badges)); }
 function earnBadge(n) { if(!badges[n]){badges[n]=true;saveBadges();toast('Badge: '+n);} }
+function setPresence(s) { presenceState=s;if(!statusDot||!statusText)return;statusDot.className='status-dot '+s;var l={online:'Online',thinking:'Thinking...',offline:'Offline',lurking:'Lurking...',locked:'Locked In',judging:'Judging...'};statusText.textContent=l[s]||'Online';clearTimeout(presenceTimer);if(s==='thinking'||s==='locked')return;presenceTimer=setTimeout(function(){setPresence('lurking');},120000); }
 
 // ═══════════════════════════════════════════
-//  PRESENCE
+//  GITHUB INTEGRATION
 // ═══════════════════════════════════════════
-function setPresence(s) { presenceState=s;if(!statusDot||!statusText)return;statusDot.className='status-dot '+s;var l={online:'Online',thinking:'Thinking...',offline:'Offline',lurking:'Lurking...',locked:'Locked In',judging:'Judging...'};statusText.textContent=l[s]||'Online';clearTimeout(presenceTimer);if(s==='thinking'||s==='locked')return;presenceTimer=setTimeout(function(){setPresence('lurking');},120000); }
+function loadGithubState() {
+  githubToken = localStorage.getItem('chrxmaticc_github_token') || null;
+  githubRepo = localStorage.getItem('chrxmaticc_github_repo') || null;
+  githubConnected = !!githubToken;
+  updateGithubUI();
+}
+function connectGitHub() {
+  // Redirect to GitHub OAuth with repo scope
+  sessionStorage.setItem('chrxmaticc_github_redirect', window.location.href);
+  location.href = '/api/auth/github';
+}
+function selectRepo() {
+  var repo = prompt('Enter repository (e.g. username/repo):');
+  if (repo && repo.indexOf('/') !== -1) {
+    githubRepo = repo;
+    localStorage.setItem('chrxmaticc_github_repo', repo);
+    updateGithubUI();
+    toast('Repository connected: ' + repo);
+  }
+}
+function disconnectGitHub() {
+  githubToken = null;
+  githubRepo = null;
+  githubConnected = false;
+  localStorage.removeItem('chrxmaticc_github_token');
+  localStorage.removeItem('chrxmaticc_github_repo');
+  updateGithubUI();
+  toast('GitHub disconnected');
+}
+function updateGithubUI() {
+  var badge = document.getElementById('workflowGithubBadge');
+  var commitBtn = document.getElementById('commitBtn');
+  if (badge) badge.style.display = (githubConnected && githubRepo) ? 'flex' : 'none';
+  if (commitBtn) commitBtn.style.display = (githubConnected && githubRepo) ? 'flex' : 'none';
+  
+  // Update settings page if loaded
+  var connectLabel = document.getElementById('githubConnectLabel');
+  var statusEl = document.getElementById('githubStatus');
+  var repoRow = document.getElementById('githubRepoRow');
+  var repoLabel = document.getElementById('githubRepoLabel');
+  var disconnectBtn = document.getElementById('githubDisconnectBtn');
+  
+  if (connectLabel) {
+    if (githubConnected && githubRepo) {
+      connectLabel.textContent = githubRepo;
+      if (statusEl) statusEl.innerHTML = 'Connected <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+      if (repoRow) repoRow.style.display = 'none';
+      if (disconnectBtn) disconnectBtn.style.display = 'block';
+    } else if (githubConnected) {
+      connectLabel.textContent = 'Connect Repository';
+      if (statusEl) statusEl.innerHTML = 'GitHub Connected <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+      if (repoRow) repoRow.style.display = 'flex';
+      if (disconnectBtn) disconnectBtn.style.display = 'none';
+    } else {
+      connectLabel.textContent = 'Connect GitHub';
+      if (statusEl) statusEl.textContent = 'Disconnected';
+      if (repoRow) repoRow.style.display = 'none';
+      if (disconnectBtn) disconnectBtn.style.display = 'none';
+    }
+  }
+}
+async function commitToRepo(code) {
+  var codeToCommit = code || lastGeneratedCode;
+  if (!codeToCommit || !githubToken || !githubRepo) {
+    toast('Connect a GitHub repository first');
+    return;
+  }
+  
+  var fileName = prompt('File name:', 'index.html');
+  if (!fileName) return;
+  
+  var commitMsg = prompt('Commit message:', 'Generated by Chrxmaticc Copilot');
+  if (!commitMsg) return;
+  
+  try {
+    var res = await fetch('/api/github/commit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: githubToken,
+        repo: githubRepo,
+        files: [{ path: fileName, content: codeToCommit }],
+        message: commitMsg
+      })
+    });
+    var data = await res.json();
+    if (data.success) {
+      toast('Committed to ' + githubRepo);
+    } else {
+      toast('Commit failed: ' + (data.error || 'unknown'));
+    }
+  } catch(e) {
+    toast('Commit failed');
+  }
+}
 
 // ═══════════════════════════════════════════
 //  INIT
@@ -75,30 +169,42 @@ function init() {
   grabDOM();
   try{savedChats=JSON.parse(localStorage.getItem('chrxmaticc_chats')||'{}');}catch(e){savedChats={};}
   try{userProfile=JSON.parse(localStorage.getItem('chrxmaticc_profile')||'{}');}catch(e){userProfile={};}
-  selectedAvatar=localStorage.getItem('chrxmaticc_avatar')||'icon.png';customBackground=localStorage.getItem('chrxmaticc_background')||'';currentTheme=localStorage.getItem('chrxmaticc_theme')||'gold';sidebarFolded=localStorage.getItem('chrxmaticc_sidebar_folded')==='true';currentPersonality=localStorage.getItem('chrxmaticc_personality')||'sonnet';surpriseMode=localStorage.getItem('chrxmaticc_surprise')==='true';ttsEnabled=localStorage.getItem('chrxmaticc_tts')!=='false';typingSpeed=parseInt(localStorage.getItem('chrxmaticc_typing_speed')||'10');roastLevel=parseInt(localStorage.getItem('chrxmaticc_roast_level')||'50');loadBadges();
+  selectedAvatar=localStorage.getItem('chrxmaticc_avatar')||'icon.png';customBackground=localStorage.getItem('chrxmaticc_background')||'';currentTheme=localStorage.getItem('chrxmaticc_theme')||'gold';sidebarFolded=localStorage.getItem('chrxmaticc_sidebar_folded')==='true';currentPersonality=localStorage.getItem('chrxmaticc_personality')||'sonnet';surpriseMode=localStorage.getItem('chrxmaticc_surprise')==='true';ttsEnabled=localStorage.getItem('chrxmaticc_tts')!=='false';typingSpeed=parseInt(localStorage.getItem('chrxmaticc_typing_speed')||'10');roastLevel=parseInt(localStorage.getItem('chrxmaticc_roast_level')||'50');loadBadges();loadGithubState();
   var params=new URLSearchParams(window.location.search);var userParam=params.get('user');if(userParam){try{localStorage.setItem('chrxmaticc_user',JSON.stringify(JSON.parse(decodeURIComponent(userParam))));window.history.replaceState({},document.title,'/app.html');}catch(e){}}
-  loadMemory();applyTheme(currentTheme);applyBackground();updateAllAvatars();updateSidebarProfile();loadSavedChats();if(sidebarFolded)applyFoldState();var speedSelect=document.getElementById('typingSpeedSelect');if(speedSelect)speedSelect.value=typingSpeed;updateTTSIcon();updateWorkflowPill();updatePersonalityPill();
+  // Check for GitHub OAuth return with repo scope
+  var githubRedirect = sessionStorage.getItem('chrxmaticc_github_redirect');
+  if (githubRedirect && userParam) {
+    try {
+      var userData = JSON.parse(decodeURIComponent(userParam));
+      if (userData.provider === 'github') {
+        githubConnected = true;
+        githubToken = userData.githubToken || localStorage.getItem('chrxmaticc_github_token');
+        localStorage.setItem('chrxmaticc_github_token', githubToken);
+        sessionStorage.removeItem('chrxmaticc_github_redirect');
+        updateGithubUI();
+        toast('GitHub connected! Select a repository in Settings.');
+      }
+    } catch(e) {}
+  }
+  loadMemory();applyTheme(currentTheme);applyBackground();updateAllAvatars();updateSidebarProfile();loadSavedChats();if(sidebarFolded)applyFoldState();var speedSelect=document.getElementById('typingSpeedSelect');if(speedSelect)speedSelect.value=typingSpeed;updateTTSIcon();updateWorkflowPill();updatePersonalityPill();updateGithubUI();
   if(inputEl){inputEl.addEventListener('input',function(){inputEl.style.height='auto';inputEl.style.height=Math.min(inputEl.scrollHeight,100)+'px';});inputEl.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();toggleChatSearch();}});}
   setupSpeech();document.addEventListener('click',function(e){if(e.target.closest('.mini-chat-avatar'))loadChat(e.target.closest('.mini-chat-avatar').dataset.chatId);});setTimeout(function(){var loader=document.getElementById('loadingScreen');if(loader){loader.classList.add('hidden');setTimeout(function(){if(loader.parentNode)loader.remove();},500);}},2200);document.querySelectorAll('.app-theme-dot').forEach(function(dot){dot.addEventListener('click',function(){applyTheme(this.getAttribute('data-theme'));toast('Theme: '+this.getAttribute('data-theme'));});});var logo=document.querySelector('.topbar-logo-sm');if(logo)logo.addEventListener('click',function(e){e.stopPropagation();sneakLevel++;if(sneakLevel===7){sneakLevel=0;launchConfetti();toast('The chrome demon awakens...');earnBadge('awakened');}});if(surpriseMode&&Math.random()>0.5){setTimeout(function(){var greetings=['Yo!','Hey!','Welcome back!','Sup!'];var firstBubble=document.querySelector('.bubble-row.ai .bubble');if(firstBubble)firstBubble.innerHTML='<strong>'+greetings[Math.floor(Math.random()*greetings.length)]+'</strong><br><br>I\'m Chrxmaticc Copilot.';},2400);}var newToken=sessionStorage.getItem('chrxmaticc_new_token');if(newToken){sessionStorage.removeItem('chrxmaticc_new_token');setTimeout(function(){showTokenToast(newToken);},1200);}var usedPersonalities=JSON.parse(localStorage.getItem('chrxmaticc_used_personalities')||'[]');if(usedPersonalities.indexOf(currentPersonality)===-1){usedPersonalities.push(currentPersonality);localStorage.setItem('chrxmaticc_used_personalities',JSON.stringify(usedPersonalities));}if(usedPersonalities.length>=5)earnBadge('versatile');
 }
 
 // ═══════════════════════════════════════════
-//  WORKFLOW & PERSONALITY
+//  WORKFLOW / PERSONALITY / MODE / QA
 // ═══════════════════════════════════════════
 function cycleWorkflow() { var idx=WORKFLOWS.indexOf(currentWorkflow);idx=(idx+1)%WORKFLOWS.length;currentWorkflow=WORKFLOWS[idx];updateWorkflowPill();planHistory=[];hideQAGrid();if(currentWorkflow==='code')setPresence('locked');else if(currentWorkflow==='review')setPresence('judging');else setPresence('online');toast('Workflow: '+WORKFLOW_LABELS[currentWorkflow]); }
 function cyclePersonality() { var idx=PERSONALITIES.indexOf(currentPersonality);idx=(idx+1)%PERSONALITIES.length;currentPersonality=PERSONALITIES[idx];localStorage.setItem('chrxmaticc_personality',currentPersonality);updatePersonalityPill();toast('Personality: '+PERSONALITY_LABELS[currentPersonality]); }
-function updateWorkflowPill() { var pill=document.getElementById('workflowPill');if(pill)pill.innerHTML=WORKFLOW_ICONS[currentWorkflow]+' <span id="workflowLabel">'+WORKFLOW_LABELS[currentWorkflow]+'</span>'; }
+function updateWorkflowPill() { var pill=document.getElementById('workflowPill');if(pill)pill.innerHTML=WORKFLOW_ICONS[currentWorkflow]+' <span id="workflowLabel">'+WORKFLOW_LABELS[currentWorkflow]+'</span>'+'<div class="github-badge" id="workflowGithubBadge" style="display:'+(githubConnected&&githubRepo?'flex':'none')+'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></div>'; }
 function updatePersonalityPill() { var pill=document.getElementById('personalityPill');if(pill)pill.innerHTML='<span id="personalityLabel">'+PERSONALITY_LABELS[currentPersonality]+'</span>'; }
 
-// ═══════════════════════════════════════════
-//  MODE POPOVER
-// ═══════════════════════════════════════════
 var ALL_TOGGLES = {
-  conversational:{code:[{id:'explain',label:'Explain Decisions'},{id:'compare',label:'Compare Approaches'},{id:'test',label:'Auto-Generate Tests'}],plan:[{id:'guided',label:'Guided'},{id:'beginner',label:'Beginner-Friendly'},{id:'examples',label:'Show Examples'}],review:[{id:'readability',label:'Readability'},{id:'clarity',label:'Clarity Check'}],think:[{id:'deep',label:'Deep Analysis'},{id:'alternatives',label:'Explore Alternatives'}],surprise:[{id:'creative',label:'Creative Chaos'},{id:'wholesome',label:'Wholesome'}]},
-  sonnet:{code:[{id:'types',label:'TypeScript'},{id:'docs',label:'Generate Docs'},{id:'optimize',label:'Optimize'}],plan:[{id:'architecture',label:'Architecture Focus'},{id:'deep',label:'Deep Analysis'},{id:'scalability',label:'Scalability'}],review:[{id:'security',label:'Security Audit'},{id:'performance',label:'Performance'},{id:'patterns',label:'Design Patterns'}],think:[{id:'deep',label:'Deep Analysis'},{id:'tradeoffs',label:'Show Tradeoffs'}],surprise:[{id:'overengineer',label:'Over-Engineer'},{id:'polyglot',label:'Multi-Language'}]},
-  vision:{code:[{id:'animate',label:'Animations'},{id:'theme',label:'Light+Dark'},{id:'accessible',label:'WCAG'}],plan:[{id:'design',label:'Visual Design'},{id:'ux',label:'UX Focus'},{id:'moodboard',label:'Mood Board'}],review:[{id:'design',label:'Design Review'},{id:'a11y',label:'A11y Audit'}],think:[{id:'visual',label:'Visual Thinking'},{id:'mood',label:'Mood Analysis'}],surprise:[{id:'experimental',label:'Experimental'},{id:'glitch',label:'Glitch Mode'}]},
-  intermediate:{code:[{id:'minimal',label:'Minimal'},{id:'reuse',label:'Prefer Libraries'},{id:'ship',label:'Ship-Ready'}],plan:[{id:'fast',label:'Fast Planning'},{id:'practical',label:'Practical Only'}],review:[{id:'practicality',label:'Practicality'},{id:'simplicity',label:'Simplify'}],think:[{id:'efficient',label:'Efficient'}],surprise:[{id:'useful',label:'Useful Chaos'},{id:'shortcuts',label:'Shortcuts'}]},
-  speed:{code:[{id:'inline',label:'Single File'},{id:'nocomments',label:'No Comments'},{id:'instant',label:'Instant'}],plan:[{id:'rapid',label:'Rapid Plan'},{id:'bullet',label:'Bullet Points'}],review:[{id:'quick',label:'Quick Review'},{id:'critical',label:'Critical Only'}],think:[{id:'snap',label:'Snap Judgment'}],surprise:[{id:'random',label:'Pure Random'},{id:'speedrun',label:'Speedrun'}]}
+  conversational:{code:[{id:'explain',label:'Explain'},{id:'compare',label:'Compare'},{id:'test',label:'Tests'}],plan:[{id:'guided',label:'Guided'},{id:'beginner',label:'Beginner'}],review:[{id:'readability',label:'Readability'},{id:'clarity',label:'Clarity'}],think:[{id:'deep',label:'Deep'},{id:'alternatives',label:'Alternatives'}],surprise:[{id:'creative',label:'Creative'},{id:'wholesome',label:'Wholesome'}]},
+  sonnet:{code:[{id:'types',label:'TypeScript'},{id:'docs',label:'Docs'},{id:'optimize',label:'Optimize'}],plan:[{id:'architecture',label:'Architecture'},{id:'deep',label:'Deep'},{id:'scalability',label:'Scalability'}],review:[{id:'security',label:'Security'},{id:'performance',label:'Performance'},{id:'patterns',label:'Patterns'}],think:[{id:'deep',label:'Deep'},{id:'tradeoffs',label:'Tradeoffs'}],surprise:[{id:'overengineer',label:'Over-Engineer'},{id:'polyglot',label:'Polyglot'}]},
+  vision:{code:[{id:'animate',label:'Animate'},{id:'theme',label:'Light+Dark'},{id:'accessible',label:'WCAG'}],plan:[{id:'design',label:'Design'},{id:'ux',label:'UX'},{id:'moodboard',label:'Mood Board'}],review:[{id:'design',label:'Design Review'},{id:'a11y',label:'A11y'}],think:[{id:'visual',label:'Visual'},{id:'mood',label:'Mood'}],surprise:[{id:'experimental',label:'Experimental'},{id:'glitch',label:'Glitch'}]},
+  intermediate:{code:[{id:'minimal',label:'Minimal'},{id:'reuse',label:'Reuse'},{id:'ship',label:'Ship'}],plan:[{id:'fast',label:'Fast'},{id:'practical',label:'Practical'}],review:[{id:'practicality',label:'Practicality'},{id:'simplicity',label:'Simplify'}],think:[{id:'efficient',label:'Efficient'}],surprise:[{id:'useful',label:'Useful'},{id:'shortcuts',label:'Shortcuts'}]},
+  speed:{code:[{id:'inline',label:'Single File'},{id:'nocomments',label:'No Comments'},{id:'instant',label:'Instant'}],plan:[{id:'rapid',label:'Rapid'},{id:'bullet',label:'Bullets'}],review:[{id:'quick',label:'Quick'},{id:'critical',label:'Critical'}],think:[{id:'snap',label:'Snap'}],surprise:[{id:'random',label:'Random'},{id:'speedrun',label:'Speedrun'}]}
 };
 function getToggles() { var p=ALL_TOGGLES[currentPersonality]||ALL_TOGGLES.sonnet;var w=p[currentWorkflow]||p.code||[];return w; }
 function toggleModePopover() {
@@ -114,27 +220,9 @@ function toggleModePopover() {
 function changeEffort(e){currentEffort=e;toast('Effort: '+e);}
 function toggleButton(id,on){if(on)activeButtons[id]=true;else delete activeButtons[id];}
 function updateRoastLevel(v){roastLevel=parseInt(v);localStorage.setItem('chrxmaticc_roast_level',v);toast('Roast: '+v+'%');}
-
-// ═══════════════════════════════════════════
-//  QA GRID
-// ═══════════════════════════════════════════
-function showQAGrid(data) {
-  var grid=document.getElementById('qaGrid');if(!grid)return;
-  grid.innerHTML='<div class="qa-grid-label">'+data.question+'</div><div class="qa-grid-options"></div>';
-  var opts=grid.querySelector('.qa-grid-options');
-  data.options.forEach(function(opt){
-    var btn=document.createElement('button');btn.className='qa-grid-btn';if(opt==='Custom')btn.classList.add('custom');
-    btn.textContent=opt;btn.onclick=function(){sendQAResponse(data.question,opt);};
-    opts.appendChild(btn);
-  });
-  grid.classList.add('visible');
-}
+function showQAGrid(data) { var grid=document.getElementById('qaGrid');if(!grid)return;grid.innerHTML='<div class="qa-grid-label">'+data.question+'</div><div class="qa-grid-options"></div>';var opts=grid.querySelector('.qa-grid-options');data.options.forEach(function(opt){var btn=document.createElement('button');btn.className='qa-grid-btn';if(opt==='Custom')btn.classList.add('custom');btn.textContent=opt;btn.onclick=function(){sendQAResponse(data.question,opt);};opts.appendChild(btn);});grid.classList.add('visible'); }
 function hideQAGrid(){var grid=document.getElementById('qaGrid');if(grid)grid.classList.remove('visible');}
-function sendQAResponse(question,answer){
-  hideQAGrid();planHistory.push({question:question,answer:answer});
-  if(answer==='Custom'){if(inputEl){inputEl.value='';inputEl.focus();inputEl.placeholder='Type your custom answer...';}return;}
-  if(inputEl){inputEl.value=answer;sendMessage();}
-}
+function sendQAResponse(question,answer){hideQAGrid();planHistory.push({question:question,answer:answer});if(answer==='Custom'){if(inputEl){inputEl.value='';inputEl.focus();inputEl.placeholder='Type your custom answer...';}return;}if(inputEl){inputEl.value=answer;sendMessage();}}
 
 // ═══════════════════════════════════════════
 //  THEME / AVATARS / SIDEBAR / SEARCH / SPEECH / TTS / FILES / PREVIEW
@@ -195,7 +283,7 @@ async function sendMessage() {
   if(typingEl)typingEl.classList.add('visible');
   setPresence('thinking');if(messagesEl)messagesEl.scrollTop=messagesEl.scrollHeight;messageCount++;
 
-  var thinkingToasts=['analyzing your request... this might hurt','reading your code... interesting choices','loading every braincell i have left','consulting the chrome demon archives'];
+  var thinkingToasts=['analyzing your request... this might hurt','reading your code... interesting choices','loading every braincell i have left'];
   phaseToast(thinkingToasts[Math.floor(Math.random()*thinkingToasts.length)],'think');
 
   try {
@@ -204,12 +292,9 @@ async function sendMessage() {
     try{var prof=JSON.parse(localStorage.getItem('chrxmaticc_profile')||'{}');var parts=[];if(prof.displayName)parts.push('Call me '+prof.displayName);if(prof.personalInfo)parts.push('About me: '+prof.personalInfo);if(parts.length)body.personalInfo=parts.join('. ');}catch(e){}
     var memCtx=getMemoryContext();if(memCtx)body.personalInfo=(body.personalInfo||'')+'\n\n'+memCtx;
 
-    var buildingToasts=['writing code that would make your professor weep','structuring this better than your last projects','adding comments so your future self doesn\'t hate you'];
+    var buildingToasts=['writing code that would make your professor weep','structuring this better than your last projects'];
     phaseToast(buildingToasts[Math.floor(Math.random()*buildingToasts.length)],'code');
 
-    // ═══════════════════════════════════════
-    //  ROUTE: cancel → chat.js, everything else → agent.js
-    // ═══════════════════════════════════════
     var endpoint = (currentWorkflow === 'cancel') ? '/api/chat' : '/api/agent';
     var res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var data=await res.json();
@@ -220,6 +305,7 @@ async function sendMessage() {
       setPresence('online');
     } else if(data.response){
       setPresence('online');lastAIResponse=data.response;
+      lastGeneratedCode = data.response;
       typeBubble(data.response,'ai',data.provider,data.codePreview);
       conversation.push({role:'assistant',content:data.response});
       addToHistory('assistant',data.response);
@@ -233,18 +319,12 @@ async function sendMessage() {
   if(sendBtn)sendBtn.disabled=false;if(inputEl)inputEl.focus();clearFile();
 }
 
-function addPlanDocument(text){
-  if(!messagesEl)return;if(typingEl?.parentNode)typingEl.remove();
-  var doc=document.createElement('div');doc.className='plan-doc';
-  doc.innerHTML='<div class="plan-doc-title">Plan Complete</div><div style="font-size:12px;color:var(--text);line-height:1.6;">'+text.replace(/\n/g,'<br>')+'</div><div class="plan-actions"><button class="plan-btn primary" onclick="approvePlan()">Approve Plan</button><button class="plan-btn" onclick="modifyPlan()">Modify</button></div>';
-  messagesEl.appendChild(doc);if(typingEl)messagesEl.appendChild(typingEl);messagesEl.scrollTop=messagesEl.scrollHeight;
-}
+function addPlanDocument(text){if(!messagesEl)return;if(typingEl?.parentNode)typingEl.remove();var doc=document.createElement('div');doc.className='plan-doc';doc.innerHTML='<div class="plan-doc-title">Plan Complete</div><div style="font-size:12px;color:var(--text);line-height:1.6;">'+text.replace(/\n/g,'<br>')+'</div><div class="plan-actions"><button class="plan-btn primary" onclick="approvePlan()">Approve Plan</button><button class="plan-btn" onclick="modifyPlan()">Modify</button></div>';messagesEl.appendChild(doc);if(typingEl)messagesEl.appendChild(typingEl);messagesEl.scrollTop=messagesEl.scrollHeight;}
 function approvePlan(){currentWorkflow='code';updateWorkflowPill();planHistory=[];hideQAGrid();setPresence('locked');toast('Plan approved! Switched to Code mode.');}
 function modifyPlan(){if(inputEl){inputEl.value='Modify the plan: ';inputEl.focus();}}
-
 function quickSend(text){if(inputEl){inputEl.value=text;sendMessage();}}
 async function generateImage(prompt){addHint('Generating: '+prompt);try{var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt||'image',width:512,height:512})});var data=await res.json();if(data.success)addMediaBubble(data.url,'image',prompt);else addError(data.error||'Failed.');}catch(e){addError('Image service offline.');}}
-function whatWouldChrxmaticcDo(){var quips=['start typing. i don\'t have all day.','you\'ve asked 3 questions about CSS. everything okay at home?','your indentation is inconsistent. just saying.','changing themes again? this is the 4th time today.','you could\'ve just asked me to build it. but watching you struggle is entertaining.','i see you hesitating. commit to the dark theme. commit to something in your life.'];addHint(quips[Math.floor(Math.random()*quips.length)]);}
+function whatWouldChrxmaticcDo(){var quips=['start typing. i don\'t have all day.','you\'ve asked 3 questions about CSS. everything okay at home?','your indentation is inconsistent.','changing themes again?','you could\'ve just asked me to build it.'];addHint(quips[Math.floor(Math.random()*quips.length)]);}
 
 // ═══════════════════════════════════════════
 //  TYPING ANIMATION
@@ -264,10 +344,10 @@ function typeBubble(text,who,provider,isCode){
 function addCodeActions(row,text){
   var hasHTML=text.indexOf('<!DOCTYPE')!==-1||text.indexOf('<html')!==-1;
   var actions=document.createElement('div');actions.className='code-actions';
-  actions.innerHTML='<button class="code-action-btn accept" onclick="acceptCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Accept</button><button class="code-action-btn reject" onclick="rejectCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject</button>'+(hasHTML?'<button class="code-action-btn preview" onclick="previewCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Preview</button>':'');
+  actions.innerHTML='<button class="code-action-btn accept" onclick="acceptCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Accept</button><button class="code-action-btn reject" onclick="rejectCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject</button>'+(hasHTML?'<button class="code-action-btn preview" onclick="previewCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Preview</button>':'')+(githubConnected&&githubRepo?'<button class="code-action-btn commit" onclick="commitToRepo(null)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>Commit</button>':'');
   row.appendChild(actions);
 }
-function acceptCode(btn){var code=btn.closest('.bubble-row').querySelector('code')?.textContent||'';navigator.clipboard.writeText(code);btn.textContent='Accepted';btn.style.borderColor='#30d158';phaseToast('accepted. you have good taste.','accept');}
+function acceptCode(btn){var code=btn.closest('.bubble-row').querySelector('code')?.textContent||'';navigator.clipboard.writeText(code);lastGeneratedCode=code;btn.textContent='Accepted';btn.style.borderColor='#30d158';phaseToast('accepted. you have good taste.','accept');}
 function rejectCode(btn){rejectCount++;if(rejectCount>=5)earnBadge('perfectionist');phaseToast('rejected? bold move. let me try harder.','reject');if(inputEl){inputEl.value='improve the last code';sendMessage();}}
 function previewCode(btn){var code=btn.closest('.bubble-row').querySelector('code')?.textContent||'';togglePreview(code);}
 function getTime(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
@@ -299,7 +379,7 @@ function removeBackground(){customBackground='';localStorage.removeItem('chrxmat
 function toggleSurpriseMode(){surpriseMode=!surpriseMode;localStorage.setItem('chrxmaticc_surprise',surpriseMode);var el=document.getElementById('surpriseStatus');if(el)el.textContent=surpriseMode?'ON':'OFF';}
 function clearAllData(){if(confirm('Clear all local data?')){localStorage.clear();location.reload();}}
 function changeTheme(t){applyTheme(t);}
-function loadSettingsPage(){var sa=document.getElementById('settingsAvatar');if(sa)sa.textContent=selectedAvatar;var su=document.getElementById('settingsUsername');if(su)su.value=userProfile.username||'';var sd=document.getElementById('settingsDisplayName');if(sd)sd.value=userProfile.displayName||'';var sb=document.getElementById('settingsBio');if(sb)sb.value=userProfile.bio||'';var sp=document.getElementById('settingsPersonalInfo');if(sp)sp.value=userProfile.personalInfo||'';var rs=document.getElementById('roastSlider');if(rs)rs.value=roastLevel;for(var b in badges){var el=document.getElementById('badge-'+b);if(el)el.classList.add('earned');}}
+function loadSettingsPage(){var sa=document.getElementById('settingsAvatar');if(sa)sa.textContent=selectedAvatar;var su=document.getElementById('settingsUsername');if(su)su.value=userProfile.username||'';var sd=document.getElementById('settingsDisplayName');if(sd)sd.value=userProfile.displayName||'';var sb=document.getElementById('settingsBio');if(sb)sb.value=userProfile.bio||'';var sp=document.getElementById('settingsPersonalInfo');if(sp)sp.value=userProfile.personalInfo||'';var rs=document.getElementById('roastSlider');if(rs)rs.value=roastLevel;for(var b in badges){var el=document.getElementById('badge-'+b);if(el)el.classList.add('earned');}updateGithubUI();}
 
 init();
 if(document.querySelector('.settings-container'))loadSettingsPage();
