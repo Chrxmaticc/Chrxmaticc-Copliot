@@ -1,3 +1,4 @@
+<!-- public/settings.html -->
 <!DOCTYPE html>
 <html lang="en" class="settings-page">
 <head>
@@ -12,56 +13,46 @@
   <script defer src="analytics.js"></script>
   <style>
     html.settings-page, body.settings-page { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; overflow-y: auto !important; position: relative !important; }
-    :root { --bg: #0b0b0a; --panel: rgba(18,18,16,0.9); --border: rgba(212,165,116,0.12); --text: #e8d5c4; --muted: #8a7a6a; --accent: #d4a574; --accent2: #c9956b; --glow: rgba(212,165,116,0.15); --card-bg: rgba(18,18,16,0.9); }
-    [data-theme="midnight"] { --bg: #0a0a0a; --panel: rgba(13,13,13,0.95); --border: #1a1a1a; --text: #e0e0e0; --muted: #8e8e93; --accent: #a0a0d0; --accent2: #8888bb; --glow: rgba(150,150,200,0.1); --card-bg: #0d0d0d; }
-    [data-theme="glass"] { --bg: #0a0a0f; --panel: rgba(20,20,30,0.5); --border: rgba(255,255,255,0.06); --text: #e0e0e0; --muted: #999; --accent: #a0b0d0; --accent2: #8899cc; --glow: rgba(150,180,220,0.1); --card-bg: rgba(20,20,30,0.4); }
-    [data-theme="chrome"] { --bg: #1a1a1a; --panel: rgba(30,30,30,0.95); --border: #2a2a2a; --text: #e0e0e0; --muted: #999; --accent: #bbb; --accent2: #aaa; --glow: rgba(200,200,220,0.08); --card-bg: #1e1e1e; }
-    [data-theme="white"] { --bg: #f5f5f7; --panel: #fff; --border: #e5e5e5; --text: #1a1a1a; --muted: #999; --accent: #0a84ff; --accent2: #0070e0; --glow: rgba(10,132,255,0.1); --card-bg: #fff; }
-    .settings-page { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; transition: background 0.5s ease, color 0.5s ease; }
-    .settings-page::-webkit-scrollbar { width: 4px; } .settings-page::-webkit-scrollbar-track { background: transparent; } .settings-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-    .settings-content { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 24px 20px 60px; }
+    .settings-page { background: #0b0b0a; color: #e8d5c4; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; }
+    .settings-page::-webkit-scrollbar { width: 4px; } .settings-page::-webkit-scrollbar-track { background: transparent; } .settings-page::-webkit-scrollbar-thumb { background: rgba(212,165,116,0.12); border-radius: 2px; }
+    .settings-content { max-width: 560px; margin: 0 auto; padding: 24px 20px 60px; }
     .settings-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
-    .settings-back { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: 500; transition: all 0.2s; font-family: inherit; }
-    .settings-back:hover { border-color: var(--accent); box-shadow: 0 0 16px var(--glow); }
+    .settings-back { background: rgba(18,18,16,0.9); border: 1px solid rgba(212,165,116,0.12); color: #e8d5c4; padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: 500; transition: all 0.2s; font-family: inherit; }
+    .settings-back:hover { border-color: #d4a574; }
     .settings-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
     .settings-section { margin-bottom: 28px; }
-    .settings-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 10px; font-weight: 600; }
-    .settings-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 4px 0; overflow: hidden; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-    .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px; cursor: pointer; font-size: 14px; transition: background 0.15s; border-bottom: 1px solid var(--border); }
+    .settings-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #6a5a4a; margin-bottom: 10px; font-weight: 600; }
+    .settings-card { background: rgba(18,18,16,0.9); border: 1px solid rgba(212,165,116,0.12); border-radius: 16px; padding: 4px 0; overflow: hidden; }
+    .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px; cursor: pointer; font-size: 14px; transition: background 0.15s; border-bottom: 1px solid rgba(212,165,116,0.06); }
     .settings-row:last-child { border-bottom: none; }
     .settings-row:hover { background: rgba(255,255,255,0.02); }
-    .settings-row-left { display: flex; align-items: center; gap: 10px; font-weight: 500; }
-    .settings-row-right { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-    .settings-value { color: var(--muted); font-size: 13px; }
-    .settings-input { padding: 8px 12px; border-radius: 8px; font-size: 13px; width: 170px; text-align: right; font-family: inherit; background: var(--panel); border: 1px solid var(--border); color: var(--text); }
-    .settings-btn { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; font-family: inherit; transition: all 0.2s; }
-    .settings-btn:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
+    .settings-value { color: #8a7a6a; font-size: 13px; }
+    .settings-input { padding: 8px 12px; border-radius: 8px; font-size: 13px; width: 170px; text-align: right; font-family: inherit; background: rgba(18,18,16,0.9); border: 1px solid rgba(212,165,116,0.12); color: #e8d5c4; }
+    .settings-btn { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(212,165,116,0.12); background: rgba(18,18,16,0.9); color: #e8d5c4; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; font-family: inherit; transition: all 0.2s; }
+    .settings-btn:hover { border-color: #d4a574; }
     .settings-btn.danger { background: rgba(255,69,58,0.08); border-color: rgba(255,69,58,0.2); color: #ff453a; }
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .theme-option { padding: 14px 10px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; font-size: 12px; font-weight: 600; text-align: center; transition: all 0.2s; font-family: inherit; }
-    .theme-option:hover { border-color: var(--accent); transform: translateY(-1px); }
-    .theme-option.active { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
+    .theme-option:hover { border-color: #d4a574; transform: translateY(-1px); }
+    .theme-option.active { border-color: #d4a574; box-shadow: 0 0 20px rgba(212,165,116,0.2); }
     .theme-option.gold { background: #0b0b0a; color: #d4a574; border-color: rgba(212,165,116,0.3); }
     .theme-option.midnight { background: #0a0a0a; color: #e0e0e0; }
     .theme-option.glass { background: rgba(20,20,30,0.6); color: #e0e0e0; backdrop-filter: blur(10px); }
     .theme-option.chrome { background: #1a1a1a; color: #e0e0e0; }
     .theme-option.white { background: #f5f5f7; color: #1a1a1a; }
-    .roast-slider { width: 100%; margin: 8px 0; accent-color: var(--accent); }
-    .roast-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
-    .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px 0; }
-    .badge-item { text-align: center; padding: 12px 8px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); font-size: 10px; color: var(--muted); transition: all 0.2s; }
-    .badge-item.earned { border-color: var(--accent); color: var(--accent); }
-    .badge-icon { font-size: 22px; margin-bottom: 4px; display: block; }
-    .settings-theme-pill { position: fixed; bottom: 24px; right: 24px; z-index: 100; display: flex; gap: 6px; padding: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    .theme-option.chromatic { background: linear-gradient(135deg, #0b0b0a, #1a1a2e); color: #d4a574; }
+    .theme-option.liquid { background: #111; color: #ccc; }
+    .theme-option.rainbow { background: #0a0a0a; color: #fff; }
+    .settings-theme-pill { position: fixed; bottom: 24px; right: 24px; z-index: 100; display: flex; gap: 6px; padding: 6px; background: rgba(18,18,16,0.9); border: 1px solid rgba(212,165,116,0.12); border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
     .settings-theme-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
-    .settings-theme-dot:hover { transform: scale(1.15); border-color: var(--accent); }
-    .settings-theme-dot.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
+    .settings-theme-dot:hover { transform: scale(1.15); border-color: #d4a574; }
+    .settings-theme-dot.active { border-color: #d4a574; box-shadow: 0 0 12px rgba(212,165,116,0.3); }
     .settings-theme-dot.gold { background: #0b0b0a; border-color: rgba(212,165,116,0.4); }
     .settings-theme-dot.midnight { background: #0a0a0a; }
     .settings-theme-dot.glass { background: rgba(20,20,30,0.8); backdrop-filter: blur(10px); }
     .settings-theme-dot.chrome { background: #1a1a1a; }
     .settings-theme-dot.white { background: #f5f5f7; }
-    @media (max-width: 480px) { .settings-content { padding: 16px 12px 80px; } .settings-title { font-size: 22px; } .theme-grid { grid-template-columns: repeat(2, 1fr); } .badge-grid { grid-template-columns: repeat(3, 1fr); } .settings-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; } .settings-theme-dot { width: 24px; height: 24px; } }
+    @media (max-width: 480px) { .settings-content { padding: 16px 12px 80px; } .settings-title { font-size: 22px; } .theme-grid { grid-template-columns: repeat(2, 1fr); } .settings-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; } .settings-theme-dot { width: 24px; height: 24px; } }
   </style>
 </head>
 <body class="settings-page" data-theme="gold">
@@ -71,89 +62,32 @@
     <div class="settings-theme-dot glass" data-theme="glass" title="Glass"></div>
     <div class="settings-theme-dot chrome" data-theme="chrome" title="Chrome"></div>
     <div class="settings-theme-dot white" data-theme="white" title="Light"></div>
+    <div class="settings-theme-dot chromatic" data-theme="chromatic" title="Chromatic" style="background:linear-gradient(135deg,#d4a574,#4a7fc0);"></div>
+    <div class="settings-theme-dot liquid" data-theme="liquid" title="Liquid Metal" style="background:linear-gradient(135deg,#888,#aaa,#999);"></div>
+    <div class="settings-theme-dot rainbow" data-theme="rainbow" title="Rainbow" style="background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#ff9ff3);"></div>
   </div>
 
   <div class="settings-content">
-    <div class="settings-header">
-      <button class="settings-back" onclick="history.back()">Back</button>
-      <h1 class="settings-title">Settings</h1>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-section-title">Profile</div>
-      <div class="settings-card">
-        <div class="settings-row"><span>Avatar</span><span class="settings-value" id="settingsAvatar"></span></div>
-        <div class="settings-row"><span>Username</span><input class="settings-input" id="settingsUsername" placeholder="username" onchange="saveProfile()"></div>
-        <div class="settings-row"><span>Display Name</span><input class="settings-input" id="settingsDisplayName" placeholder="What AI calls you" onchange="saveProfile()"></div>
-        <button class="settings-btn" onclick="location.href='accounts.html'">Account Settings</button>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-section-title">GitHub Integration</div>
-      <div class="settings-card" id="githubSettings">
-        <div class="settings-row" id="githubConnectRow" onclick="connectGitHub()">
-          <div class="settings-row-left">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            <span id="githubConnectLabel">Connect GitHub</span>
-          </div>
-          <div class="settings-row-right" id="githubStatus">Disconnected</div>
-        </div>
-        <div class="settings-row" id="githubRepoRow" style="display:none;" onclick="selectRepo()">
-          <div class="settings-row-left">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            <span id="githubRepoLabel">Connect Repository</span>
-          </div>
-          <div class="settings-row-right">Select</div>
-        </div>
-        <button class="settings-btn danger" id="githubDisconnectBtn" style="display:none;" onclick="disconnectGitHub()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px;"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg> Disconnect Repository
-        </button>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-section-title">Theme</div>
-      <div class="theme-grid">
-        <button class="theme-option gold active" onclick="changeTheme('gold')">Gold</button>
-        <button class="theme-option midnight" onclick="changeTheme('midnight')">Midnight</button>
-        <button class="theme-option glass" onclick="changeTheme('glass')">Glass</button>
-        <button class="theme-option chrome" onclick="changeTheme('chrome')">Chrome</button>
-        <button class="theme-option white" onclick="changeTheme('white')">Light</button>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-section-title">Roast Intensity</div>
-      <div class="settings-card">
-        <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
-          <span>How hard Chrxmaticc roasts you</span>
-          <input type="range" min="0" max="100" value="50" step="25" class="roast-slider" id="roastSlider" onchange="updateRoastLevel(this.value)">
-          <div class="roast-label"><span>Helpful</span><span>Standard</span><span>Brutal</span><span>Crying</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-section-title">Badges</div>
-      <div class="settings-card"><div class="badge-grid" id="badgeGrid">
-        <div class="badge-item" id="badge-awakened"><span class="badge-icon">&#9670;</span>Awakened</div>
-        <div class="badge-item" id="badge-versatile"><span class="badge-icon">&#9733;</span>Versatile</div>
-        <div class="badge-item" id="badge-masochist"><span class="badge-icon">&#9760;</span>Masochist</div>
-        <div class="badge-item" id="badge-essayist"><span class="badge-icon">&#9998;</span>Essayist</div>
-        <div class="badge-item" id="badge-perfectionist"><span class="badge-icon">&#9830;</span>Perfectionist</div>
-        <div class="badge-item" id="badge-indecisive"><span class="badge-icon">&#9925;</span>Indecisive</div>
-      </div></div>
-    </div>
-
-    <div class="settings-section"><div class="settings-section-title">Data</div><div class="settings-card"><button class="settings-btn danger" onclick="clearAllData()">Clear All Local Data</button></div></div>
-    <div class="settings-section"><div class="settings-section-title">About</div><div class="settings-card">
-      <div class="settings-row"><span>Version</span><span class="settings-value">v1.3.0</span></div>
-      <div class="settings-row"><span>Author</span><span class="settings-value">Chrxmee-Midnightt</span></div>
-      <div class="settings-row"><span>AI</span><span class="settings-value">Groq</span></div>
-      <div class="settings-row"><span>Themes</span><span class="settings-value">5</span></div>
-      <div class="settings-row"><span>Workflows</span><span class="settings-value">6</span></div>
+    <div class="settings-header"><button class="settings-back" onclick="history.back()">Back</button><h1 class="settings-title">Settings</h1></div>
+    <div class="settings-section"><div class="settings-section-title">Profile</div><div class="settings-card"><div class="settings-row"><span>Avatar</span><span class="settings-value" id="settingsAvatar"></span></div><div class="settings-row"><span>Username</span><input class="settings-input" id="settingsUsername" placeholder="username" onchange="saveProfile()"></div><div class="settings-row"><span>Display Name</span><input class="settings-input" id="settingsDisplayName" placeholder="What AI calls you" onchange="saveProfile()"></div><button class="settings-btn" onclick="location.href='accounts.html'">Account Settings</button></div></div>
+    <div class="settings-section"><div class="settings-section-title">GitHub Integration</div><div class="settings-card" id="githubSettings">
+      <div class="settings-row" id="githubConnectRow" onclick="connectGitHub()"><div class="settings-row-left" style="display:flex;align-items:center;gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg><span id="githubConnectLabel">Connect GitHub</span></div><div class="settings-row-right" id="githubStatus">Disconnected</div></div>
+      <div class="settings-row" id="githubRepoRow" style="display:none;" onclick="selectRepo()"><div class="settings-row-left" style="display:flex;align-items:center;gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg><span id="githubRepoLabel">Connect Repository</span></div><div class="settings-row-right">Select</div></div>
+      <button class="settings-btn danger" id="githubDisconnectBtn" style="display:none;" onclick="disconnectGitHub()">Disconnect Repository</button>
     </div></div>
+    <div class="settings-section"><div class="settings-section-title">Theme</div><div class="theme-grid">
+      <button class="theme-option gold active" onclick="changeTheme('gold')">Gold</button>
+      <button class="theme-option midnight" onclick="changeTheme('midnight')">Midnight</button>
+      <button class="theme-option glass" onclick="changeTheme('glass')">Glass</button>
+      <button class="theme-option chrome" onclick="changeTheme('chrome')">Chrome</button>
+      <button class="theme-option white" onclick="changeTheme('white')">Light</button>
+      <button class="theme-option chromatic" onclick="changeTheme('chromatic')" style="background:linear-gradient(135deg,#0b0b0a,#1a1a2e);color:#d4a574;">Chromatic</button>
+      <button class="theme-option liquid" onclick="changeTheme('liquid')" style="background:#111;color:#ccc;">Liquid Metal</button>
+      <button class="theme-option rainbow" onclick="changeTheme('rainbow')" style="background:#0a0a0a;color:#fff;">Rainbow</button>
+    </div></div>
+    <div class="settings-section"><div class="settings-section-title">Roast Intensity</div><div class="settings-card"><div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;"><span>How hard Chrxmaticc roasts you</span><input type="range" min="0" max="100" value="50" step="25" class="roast-slider" id="roastSlider" onchange="updateRoastLevel(this.value)" style="width:100%;accent-color:#d4a574;"><div style="display:flex;justify-content:space-between;font-size:11px;color:#8a7a6a;width:100%;"><span>Helpful</span><span>Standard</span><span>Brutal</span><span>Crying</span></div></div></div></div>
+    <div class="settings-section"><div class="settings-section-title">Data</div><div class="settings-card"><button class="settings-btn danger" onclick="clearAllData()">Clear All Local Data</button></div></div>
+    <div class="settings-section"><div class="settings-section-title">About</div><div class="settings-card"><div class="settings-row"><span>Version</span><span class="settings-value">v1.4.0</span></div><div class="settings-row"><span>Author</span><span class="settings-value">Chrxmee-Midnightt</span></div><div class="settings-row"><span>AI</span><span class="settings-value">Groq + Claude</span></div><div class="settings-row"><span>Themes</span><span class="settings-value">8</span></div><div class="settings-row"><span>Workflows</span><span class="settings-value">6</span></div></div></div>
   </div>
   <script src="app.js"></script>
 </body>
