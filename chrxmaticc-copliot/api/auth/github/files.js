@@ -20,7 +20,7 @@ module.exports = async function(req, res) {
     var defaultBranch = repoData.default_branch || 'main';
 
     // Get the file tree (top-level only, limit depth)
-    var treeRes = await fetch('https://api.github.com/repos/' + repo + '/git/trees/' + defaultBranch + '?recursive=0', {
+    var treeRes = await fetch('https://api.github.com/repos/' + repo + '/git/trees/' + defaultBranch + '?recursive=1', {
       headers: { 'Authorization': 'Bearer ' + token, 'User-Agent': 'Chrxmaticc-Copilot', 'Accept': 'application/json' }
     });
     var treeData = await treeRes.json();
