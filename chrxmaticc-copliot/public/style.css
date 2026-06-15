@@ -25,7 +25,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica
 @keyframes chromeShimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
 /* ═══════════════════════════════════════════
-   IMAGE CONSTRAINTS — FORCE ALL IMAGES TO FIT
+   IMAGE CONSTRAINTS
    ═══════════════════════════════════════════ */
 .sidebar img, .chat-item img, .sidebar-profile img, .sidebar-avatar img, .sidebar-profile-avatar img, .mini-chat-avatar img, .chat-item-avatar img { max-width: 28px !important; max-height: 28px !important; width: 28px !important; height: 28px !important; object-fit: contain !important; border-radius: 50% !important; flex-shrink: 0 !important; }
 .topbar-logo-sm img, .topbar-avatar-sm img, .chrome-logo-sm img { max-width: 26px !important; max-height: 26px !important; width: 26px !important; height: 26px !important; object-fit: cover !important; border-radius: 50% !important; }
@@ -70,6 +70,11 @@ body.theme-gold { background: #0b0b0a; color: #e8d5c4; }
 .theme-gold .settings-row { border-bottom: 1px solid rgba(212,165,116,0.06); }
 .theme-gold .settings-section-title { color: #6a5a4a; }
 .theme-gold .settings-input, .theme-gold .settings-textarea, .theme-gold .settings-select { background: rgba(18,18,16,0.9); border: 1px solid rgba(212,165,116,0.12); color: #e8d5c4; }
+.theme-gold .provider-badge { color: #8a7a6a; }
+.theme-gold .timestamp { color: #8a7a6a; }
+.theme-gold .sidebar-close { color: #8a7a6a; }
+.theme-gold .input-btn { color: #8a7a6a; }
+.theme-gold .input-btn:hover { color: #e8d5c4; }
 
 /* ── Midnight ── */
 body.theme-midnight { background: #0a0a0a; color: #e0e0e0; }
@@ -95,6 +100,11 @@ body.theme-midnight { background: #0a0a0a; color: #e0e0e0; }
 .theme-midnight .settings-row { border-bottom: 1px solid #1a1a1a; }
 .theme-midnight .settings-section-title { color: #666; }
 .theme-midnight .settings-input, .theme-midnight .settings-textarea, .theme-midnight .settings-select { background: #0f0f0f; border: 1px solid #1a1a1a; color: #e0e0e0; }
+.theme-midnight .provider-badge { color: #8e8e93; }
+.theme-midnight .timestamp { color: #8e8e93; }
+.theme-midnight .sidebar-close { color: #8e8e93; }
+.theme-midnight .input-btn { color: #8e8e93; }
+.theme-midnight .input-btn:hover { color: #e0e0e0; }
 
 /* ── Glass ── */
 body.theme-glass { background: #0a0a0f; color: #e0e0e0; }
@@ -121,6 +131,11 @@ body.theme-glass { background: #0a0a0f; color: #e0e0e0; }
 .theme-glass .settings-row { border-bottom: 1px solid rgba(255,255,255,0.06); }
 .theme-glass .settings-section-title { color: rgba(255,255,255,0.5); }
 .theme-glass .settings-input, .theme-glass .settings-textarea, .theme-glass .settings-select { background: rgba(25,25,35,0.5); border: 1px solid rgba(255,255,255,0.06); color: #e0e0e0; }
+.theme-glass .provider-badge { color: #999; }
+.theme-glass .timestamp { color: #999; }
+.theme-glass .sidebar-close { color: #999; }
+.theme-glass .input-btn { color: #999; }
+.theme-glass .input-btn:hover { color: #e0e0e0; }
 
 /* ── Chrome ── */
 body.theme-chrome { background: #1a1a1a; color: #e0e0e0; }
@@ -146,6 +161,11 @@ body.theme-chrome { background: #1a1a1a; color: #e0e0e0; }
 .theme-chrome .settings-row { border-bottom: 1px solid #2a2a2a; }
 .theme-chrome .settings-section-title { color: #888; }
 .theme-chrome .settings-input, .theme-chrome .settings-textarea, .theme-chrome .settings-select { background: #222; border: 1px solid #2a2a2a; color: #e0e0e0; }
+.theme-chrome .provider-badge { color: #999; }
+.theme-chrome .timestamp { color: #999; }
+.theme-chrome .sidebar-close { color: #999; }
+.theme-chrome .input-btn { color: #999; }
+.theme-chrome .input-btn:hover { color: #e0e0e0; }
 
 /* ── Light / White ── */
 body.theme-white { background: #f5f5f7; color: #1a1a1a; }
@@ -172,6 +192,11 @@ body.theme-white { background: #f5f5f7; color: #1a1a1a; }
 .theme-white .settings-row { border-bottom: 1px solid #f0f0f0; }
 .theme-white .settings-section-title { color: #999; }
 .theme-white .settings-input, .theme-white .settings-textarea, .theme-white .settings-select { background: #f5f5f7; border: 1px solid #e5e5e5; color: #1a1a1a; }
+.theme-white .provider-badge { color: #999; }
+.theme-white .timestamp { color: #999; }
+.theme-white .sidebar-close { color: #999; }
+.theme-white .input-btn { color: #999; }
+.theme-white .input-btn:hover { color: #1a1a1a; }
 
 /* ═══════════════════════════════════════════
    LAYOUT
@@ -210,6 +235,7 @@ body.theme-white { background: #f5f5f7; color: #1a1a1a; }
 .bubble-row.ai .bubble { border-bottom-left-radius: 4px; }
 .timestamp { font-size: 10px; margin: 3px 8px; opacity: 0; transition: opacity 0.2s; }
 .bubble-row:hover .timestamp { opacity: 1; }
+.provider-badge { font-size: 9px; margin: 2px 8px; opacity: 0.5; font-style: italic; letter-spacing: 0.3px; }
 .typing-indicator { display: none; align-self: flex-start; padding: 12px 16px; gap: 5px; }
 .typing-indicator.visible { display: flex; }
 .typing-dot { width: 7px; height: 7px; border-radius: 50%; animation: bounce 1.2s infinite; }
