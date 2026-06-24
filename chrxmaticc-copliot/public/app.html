@@ -12,194 +12,446 @@
   <title>Chrxmaticc Copilot</title>
   <link rel="stylesheet" href="style.css">
   <script defer src="analytics.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
-    html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; position: fixed; inset: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; transition: background 0.5s ease, color 0.5s ease; }
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;width:100%;overflow:hidden;position:fixed;inset:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;transition:background 0.5s ease,color 0.5s ease}
 
-    .loading-screen { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; transition: opacity 0.5s ease, visibility 0.5s ease; opacity: 1; visibility: visible; }
-    .loading-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    .loading-ring { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; animation: ringPulse 2s ease-in-out infinite; }
-    .loading-ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    @keyframes ringPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-    .loading-icon { width: 48px; height: 48px; }
-    .loading-icon img { width: 100%; height: 100%; object-fit: contain; }
-    .loading-text { font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+    /* ── LANDING STATE ── */
+    .landing-container{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease,visibility 0.6s ease,transform 0.8s cubic-bezier(0.22,1,0.36,1)}
+    .landing-container.hidden{opacity:0;visibility:hidden;pointer-events:none;transform:scale(0.95)}
+    .landing-mesh{width:180px;height:180px;border-radius:50%;cursor:grab;position:relative;margin-bottom:20px;transition:transform 0.3s ease}
+    .landing-mesh:active{cursor:grabbing}
+    .landing-mesh canvas{width:100%!important;height:100%!important;border-radius:50%}
+    .landing-greeting{font-size:26px;font-weight:700;letter-spacing:-0.5px;text-align:center;margin-bottom:6px;background:linear-gradient(135deg,#c9956b,#d4a574,#c9956b);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:greetingShimmer 3s ease-in-out infinite}
+    @keyframes greetingShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    .landing-subtitle{font-size:13px;color:#8a7a6a;text-align:center;margin-bottom:28px;max-width:360px;line-height:1.5;opacity:0.8}
 
-    #app { display: flex; height: 100%; width: 100%; position: relative; z-index: 1; }
-    .sidebar { position: fixed; left: -300px; top: 0; bottom: 0; width: 280px; z-index: 100; transition: left 0.3s cubic-bezier(0.25,0.8,0.25,1.2); display: flex; flex-direction: column; padding: 16px; overflow-y: auto; }
-    .sidebar.open { left: 0; }
-    .sidebar-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .sidebar-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
-    .sidebar-avatar img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
-    .sidebar-title { font-size: 18px; font-weight: 700; flex: 1; }
-    .sidebar-close { margin-left: auto; background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; }
-    .sidebar-new-chat { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px; border-radius: 10px; border: 1px solid; font-size: 13px; cursor: pointer; margin-bottom: 12px; font-family: inherit; }
-    .sidebar-new-chat svg { width: 16px; height: 16px; flex-shrink: 0; }
-    .sidebar-chats { flex: 1; overflow-y: auto; }
-    .chat-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 10px; cursor: pointer; margin-bottom: 2px; }
-    .chat-item img { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; flex-shrink: 0; }
-    .chat-item-name { font-size: 13px; font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-    .chat-item-settings { background: none; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
-    .chat-item:hover .chat-item-settings { opacity: 1; }
-    .chat-item-settings svg { width: 14px; height: 14px; }
-    .sidebar-footer { border-top: 1px solid; padding-top: 12px; margin-top: 8px; }
-    .sidebar-profile { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 10px; cursor: pointer; font-size: 13px; }
-    .sidebar-profile-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
-    .sidebar-profile-avatar img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
-    .sidebar-profile-name { font-weight: 500; }
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
-    .overlay.visible { display: block; }
+    /* ── CENTER CHATBOX ── */
+    .landing-chatbox-wrap{width:100%;max-width:640px;padding:0 20px;position:relative;z-index:2}
+    .landing-chatbox{width:100%;background:rgba(18,18,16,0.9);border:1px solid rgba(212,165,116,0.15);border-radius:20px;padding:6px;display:flex;align-items:flex-end;gap:8px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 8px 40px rgba(0,0,0,0.4),0 0 0 1px rgba(212,165,116,0.05);transition:border-color 0.3s ease,box-shadow 0.3s ease}
+    .landing-chatbox:focus-within{border-color:#d4a574;box-shadow:0 8px 50px rgba(0,0,0,0.5),0 0 0 1px rgba(212,165,116,0.15),0 0 30px rgba(212,165,116,0.08)}
+    .landing-chatbox textarea{flex:1;background:transparent;border:none;outline:none;color:#e8d5c4;font-size:15px;font-family:inherit;resize:none;max-height:120px;padding:10px 8px;line-height:1.5;min-height:44px}
+    .landing-chatbox textarea::placeholder{color:#5a4a3a;opacity:0.6}
+    .landing-send-btn{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#c9956b,#d4a574);transition:transform 0.2s ease,box-shadow 0.2s ease;margin:4px}
+    .landing-send-btn:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(212,165,116,0.3)}
+    .landing-send-btn svg{width:16px;height:16px;fill:#0b0b0a}
+    .landing-send-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
 
-    .main { flex: 1; display: flex; flex-direction: column; max-width: 720px; margin: 0 auto; width: 100%; height: 100%; min-height: 0; position: relative; }
-    .topbar { padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid; flex-shrink: 0; }
-    .topbar-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px; display: flex; align-items: center; gap: 4px; }
-    .topbar-back { font-size: 26px; line-height: 1; }
-    .topbar-logo-sm { width: 26px; height: 26px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
-    .topbar-logo-sm img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    .topbar-center { flex: 1; cursor: pointer; min-width: 0; }
-    .topbar-name { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
-    .topbar-status { font-size: 10px; display: flex; align-items: center; gap: 4px; }
-    .status-dot { width: 5px; height: 5px; border-radius: 50%; }
-    @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .topbar-util { display: flex; align-items: center; gap: 4px; }
-    .topbar-select { border-radius: 8px; padding: 4px 8px; font-size: 10px; font-weight: 600; cursor: pointer; border: 1px solid; font-family: inherit; -webkit-appearance: none; appearance: none; }
+    /* ── SUGGESTION CHIPS ── */
+    .landing-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:640px;padding:16px 20px 0}
+    .landing-chip{background:rgba(18,18,16,0.8);border:1px solid rgba(212,165,116,0.1);color:#c9b89a;padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.2s ease;white-space:nowrap;backdrop-filter:blur(10px)}
+    .landing-chip:hover{border-color:#d4a574;background:rgba(212,165,116,0.08);color:#e8d5c4;transform:translateY(-1px)}
 
-    .messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
-    .messages::-webkit-scrollbar { display: none; }
-    .bubble-row { display: flex; flex-direction: column; max-width: 82%; animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-    @keyframes popIn { from{opacity:0;transform:scale(0.9) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
-    .bubble-row.user { align-self: flex-end; align-items: flex-end; }
-    .bubble-row.ai { align-self: flex-start; align-items: flex-start; }
-    .bubble { padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.6; word-break: break-word; white-space: pre-wrap; border: 1px solid; }
-    .bubble-row.user .bubble { border-bottom-right-radius: 4px; }
-    .bubble-row.ai .bubble { border-bottom-left-radius: 4px; }
-    .timestamp { font-size: 10px; margin: 3px 8px; opacity: 0; transition: opacity 0.2s; }
-    .bubble-row:hover .timestamp { opacity: 1; }
-    .provider-badge { font-size: 9px; margin: 2px 8px; opacity: 0.5; font-style: italic; letter-spacing: 0.3px; }
-    .typing-cursor { display: inline-block; animation: blink 0.7s infinite; font-weight: 200; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-    .typing-indicator { display: none; align-self: flex-start; padding: 12px 16px; gap: 5px; }
-    .typing-indicator.visible { display: flex; }
-    .typing-dot { width: 7px; height: 7px; border-radius: 50%; animation: bounce 1.2s infinite; }
-    .typing-dot:nth-child(2){animation-delay:0.2s} .typing-dot:nth-child(3){animation-delay:0.4s}
-    @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+    /* ── VIDEO PREVIEW AREA ── */
+    .landing-preview{width:100%;max-width:640px;margin-top:20px;padding:0 20px;display:none}
+    .landing-preview.visible{display:block}
+    .landing-preview-inner{background:rgba(18,18,16,0.6);border:1px solid rgba(212,165,116,0.08);border-radius:16px;overflow:hidden;backdrop-filter:blur(10px);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:#5a4a3a;font-size:13px;position:relative}
+    .landing-preview-inner video{width:100%;height:100%;object-fit:cover;border-radius:16px}
+    .landing-preview-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0.5}
 
-    .code-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-    .code-action-btn { display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; border: 1px solid; font-size: 11px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-    .code-action-btn svg { width: 12px; height: 12px; }
-    .code-block { border-radius: 10px; margin: 6px 0; overflow: hidden; border: 1px solid; border-left: 3px solid; }
-    .code-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; font-size: 10px; border-bottom: 1px solid; }
-    .code-copy { border: none; padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; font-family: inherit; }
-    .code-block pre { padding: 10px 14px; margin: 0; overflow-x: auto; font-size: 12px; line-height: 1.6; font-family: 'SF Mono','Fira Code',monospace; white-space: pre-wrap; word-break: break-word; }
-    .inline-code { padding: 2px 5px; border-radius: 4px; font-family: 'SF Mono','Fira Code',monospace; font-size: 11px; }
+    /* ── THINKING PHASES ── */
+    .phase-overlay{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)}
+    .phase-overlay.visible{display:flex}
+    .phase-card{background:rgba(18,18,16,0.95);border:1px solid rgba(212,165,116,0.15);border-radius:20px;padding:32px 40px;text-align:center;max-width:420px;width:90%;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+    .phase-icon{font-size:36px;margin-bottom:12px;animation:phasePulse 1.5s ease-in-out infinite}
+    @keyframes phasePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:0.7}}
+    .phase-title{font-size:18px;font-weight:700;color:#d4a574;margin-bottom:8px}
+    .phase-subtext{font-size:12px;color:rgba(232,213,196,0.5);line-height:1.6;min-height:32px;transition:opacity 0.4s ease}
+    .phase-progress{width:100%;height:3px;background:rgba(212,165,116,0.1);border-radius:2px;margin-top:16px;overflow:hidden}
+    .phase-progress-bar{height:100%;background:linear-gradient(90deg,#c9956b,#d4a574);border-radius:2px;width:0%;transition:width 0.3s ease}
 
-    .qa-grid { display: none; padding: 12px 14px; border-top: 1px solid; flex-direction: column; gap: 8px; flex-shrink: 0; }
-    .qa-grid.visible { display: flex; }
-    .qa-grid-label { font-size: 12px; font-weight: 600; }
-    .qa-grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .qa-grid-btn { padding: 10px 14px; border-radius: 12px; border: 1px solid; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; text-align: center; transition: all 0.15s; }
-    .qa-grid-btn.custom { border-style: dashed; grid-column: 1 / -1; }
-    .plan-doc { border-radius: 14px; padding: 16px; margin: 8px 0; border: 1px solid; }
-    .plan-doc-title { font-size: 14px; font-weight: 700; }
-    .plan-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .plan-btn { padding: 10px 18px; border-radius: 10px; border: 1px solid; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    /* ── FULL CHAT STATE ── */
+    .chat-container{position:fixed;inset:0;z-index:5;display:none;opacity:0}
+    .chat-container.visible{display:flex;opacity:1}
 
-    .preview-panel { display: none; position: absolute; right: 0; top: 0; bottom: 0; width: 50%; z-index: 50; }
-    .preview-panel.visible { display: flex; flex-direction: column; }
-    .preview-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid; font-size: 12px; }
-    .preview-iframe { flex: 1; border: none; width: 100%; }
-
-    .inputbar { padding: 10px 14px; border-top: 1px solid; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .input-wrap { flex: 1; border-radius: 24px; display: flex; align-items: center; padding: 0 14px; min-height: 40px; border: 1px solid; }
-    #userInput { background: transparent; border: none; outline: none; font-size: 14px; font-family: inherit; width: 100%; resize: none; max-height: 100px; padding: 10px 0; line-height: 1.4; }
-    .input-pill { display: flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; border: 1px solid; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; position: relative; }
-    .input-pill svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .input-pill.workflow-pill { min-width: 74px; justify-content: center; }
-    .input-pill.personality-pill { min-width: 74px; justify-content: center; }
-    .input-pill.mode-pill { min-width: 34px; justify-content: center; padding: 7px 8px; }
-    .github-badge { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 1.5px solid; }
-    .github-badge.visible { display: flex; }
-    .github-badge svg { width: 11px; height: 11px; }
-    .input-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; }
-    .input-btn svg { width: 18px; height: 18px; }
-    .commit-btn { display: none; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 20px; border: 1px solid; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
-    .commit-btn.visible { display: flex; }
-    .commit-btn svg { width: 14px; height: 14px; }
-    .send-btn { width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .send-btn svg { width: 15px; height: 15px; }
-
-    .file-preview { display: none; padding: 8px 14px; border-top: 1px solid; align-items: center; gap: 10px; }
-    .file-preview.visible { display: flex; }
-    .file-preview img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
-
-    .app-theme-pill { position: fixed; bottom: 100px; right: 12px; z-index: 150; display: flex; flex-direction: column; gap: 4px; padding: 4px; border-radius: 20px; border: 1px solid; backdrop-filter: blur(20px); box-shadow: 0 4px 24px rgba(0,0,0,0.4); opacity: 0.4; transition: opacity 0.3s; }
-    .app-theme-pill:hover { opacity: 1; }
-    .app-theme-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-    .app-theme-dot.active { box-shadow: 0 0 8px rgba(0,0,0,0.3); }
-
-    .app-toast { position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%); padding: 10px 18px; border-radius: 12px; font-size: 12px; z-index: 300; backdrop-filter: blur(20px); display: flex; align-items: center; gap: 10px; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; pointer-events: none; font-weight: 500; max-width: 380px; border: 1px solid; border-left: 3px solid; }
-    @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-    @keyframes toastOut { from{opacity:1;transform:translateX(-50%) translateY(0)} to{opacity:0;transform:translateX(-50%) translateY(-6px)} }
-    .app-toast svg { width: 16px; height: 16px; flex-shrink: 0; }
-    .wwcd-btn { position: fixed; bottom: 140px; right: 16px; z-index: 200; width: 36px; height: 36px; border-radius: 50%; border: 1px solid; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); opacity: 0.5; }
-    .wwcd-btn:hover { opacity: 1; }
-    .wwcd-btn svg { width: 16px; height: 16px; }
-    .chat-menu { position: fixed; z-index: 500; border-radius: 12px; padding: 6px; min-width: 160px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); border: 1px solid; }
-    .chat-menu button { display: block; width: 100%; padding: 10px 14px; border: none; background: transparent; font-size: 12px; text-align: left; cursor: pointer; font-family: inherit; border-radius: 8px; transition: background 0.15s; }
-
-    @media (max-width: 480px) { .topbar { padding: 8px 12px; } .bubble { font-size: 13px; padding: 10px 14px; } .input-pill { padding: 5px 8px; font-size: 10px; } .sidebar { width: 260px; } .qa-grid-options { grid-template-columns: 1fr; } }
+    /* ── RESPONSIVE ── */
+    @media(max-width:480px){
+      .landing-greeting{font-size:20px}
+      .landing-chatbox-wrap{padding:0 16px}
+      .landing-chips{padding:12px 16px 0;gap:6px}
+      .landing-chip{font-size:11px;padding:6px 12px}
+      .landing-mesh{width:140px;height:140px}
+    }
   </style>
 </head>
 <body class="theme-gold">
-  <div id="loadingScreen" class="loading-screen"><div class="loading-ring"><img src="chrome.gif" alt="Loading"></div><div class="loading-icon"><img src="icon.png" alt="Chrxmaticc"></div><div class="loading-text">Chrxmaticc Copilot</div></div>
-  <div id="app">
-    <div id="sidebar" class="sidebar">
-      <div class="sidebar-header"><div class="sidebar-avatar" id="sidebarAvatar"><img src="icon.png" alt="Avatar"></div><div class="sidebar-title">Chats</div><button class="sidebar-close" onclick="toggleSidebar()">&times;</button></div>
-      <button class="sidebar-new-chat" onclick="newChat()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Chat</button>
-      <div class="sidebar-chats" id="savedChatsList"></div>
-      <div class="sidebar-footer"><div class="sidebar-profile" onclick="location.href='settings.html'"><div class="sidebar-profile-avatar" id="profileAvatar"><img src="icon.png" alt="Profile"></div><div class="sidebar-profile-name" id="profileName">Guest</div></div></div>
+  <!-- ═══════════════════════════════════════════
+   LANDING / DEMO STATE
+   ═══════════════════════════════════════════ -->
+  <div class="landing-container" id="landingContainer">
+    <!-- 3D Icon Mesh -->
+    <div class="landing-mesh" id="landingMesh">
+      <canvas id="landingMeshCanvas"></canvas>
     </div>
-    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
-    <div id="main" class="main">
-      <div class="topbar">
-        <button class="topbar-btn" onclick="toggleSidebar()"><span class="topbar-back">&lsaquo;</span><span class="topbar-logo-sm"><img src="chrome.gif" alt="Chrxmaticc"></span></button>
-        <div class="topbar-center"><div class="topbar-name">Chrxmaticc Copilot</div><div class="topbar-status"><span id="statusDot" class="status-dot online"></span><span id="statusText">Online</span></div></div>
-        <div class="topbar-util">
-          <select id="typingSpeedSelect" class="topbar-select" onchange="changeTypingSpeed(this.value)"><option value="0">Off</option><option value="10" selected>1x</option><option value="20">2x</option><option value="30">3x</option><option value="40">4x</option><option value="50">5x</option></select>
-          <button class="input-btn" onclick="toggleChatSearch()" title="Search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
-          <button class="input-btn" onclick="toggleTTS()" title="TTS"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg></button>
-          <button class="input-btn" onclick="location.href='settings.html'" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
+
+    <!-- Greeting -->
+    <div class="landing-greeting">Ready to learn or what slowpoke?</div>
+    <div class="landing-subtitle">nah just kidding, or maybe?<br>Start a conversation below.</div>
+
+    <!-- Center Chatbox -->
+    <div class="landing-chatbox-wrap">
+      <div class="landing-chatbox">
+        <textarea id="landingInput" rows="1" placeholder="Ask anything..."></textarea>
+        <button class="landing-send-btn" id="landingSendBtn" onclick="sendFromLanding()">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Suggestion Chips -->
+    <div class="landing-chips" id="landingChips">
+      <button class="landing-chip" onclick="selectChip('Write a React landing page component')">🖥️ React component</button>
+      <button class="landing-chip" onclick="selectChip('Create a dark mode toggle in CSS')">🎨 Dark mode toggle</button>
+      <button class="landing-chip" onclick="selectChip('Explain how async/await works')">📖 Async/Await</button>
+      <button class="landing-chip" onclick="selectChip('Build a REST API with Express')">🚀 Express API</button>
+      <button class="landing-chip" onclick="selectChip('Debug this Python error')">🐍 Python debug</button>
+      <button class="landing-chip" onclick="selectChip('Design a database schema')">🗄️ DB Schema</button>
+      <button class="landing-chip" onclick="selectChip('Write unit tests for my code')">🧪 Unit tests</button>
+      <button class="landing-chip" onclick="selectChip('Optimize this function')">⚡ Optimize</button>
+      <button class="landing-chip" onclick="selectChip('Convert JavaScript to TypeScript')">🔄 JS to TS</button>
+      <button class="landing-chip" onclick="selectChip('Generate a README for my project')">📝 README</button>
+    </div>
+
+    <!-- Video Preview Area -->
+    <div class="landing-preview" id="landingPreview">
+      <div class="landing-preview-inner">
+        <div class="landing-preview-placeholder">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Preview</span>
         </div>
       </div>
-      <div class="messages" id="messages"><div class="typing-indicator" id="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
-      <div class="preview-panel" id="previewPanel"><div class="preview-header"><span>Live Preview</span><button onclick="togglePreview()">x</button></div><iframe class="preview-iframe" id="previewIframe" sandbox="allow-scripts"></iframe></div>
-      <div class="file-preview" id="filePreview" style="display:none;"><img id="filePreviewImg" src="" style="display:none;" alt="Preview"><span id="filePreviewInfo"></span><button onclick="clearFile()">&times;</button></div>
-      <div class="qa-grid" id="qaGrid"></div>
-      <div class="inputbar">
-        <button class="input-btn" id="micBtn" onclick="toggleMic()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg></button>
-        <button class="input-pill workflow-pill" id="workflowPill" onclick="cycleWorkflow()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H7a4 4 0 00-4 4v2.5a1.5 1.5 0 001.5 1.5h0A1.5 1.5 0 006 12.5V14a4 4 0 004 4h1"/><path d="M16 21h1a4 4 0 004-4v-2.5a1.5 1.5 0 00-1.5-1.5h0a1.5 1.5 0 01-1.5-1.5V10a4 4 0 00-4-4h-1"/></svg><span id="workflowLabel">Code</span><div class="github-badge" id="workflowGithubBadge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></div></button>
-        <button class="input-pill personality-pill" id="personalityPill" onclick="cyclePersonality()"><span id="personalityLabel">Sonnet</span></button>
-        <button class="input-pill mode-pill" id="modePill" onclick="toggleModePopover()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="14" y2="6"/><circle cx="17" cy="6" r="2"/><line x1="4" y1="12" x2="8" y2="12"/><circle cx="12" cy="12" r="2"/><line x1="4" y1="18" x2="16" y2="18"/><circle cx="19" cy="18" r="2"/></svg></button>
-        <button class="commit-btn" id="commitBtn" onclick="commitToRepo()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>Commit</button>
-        <div class="input-wrap"><textarea id="userInput" rows="1" placeholder="Message"></textarea></div>
-        <button class="input-btn" id="attachBtn" onclick="triggerFileUpload()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
-        <input type="file" id="fileInput" style="display:none" accept="image/*,.js,.json,.html,.css,.md,.txt,.py,.glsl,.yml,.yaml,.xml,.svg" onchange="handleFileUpload(event)">
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+   THINKING PHASES OVERLAY
+   ═══════════════════════════════════════════ -->
+  <div class="phase-overlay" id="phaseOverlay">
+    <div class="phase-card">
+      <div class="phase-icon" id="phaseIcon">💭</div>
+      <div class="phase-title" id="phaseTitle">Thinking</div>
+      <div class="phase-subtext" id="phaseSubtext">analyzing the request structure…</div>
+      <div class="phase-progress">
+        <div class="phase-progress-bar" id="phaseProgress"></div>
       </div>
     </div>
   </div>
-  <div class="app-theme-pill" id="appThemePill">
-    <div class="app-theme-dot gold active" data-theme="gold" onclick="applyTheme('gold')" title="Gold" style="background:#0b0b0a;"></div>
-    <div class="app-theme-dot midnight" data-theme="midnight" onclick="applyTheme('midnight')" title="Midnight" style="background:#0a0a0a;"></div>
-    <div class="app-theme-dot glass" data-theme="glass" onclick="applyTheme('glass')" title="Glass" style="background:rgba(20,20,30,0.8);"></div>
-    <div class="app-theme-dot chrome" data-theme="chrome" onclick="applyTheme('chrome')" title="Chrome" style="background:#1a1a1a;"></div>
-    <div class="app-theme-dot white" data-theme="white" onclick="applyTheme('white')" title="Light" style="background:#f5f5f7;"></div>
-    <div class="app-theme-dot chromatic" data-theme="chromatic" onclick="applyTheme('chromatic')" title="Chromatic" style="background:linear-gradient(135deg,#d4a574,#4a7fc0);"></div>
-    <div class="app-theme-dot liquid" data-theme="liquid" onclick="applyTheme('liquid')" title="Liquid Metal" style="background:linear-gradient(135deg,#888,#aaa,#999);"></div>
-    <div class="app-theme-dot rainbow" data-theme="rainbow" onclick="applyTheme('rainbow')" title="Rainbow" style="background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#ff9ff3);"></div>
+
+  <!-- ═══════════════════════════════════════════
+   FULL CHAT LAYOUT (hidden initially)
+   ═══════════════════════════════════════════ -->
+  <div class="chat-container" id="chatContainer">
+    <div id="app">
+      <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-avatar" id="sidebarAvatar"><img src="icon.png" alt="Avatar"></div>
+          <div class="sidebar-title">Chats</div>
+          <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
+        </div>
+        <button class="sidebar-new-chat" onclick="newChat()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Chat
+        </button>
+        <div class="sidebar-chats" id="savedChatsList"></div>
+        <div class="sidebar-footer">
+          <div class="sidebar-profile" onclick="location.href='settings.html'">
+            <div class="sidebar-profile-avatar" id="profileAvatar"><img src="icon.png" alt="Profile"></div>
+            <div class="sidebar-profile-name" id="profileName">Guest</div>
+          </div>
+        </div>
+      </div>
+      <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+      <div id="main" class="main">
+        <div class="topbar">
+          <button class="topbar-btn" onclick="toggleSidebar()"><span class="topbar-back">&lsaquo;</span><span class="topbar-logo-sm"><img src="chrome.gif" alt="Chrxmaticc"></span></button>
+          <div class="topbar-center"><div class="topbar-name">Chrxmaticc Copilot</div><div class="topbar-status"><span id="statusDot" class="status-dot online"></span><span id="statusText">Online</span></div></div>
+          <div class="topbar-util">
+            <select id="typingSpeedSelect" class="topbar-select" onchange="changeTypingSpeed(this.value)"><option value="0">Off</option><option value="10" selected>1x</option><option value="20">2x</option><option value="30">3x</option><option value="40">4x</option><option value="50">5x</option></select>
+            <button class="input-btn" onclick="toggleChatSearch()" title="Search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+            <button class="input-btn" onclick="toggleTTS()" title="TTS"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg></button>
+            <button class="input-btn" onclick="location.href='settings.html'" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
+          </div>
+        </div>
+        <div class="messages" id="messages"><div class="typing-indicator" id="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
+        <div class="preview-panel" id="previewPanel"><div class="preview-header"><span>Live Preview</span><button onclick="togglePreview()">x</button></div><iframe class="preview-iframe" id="previewIframe" sandbox="allow-scripts"></iframe></div>
+        <div class="file-preview" id="filePreview" style="display:none;"><img id="filePreviewImg" src="" style="display:none;" alt="Preview"><span id="filePreviewInfo"></span><button onclick="clearFile()">&times;</button></div>
+        <div class="qa-grid" id="qaGrid"></div>
+        <div class="inputbar">
+          <button class="input-btn" id="micBtn" onclick="toggleMic()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg></button>
+          <button class="input-pill workflow-pill" id="workflowPill" onclick="cycleWorkflow()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H7a4 4 0 00-4 4v2.5a1.5 1.5 0 001.5 1.5h0A1.5 1.5 0 006 12.5V14a4 4 0 004 4h1"/><path d="M16 21h1a4 4 0 004-4v-2.5a1.5 1.5 0 00-1.5-1.5h0a1.5 1.5 0 01-1.5-1.5V10a4 4 0 00-4-4h-1"/></svg><span id="workflowLabel">Code</span><div class="github-badge" id="workflowGithubBadge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></div></button>
+          <button class="input-pill personality-pill" id="personalityPill" onclick="cyclePersonality()"><span id="personalityLabel">Sonnet</span></button>
+          <button class="input-pill mode-pill" id="modePill" onclick="toggleModePopover()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="14" y2="6"/><circle cx="17" cy="6" r="2"/><line x1="4" y1="12" x2="8" y2="12"/><circle cx="12" cy="12" r="2"/><line x1="4" y1="18" x2="16" y2="18"/><circle cx="19" cy="18" r="2"/></svg></button>
+          <button class="commit-btn" id="commitBtn" onclick="commitToRepo()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>Commit</button>
+          <div class="input-wrap"><textarea id="userInput" rows="1" placeholder="Message"></textarea></div>
+          <button class="input-btn" id="attachBtn" onclick="triggerFileUpload()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
+          <input type="file" id="fileInput" style="display:none" accept="image/*,.js,.json,.html,.css,.md,.txt,.py,.glsl,.yml,.yaml,.xml,.svg" onchange="handleFileUpload(event)">
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="app-theme-pill" id="appThemePill">
+      <div class="app-theme-dot gold active" data-theme="gold" onclick="applyTheme('gold')" title="Gold" style="background:#0b0b0a;"></div>
+      <div class="app-theme-dot midnight" data-theme="midnight" onclick="applyTheme('midnight')" title="Midnight" style="background:#0a0a0a;"></div>
+      <div class="app-theme-dot glass" data-theme="glass" onclick="applyTheme('glass')" title="Glass" style="background:rgba(20,20,30,0.8);"></div>
+      <div class="app-theme-dot chrome" data-theme="chrome" onclick="applyTheme('chrome')" title="Chrome" style="background:#1a1a1a;"></div>
+      <div class="app-theme-dot white" data-theme="white" onclick="applyTheme('white')" title="Light" style="background:#f5f5f7;"></div>
+      <div class="app-theme-dot chromatic" data-theme="chromatic" onclick="applyTheme('chromatic')" title="Chromatic" style="background:linear-gradient(135deg,#d4a574,#4a7fc0);"></div>
+      <div class="app-theme-dot liquid" data-theme="liquid" onclick="applyTheme('liquid')" title="Liquid Metal" style="background:linear-gradient(135deg,#888,#aaa,#999);"></div>
+      <div class="app-theme-dot rainbow" data-theme="rainbow" onclick="applyTheme('rainbow')" title="Rainbow" style="background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#ff9ff3);"></div>
+    </div>
+    <button class="wwcd-btn" onclick="whatWouldChrxmaticcDo()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.5 7.5L22 3l-4 7.5L24 12l-8 1.5L18 21l-3-6.5L10 22l1-8.5L2 15l5-5.5L0 6l8-3L12 0z"/></svg></button>
+    <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
   </div>
-  <button class="wwcd-btn" onclick="whatWouldChrxmaticcDo()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.5 7.5L22 3l-4 7.5L24 12l-8 1.5L18 21l-3-6.5L10 22l1-8.5L2 15l5-5.5L0 6l8-3L12 0z"/></svg></button>
-  <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+
+  <script>
+    // ═══════════════════════════════════════════
+    //  LANDING PAGE LOGIC
+    // ═══════════════════════════════════════════
+    var landingInput = document.getElementById('landingInput');
+    var landingSendBtn = document.getElementById('landingSendBtn');
+    var landingContainer = document.getElementById('landingContainer');
+    var phaseOverlay = document.getElementById('phaseOverlay');
+    var chatContainer = document.getElementById('chatContainer');
+    var landingPreview = document.getElementById('landingPreview');
+
+    // Auto-resize landing textarea
+    if (landingInput) {
+      landingInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+      landingInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendFromLanding();
+        }
+      });
+    }
+
+    // Select a suggestion chip
+    function selectChip(text) {
+      if (landingInput) {
+        landingInput.value = text;
+        landingInput.style.height = 'auto';
+        landingInput.style.height = Math.min(landingInput.scrollHeight, 120) + 'px';
+        landingInput.focus();
+      }
+    }
+
+    // Send from landing — triggers phase animation then transition
+    function sendFromLanding() {
+      var text = landingInput ? landingInput.value.trim() : '';
+      if (!text) return;
+
+      if (landingSendBtn) landingSendBtn.disabled = true;
+
+      // Store message for when chat opens
+      window._landingMessage = text;
+
+      // Start phase animation
+      showPhaseAnimation(function() {
+        // Phase complete — transition to chat
+        transitionToChat();
+      });
+    }
+
+    // Thinking → Planning → Coding phases
+    function showPhaseAnimation(callback) {
+      if (!phaseOverlay) return callback();
+
+      var phases = [
+        { icon: '💭', title: 'Thinking', subtexts: [
+          'analyzing the request structure…',
+          'identifying key requirements…',
+          'considering edge cases…'
+        ]},
+        { icon: '📋', title: 'Planning', subtexts: [
+          'breaking down into components…',
+          'selecting optimal approach…',
+          'outlining the architecture…'
+        ]},
+        { icon: '⚡', title: 'Coding', subtexts: [
+          'generating implementation…',
+          'applying best practices…',
+          'optimizing for performance…'
+        ]}
+      ];
+
+      var iconEl = document.getElementById('phaseIcon');
+      var titleEl = document.getElementById('phaseTitle');
+      var subtextEl = document.getElementById('phaseSubtext');
+      var progressEl = document.getElementById('phaseProgress');
+
+      phaseOverlay.classList.add('visible');
+
+      function runPhase(index) {
+        if (index >= phases.length) {
+          // All phases done
+          setTimeout(function() {
+            phaseOverlay.classList.remove('visible');
+            if (callback) callback();
+          }, 400);
+          return;
+        }
+
+        var phase = phases[index];
+        if (iconEl) iconEl.textContent = phase.icon;
+        if (titleEl) titleEl.textContent = phase.title;
+        if (progressEl) progressEl.style.width = ((index / phases.length) * 100) + '%';
+
+        // Cycle subtexts
+        var subIdx = 0;
+        if (subtextEl) subtextEl.textContent = phase.subtexts[0];
+
+        var subInterval = setInterval(function() {
+          subIdx++;
+          if (subIdx >= phase.subtexts.length) {
+            clearInterval(subInterval);
+            // Move to next phase
+            if (progressEl) progressEl.style.width = (((index + 1) / phases.length) * 100) + '%';
+            setTimeout(function() { runPhase(index + 1); }, 300);
+          } else {
+            if (subtextEl) {
+              subtextEl.style.opacity = '0';
+              setTimeout(function() {
+                subtextEl.textContent = phase.subtexts[subIdx];
+                subtextEl.style.opacity = '1';
+              }, 200);
+            }
+          }
+        }, 800);
+      }
+
+      if (progressEl) progressEl.style.width = '0%';
+      runPhase(0);
+    }
+
+    // Transition landing → full chat
+    function transitionToChat() {
+      // GSAP animate landing out
+      if (typeof gsap !== 'undefined' && landingContainer) {
+        gsap.to(landingContainer, {
+          opacity: 0,
+          scale: 0.95,
+          duration: 0.5,
+          ease: 'power2.in',
+          onComplete: function() {
+            landingContainer.classList.add('hidden');
+            showChatLayout();
+          }
+        });
+      } else {
+        landingContainer.classList.add('hidden');
+        showChatLayout();
+      }
+    }
+
+    function showChatLayout() {
+      if (chatContainer) {
+        chatContainer.classList.add('visible');
+        if (typeof gsap !== 'undefined') {
+          gsap.fromTo(chatContainer, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' });
+        }
+      }
+
+      // Initialize the app if it hasn't been
+      if (typeof init === 'function') {
+        if (!window._appInitialized) {
+          init();
+          window._appInitialized = true;
+        } else {
+          // Re-grab DOM in case elements were recreated
+          if (typeof grabDOM === 'function') grabDOM();
+        }
+      }
+
+      // Auto-send the landing message into the chat
+      setTimeout(function() {
+        if (window._landingMessage && typeof inputEl !== 'undefined' && inputEl) {
+          inputEl.value = window._landingMessage;
+          inputEl.style.height = 'auto';
+          inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
+          if (typeof sendMessage === 'function') {
+            sendMessage();
+          }
+          window._landingMessage = null;
+        }
+        // Scroll to input
+        if (typeof messagesEl !== 'undefined' && messagesEl) {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+      }, 300);
+    }
+
+    // ═══════════════════════════════════════════
+    //  3D ICON MESH (Mini version for landing)
+    // ═══════════════════════════════════════════
+    (function initLandingMesh() {
+      var canvas = document.getElementById('landingMeshCanvas');
+      var container = document.getElementById('landingMesh');
+      if (!canvas || !container || typeof THREE === 'undefined') return;
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+      camera.position.z = 3;
+
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+      renderer.setSize(180, 180);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Lights
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      var key = new THREE.DirectionalLight(0xffffff, 1);
+      key.position.set(5, 5, 5);
+      scene.add(key);
+      var rim = new THREE.DirectionalLight(0xd4a574, 0.5);
+      rim.position.set(-3, 0, 3);
+      scene.add(rim);
+
+      // Load icon texture
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = 'icon.png';
+      img.onload = function() {
+        var texture = new THREE.CanvasTexture(img);
+        var geo = new THREE.TorusGeometry(0.7, 0.35, 32, 64);
+        var mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.3, metalness: 0.5, color: 0xffffff });
+        var mesh = new THREE.Mesh(geo, mat);
+        scene.add(mesh);
+
+        function anim() {
+          requestAnimationFrame(anim);
+          mesh.rotation.y += 0.005;
+          mesh.rotation.x += 0.002;
+          renderer.render(scene, camera);
+        }
+        anim();
+      };
+
+      // Simple drag
+      var isDragging = false, prevX = 0, prevY = 0;
+      container.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        prevX = e.clientX;
+        prevY = e.clientY;
+        container.style.cursor = 'grabbing';
+      });
+      window.addEventListener('mousemove', function(e) {
+        if (!isDragging || !scene.children.length) return;
+        var mesh = scene.children[scene.children.length - 1];
+        mesh.rotation.y += (e.clientX - prevX) * 0.01;
+        mesh.rotation.x += (e.clientY - prevY) * 0.01;
+        prevX = e.clientX;
+        prevY = e.clientY;
+      });
+      window.addEventListener('mouseup', function() {
+        isDragging = false;
+        if (container) container.style.cursor = 'grab';
+      });
+    })();
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
