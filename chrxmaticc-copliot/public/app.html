@@ -17,150 +17,189 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
     html,body{height:100%;width:100%;overflow:hidden;position:fixed;inset:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;transition:background 0.5s ease,color 0.5s ease}
+    body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;transition:background 0.6s cubic-bezier(0.22,1,0.36,1),color 0.6s cubic-bezier(0.22,1,0.36,1)}
 
-    /* ── LANDING STATE ── */
-    .landing-container{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease,visibility 0.6s ease,transform 0.8s cubic-bezier(0.22,1,0.36,1)}
-    .landing-container.hidden{opacity:0;visibility:hidden;pointer-events:none;transform:scale(0.95)}
-    .landing-mesh{width:180px;height:180px;border-radius:50%;cursor:grab;position:relative;margin-bottom:20px;transition:transform 0.3s ease}
-    .landing-mesh:active{cursor:grabbing}
-    .landing-mesh canvas{width:100%!important;height:100%!important;border-radius:50%}
-    .landing-greeting{font-size:26px;font-weight:700;letter-spacing:-0.5px;text-align:center;margin-bottom:6px;background:linear-gradient(135deg,#c9956b,#d4a574,#c9956b);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:greetingShimmer 3s ease-in-out infinite}
+    /* ═══════════════════════════════════════════
+       LANDING CONTAINER
+       ═══════════════════════════════════════════ */
+    .landing-container{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:opacity 0.5s cubic-bezier(0.4,0,0.2,1),transform 0.6s cubic-bezier(0.22,1,0.36,1),visibility 0.5s}
+    .landing-container.hidden{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-20px)}
+    .landing-inner{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;max-width:680px;padding:0 24px}
+
+    /* ── 3D Mesh ── */
+    .landing-mesh-wrap{position:relative;width:160px;height:160px;margin-bottom:16px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+    .landing-mesh-wrap:active{cursor:grabbing}
+    .landing-mesh-wrap canvas{width:160px!important;height:160px!important;border-radius:50%;display:block}
+    .landing-mesh-glow{position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(212,165,116,0.15) 0%,transparent 70%);pointer-events:none;animation:meshGlow 3s ease-in-out infinite}
+    @keyframes meshGlow{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+
+    /* ── Greeting ── */
+    .landing-greeting{font-size:28px;font-weight:700;letter-spacing:-0.6px;text-align:center;line-height:1.25;margin-bottom:6px;background:linear-gradient(135deg,#c9956b,#d4a574,#c9956b);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:greetingShimmer 4s ease-in-out infinite}
     @keyframes greetingShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-    .landing-subtitle{font-size:13px;color:#8a7a6a;text-align:center;margin-bottom:28px;max-width:360px;line-height:1.5;opacity:0.8}
+    .landing-subtitle{font-size:13px;color:#8a7a6a;text-align:center;max-width:380px;line-height:1.55;opacity:0.75;margin-bottom:24px;letter-spacing:0.1px}
 
-    /* ── CENTER CHATBOX ── */
-    .landing-chatbox-wrap{width:100%;max-width:640px;padding:0 20px;position:relative;z-index:2}
-    .landing-chatbox{width:100%;background:rgba(18,18,16,0.9);border:1px solid rgba(212,165,116,0.15);border-radius:20px;padding:6px;display:flex;align-items:flex-end;gap:8px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 8px 40px rgba(0,0,0,0.4),0 0 0 1px rgba(212,165,116,0.05);transition:border-color 0.3s ease,box-shadow 0.3s ease}
-    .landing-chatbox:focus-within{border-color:#d4a574;box-shadow:0 8px 50px rgba(0,0,0,0.5),0 0 0 1px rgba(212,165,116,0.15),0 0 30px rgba(212,165,116,0.08)}
-    .landing-chatbox textarea{flex:1;background:transparent;border:none;outline:none;color:#e8d5c4;font-size:15px;font-family:inherit;resize:none;max-height:120px;padding:10px 8px;line-height:1.5;min-height:44px}
-    .landing-chatbox textarea::placeholder{color:#5a4a3a;opacity:0.6}
-    .landing-send-btn{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#c9956b,#d4a574);transition:transform 0.2s ease,box-shadow 0.2s ease;margin:4px}
-    .landing-send-btn:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(212,165,116,0.3)}
-    .landing-send-btn svg{width:16px;height:16px;fill:#0b0b0a}
-    .landing-send-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
+    /* ── Chatbox ── */
+    .landing-chatbox-wrap{width:100%;position:relative;z-index:2}
+    .landing-chatbox{width:100%;background:rgba(22,22,20,0.85);border:1px solid rgba(212,165,116,0.12);border-radius:18px;padding:5px;display:flex;align-items:flex-end;gap:6px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 4px 32px rgba(0,0,0,0.35),0 0 0 1px rgba(212,165,116,0.03);transition:border-color 0.35s ease,box-shadow 0.35s ease,transform 0.2s ease}
+    .landing-chatbox:focus-within{border-color:rgba(212,165,116,0.35);box-shadow:0 4px 40px rgba(0,0,0,0.45),0 0 0 1px rgba(212,165,116,0.1),0 0 40px rgba(212,165,116,0.06);transform:translateY(-2px)}
+    .landing-chatbox textarea{flex:1;background:transparent;border:none;outline:none;color:#e8d5c4;font-size:15px;font-family:inherit;resize:none;max-height:130px;padding:11px 10px;line-height:1.5;min-height:46px}
+    .landing-chatbox textarea::placeholder{color:#5a4a3a;opacity:0.5}
+    .landing-send-btn{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#c9956b,#d4a574);transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.2s ease,opacity 0.2s ease;margin:3px;position:relative;overflow:hidden}
+    .landing-send-btn::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,transparent,rgba(255,255,255,0.2),transparent);opacity:0;transition:opacity 0.3s ease}
+    .landing-send-btn:hover{transform:scale(1.08);box-shadow:0 0 28px rgba(212,165,116,0.35)}
+    .landing-send-btn:hover::after{opacity:1}
+    .landing-send-btn:active{transform:scale(0.95)}
+    .landing-send-btn svg{width:17px;height:17px;fill:#0b0b0a;position:relative;z-index:1}
+    .landing-send-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none!important;box-shadow:none!important}
 
-    /* ── SUGGESTION CHIPS ── */
-    .landing-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:640px;padding:16px 20px 0}
-    .landing-chip{background:rgba(18,18,16,0.8);border:1px solid rgba(212,165,116,0.1);color:#c9b89a;padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.2s ease;white-space:nowrap;backdrop-filter:blur(10px)}
-    .landing-chip:hover{border-color:#d4a574;background:rgba(212,165,116,0.08);color:#e8d5c4;transform:translateY(-1px)}
+    /* ── Suggestion Chips ── */
+    .landing-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;padding:18px 0 0}
+    .landing-chip{background:rgba(22,22,20,0.7);border:1px solid rgba(212,165,116,0.08);color:#b8a890;padding:9px 17px;border-radius:22px;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.25s cubic-bezier(0.22,1,0.36,1);white-space:nowrap;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);letter-spacing:0.1px}
+    .landing-chip:hover{border-color:rgba(212,165,116,0.3);background:rgba(212,165,116,0.07);color:#e8d5c4;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+    .landing-chip:active{transform:scale(0.96)}
 
-    /* ── VIDEO PREVIEW AREA ── */
-    .landing-preview{width:100%;max-width:640px;margin-top:20px;padding:0 20px;display:none}
-    .landing-preview.visible{display:block}
-    .landing-preview-inner{background:rgba(18,18,16,0.6);border:1px solid rgba(212,165,116,0.08);border-radius:16px;overflow:hidden;backdrop-filter:blur(10px);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:#5a4a3a;font-size:13px;position:relative}
-    .landing-preview-inner video{width:100%;height:100%;object-fit:cover;border-radius:16px}
-    .landing-preview-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0.5}
+    /* ── Theme Switcher (Landing) ── */
+    .landing-themes{display:flex;gap:8px;justify-content:center;padding:20px 0 0;flex-wrap:wrap}
+    .landing-theme-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.25s cubic-bezier(0.22,1,0.36,1);position:relative}
+    .landing-theme-dot:hover{transform:scale(1.2)}
+    .landing-theme-dot.active{border-color:#d4a574;box-shadow:0 0 14px rgba(212,165,116,0.35);transform:scale(1.1)}
+    .landing-theme-dot::after{content:attr(data-label);position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:9px;color:#8a7a6a;opacity:0;transition:opacity 0.2s ease;white-space:nowrap;pointer-events:none}
+    .landing-theme-dot:hover::after{opacity:1}
 
-    /* ── THINKING PHASES ── */
-    .phase-overlay{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)}
+    /* ── Video Preview ── */
+    .landing-preview{width:100%;margin-top:16px;display:none}
+    .landing-preview.visible{display:block;animation:previewSlideUp 0.5s cubic-bezier(0.22,1,0.36,1)}
+    @keyframes previewSlideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .landing-preview-inner{background:rgba(22,22,20,0.5);border:1px solid rgba(212,165,116,0.06);border-radius:14px;overflow:hidden;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative}
+    .landing-preview-inner video{width:100%;height:100%;object-fit:cover;border-radius:14px}
+    .landing-preview-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;color:#5a4a3a;font-size:12px;opacity:0.5}
+
+    /* ═══════════════════════════════════════════
+       PHASE OVERLAY
+       ═══════════════════════════════════════════ */
+    .phase-overlay{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
     .phase-overlay.visible{display:flex}
-    .phase-card{background:rgba(18,18,16,0.95);border:1px solid rgba(212,165,116,0.15);border-radius:20px;padding:32px 40px;text-align:center;max-width:420px;width:90%;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
-    .phase-icon{font-size:36px;margin-bottom:12px;animation:phasePulse 1.5s ease-in-out infinite}
-    @keyframes phasePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:0.7}}
-    .phase-title{font-size:18px;font-weight:700;color:#d4a574;margin-bottom:8px}
-    .phase-subtext{font-size:12px;color:rgba(232,213,196,0.5);line-height:1.6;min-height:32px;transition:opacity 0.4s ease}
-    .phase-progress{width:100%;height:3px;background:rgba(212,165,116,0.1);border-radius:2px;margin-top:16px;overflow:hidden}
-    .phase-progress-bar{height:100%;background:linear-gradient(90deg,#c9956b,#d4a574);border-radius:2px;width:0%;transition:width 0.3s ease}
+    .phase-card{background:rgba(22,22,20,0.95);border:1px solid rgba(212,165,116,0.12);border-radius:22px;padding:36px 44px;text-align:center;max-width:420px;width:90%;backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:0 24px 64px rgba(0,0,0,0.55);animation:phaseCardIn 0.5s cubic-bezier(0.22,1,0.36,1)}
+    @keyframes phaseCardIn{from{opacity:0;transform:scale(0.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .phase-icon{font-size:40px;margin-bottom:10px;animation:phaseIconPulse 2s ease-in-out infinite}
+    @keyframes phaseIconPulse{0%,100%{transform:scale(1);opacity:0.9}50%{transform:scale(1.12);opacity:1}}
+    .phase-title{font-size:20px;font-weight:700;color:#d4a574;margin-bottom:10px;letter-spacing:-0.3px}
+    .phase-subtext{font-size:13px;color:rgba(232,213,196,0.55);line-height:1.6;min-height:36px;transition:opacity 0.35s ease}
+    .phase-progress{width:100%;height:4px;background:rgba(212,165,116,0.08);border-radius:3px;margin-top:18px;overflow:hidden}
+    .phase-progress-bar{height:100%;background:linear-gradient(90deg,#c9956b,#d4a574,#c9956b);background-size:200% 100%;border-radius:3px;transition:width 0.5s cubic-bezier(0.22,1,0.36,1);animation:progressShimmer 2s linear infinite}
+    @keyframes progressShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-    /* ── FULL CHAT STATE ── */
+    /* ═══════════════════════════════════════════
+       CHAT CONTAINER
+       ═══════════════════════════════════════════ */
     .chat-container{position:fixed;inset:0;z-index:5;display:none;opacity:0}
-    .chat-container.visible{display:flex;opacity:1}
+    .chat-container.visible{display:flex;opacity:1;animation:chatFadeIn 0.6s cubic-bezier(0.22,1,0.36,1)}
+    @keyframes chatFadeIn{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:blur(0)}}
+    #app{display:flex;height:100%;width:100%;position:relative;z-index:1}
 
-    /* ── RESPONSIVE ── */
-    @media(max-width:480px){
-      .landing-greeting{font-size:20px}
-      .landing-chatbox-wrap{padding:0 16px}
-      .landing-chips{padding:12px 16px 0;gap:6px}
-      .landing-chip{font-size:11px;padding:6px 12px}
-      .landing-mesh{width:140px;height:140px}
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════ */
+    @media(max-width:520px){
+      .landing-greeting{font-size:22px}
+      .landing-subtitle{font-size:12px;margin-bottom:18px}
+      .landing-chatbox-wrap{padding:0 12px}
+      .landing-inner{padding:0 12px}
+      .landing-chips{gap:6px;padding:14px 0 0}
+      .landing-chip{font-size:11px;padding:7px 13px}
+      .landing-mesh-wrap{width:130px;height:130px;margin-bottom:10px}
+      .landing-mesh-wrap canvas{width:130px!important;height:130px!important}
+      .landing-themes{gap:6px;padding:16px 0 0}
+      .landing-theme-dot{width:22px;height:22px}
     }
   </style>
 </head>
 <body class="theme-gold">
   <!-- ═══════════════════════════════════════════
-   LANDING / DEMO STATE
+   LANDING
    ═══════════════════════════════════════════ -->
   <div class="landing-container" id="landingContainer">
-    <!-- 3D Icon Mesh -->
-    <div class="landing-mesh" id="landingMesh">
-      <canvas id="landingMeshCanvas"></canvas>
-    </div>
-
-    <!-- Greeting -->
-    <div class="landing-greeting">Ready to learn or what slowpoke?</div>
-    <div class="landing-subtitle">nah just kidding, or maybe?<br>Start a conversation below.</div>
-
-    <!-- Center Chatbox -->
-    <div class="landing-chatbox-wrap">
-      <div class="landing-chatbox">
-        <textarea id="landingInput" rows="1" placeholder="Ask anything..."></textarea>
-        <button class="landing-send-btn" id="landingSendBtn" onclick="sendFromLanding()">
-          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-        </button>
+    <div class="landing-inner">
+      <!-- 3D Mesh -->
+      <div class="landing-mesh-wrap" id="landingMeshWrap">
+        <div class="landing-mesh-glow"></div>
+        <canvas id="landingMeshCanvas"></canvas>
       </div>
-    </div>
 
-    <!-- Suggestion Chips -->
-    <div class="landing-chips" id="landingChips">
-      <button class="landing-chip" onclick="selectChip('Write a React landing page component')">🖥️ React component</button>
-      <button class="landing-chip" onclick="selectChip('Create a dark mode toggle in CSS')">🎨 Dark mode toggle</button>
-      <button class="landing-chip" onclick="selectChip('Explain how async/await works')">📖 Async/Await</button>
-      <button class="landing-chip" onclick="selectChip('Build a REST API with Express')">🚀 Express API</button>
-      <button class="landing-chip" onclick="selectChip('Debug this Python error')">🐍 Python debug</button>
-      <button class="landing-chip" onclick="selectChip('Design a database schema')">🗄️ DB Schema</button>
-      <button class="landing-chip" onclick="selectChip('Write unit tests for my code')">🧪 Unit tests</button>
-      <button class="landing-chip" onclick="selectChip('Optimize this function')">⚡ Optimize</button>
-      <button class="landing-chip" onclick="selectChip('Convert JavaScript to TypeScript')">🔄 JS to TS</button>
-      <button class="landing-chip" onclick="selectChip('Generate a README for my project')">📝 README</button>
-    </div>
+      <!-- Greeting -->
+      <div class="landing-greeting">Ready to build or what slowpoke?</div>
+      <div class="landing-subtitle">nah just kidding… or maybe?<br>Start a conversation and watch the magic happen.</div>
 
-    <!-- Video Preview Area -->
-    <div class="landing-preview" id="landingPreview">
-      <div class="landing-preview-inner">
-        <div class="landing-preview-placeholder">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span>Preview</span>
+      <!-- Chatbox -->
+      <div class="landing-chatbox-wrap">
+        <div class="landing-chatbox">
+          <textarea id="landingInput" rows="1" placeholder="Ask anything…"></textarea>
+          <button class="landing-send-btn" id="landingSendBtn" onclick="sendFromLanding()">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Suggestion Chips -->
+      <div class="landing-chips" id="landingChips">
+        <button class="landing-chip" onclick="selectChip('Build a responsive React navbar component')">🖥️ React component</button>
+        <button class="landing-chip" onclick="selectChip('Create a dark mode toggle with CSS variables')">🎨 Dark mode toggle</button>
+        <button class="landing-chip" onclick="selectChip('Explain how async/await works in JavaScript')">📖 Async/Await</button>
+        <button class="landing-chip" onclick="selectChip('Write a REST API with Express and TypeScript')">🚀 Express API</button>
+        <button class="landing-chip" onclick="selectChip('Debug this Python recursion error')">🐍 Python debug</button>
+        <button class="landing-chip" onclick="selectChip('Design a PostgreSQL database schema')">🗄️ DB Schema</button>
+        <button class="landing-chip" onclick="selectChip('Write comprehensive unit tests with Jest')">🧪 Unit tests</button>
+        <button class="landing-chip" onclick="selectChip('Optimize this React render loop')">⚡ Optimize</button>
+        <button class="landing-chip" onclick="selectChip('Convert this JavaScript file to TypeScript')">🔄 JS to TS</button>
+        <button class="landing-chip" onclick="selectChip('Generate a professional README for my project')">📝 README</button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <div class="landing-themes" id="landingThemes">
+        <div class="landing-theme-dot active" data-theme="gold" data-label="Gold" onclick="landingSetTheme('gold')" style="background:#0b0b0a;"></div>
+        <div class="landing-theme-dot" data-theme="midnight" data-label="Midnight" onclick="landingSetTheme('midnight')" style="background:#0a0a0a;"></div>
+        <div class="landing-theme-dot" data-theme="glass" data-label="Glass" onclick="landingSetTheme('glass')" style="background:rgba(20,20,30,0.8);"></div>
+        <div class="landing-theme-dot" data-theme="chrome" data-label="Chrome" onclick="landingSetTheme('chrome')" style="background:#1a1a1a;"></div>
+        <div class="landing-theme-dot" data-theme="white" data-label="Light" onclick="landingSetTheme('white')" style="background:#f5f5f7;"></div>
+        <div class="landing-theme-dot" data-theme="chromatic" data-label="Chromatic" onclick="landingSetTheme('chromatic')" style="background:linear-gradient(135deg,#d4a574,#4a7fc0);"></div>
+        <div class="landing-theme-dot" data-theme="liquid" data-label="Liquid" onclick="landingSetTheme('liquid')" style="background:linear-gradient(135deg,#999,#bbb);"></div>
+        <div class="landing-theme-dot" data-theme="rainbow" data-label="Rainbow" onclick="landingSetTheme('rainbow')" style="background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#ff9ff3);"></div>
+      </div>
+
+      <!-- Video Preview -->
+      <div class="landing-preview" id="landingPreview">
+        <div class="landing-preview-inner">
+          <div class="landing-preview-placeholder">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Demo preview</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ═══════════════════════════════════════════
-   THINKING PHASES OVERLAY
+   PHASE OVERLAY
    ═══════════════════════════════════════════ -->
   <div class="phase-overlay" id="phaseOverlay">
     <div class="phase-card">
       <div class="phase-icon" id="phaseIcon">💭</div>
       <div class="phase-title" id="phaseTitle">Thinking</div>
       <div class="phase-subtext" id="phaseSubtext">analyzing the request structure…</div>
-      <div class="phase-progress">
-        <div class="phase-progress-bar" id="phaseProgress"></div>
-      </div>
+      <div class="phase-progress"><div class="phase-progress-bar" id="phaseProgress"></div></div>
     </div>
   </div>
 
   <!-- ═══════════════════════════════════════════
-   FULL CHAT LAYOUT (hidden initially)
+   CHAT LAYOUT (hidden until transition)
    ═══════════════════════════════════════════ -->
   <div class="chat-container" id="chatContainer">
     <div id="app">
       <div id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-          <div class="sidebar-avatar" id="sidebarAvatar"><img src="icon.png" alt="Avatar"></div>
-          <div class="sidebar-title">Chats</div>
-          <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
-        </div>
-        <button class="sidebar-new-chat" onclick="newChat()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Chat
-        </button>
+        <div class="sidebar-header"><div class="sidebar-avatar" id="sidebarAvatar"><img src="icon.png" alt="Avatar"></div><div class="sidebar-title">Chats</div><button class="sidebar-close" onclick="toggleSidebar()">&times;</button></div>
+        <button class="sidebar-new-chat" onclick="newChat()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Chat</button>
         <div class="sidebar-chats" id="savedChatsList"></div>
-        <div class="sidebar-footer">
-          <div class="sidebar-profile" onclick="location.href='settings.html'">
-            <div class="sidebar-profile-avatar" id="profileAvatar"><img src="icon.png" alt="Profile"></div>
-            <div class="sidebar-profile-name" id="profileName">Guest</div>
-          </div>
-        </div>
+        <div class="sidebar-footer"><div class="sidebar-profile" onclick="location.href='settings.html'"><div class="sidebar-profile-avatar" id="profileAvatar"><img src="icon.png" alt="Profile"></div><div class="sidebar-profile-name" id="profileName">Guest</div></div></div>
       </div>
       <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
       <div id="main" class="main">
@@ -207,20 +246,19 @@
 
   <script>
     // ═══════════════════════════════════════════
-    //  LANDING PAGE LOGIC
+    //  LANDING LOGIC
     // ═══════════════════════════════════════════
     var landingInput = document.getElementById('landingInput');
     var landingSendBtn = document.getElementById('landingSendBtn');
     var landingContainer = document.getElementById('landingContainer');
     var phaseOverlay = document.getElementById('phaseOverlay');
     var chatContainer = document.getElementById('chatContainer');
-    var landingPreview = document.getElementById('landingPreview');
 
     // Auto-resize landing textarea
     if (landingInput) {
       landingInput.addEventListener('input', function() {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        this.style.height = Math.min(this.scrollHeight, 130) + 'px';
       });
       landingInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -230,118 +268,81 @@
       });
     }
 
-    // Select a suggestion chip
     function selectChip(text) {
-      if (landingInput) {
-        landingInput.value = text;
-        landingInput.style.height = 'auto';
-        landingInput.style.height = Math.min(landingInput.scrollHeight, 120) + 'px';
-        landingInput.focus();
-      }
+      if (!landingInput) return;
+      landingInput.value = text;
+      landingInput.style.height = 'auto';
+      landingInput.style.height = Math.min(landingInput.scrollHeight, 130) + 'px';
+      landingInput.focus();
     }
 
-    // Send from landing — triggers phase animation then transition
+    function landingSetTheme(t) {
+      document.body.className = 'theme-' + t;
+      localStorage.setItem('chrxmaticc_theme', t);
+      document.querySelectorAll('.landing-theme-dot').forEach(function(d) {
+        d.classList.toggle('active', d.getAttribute('data-theme') === t);
+      });
+      document.querySelectorAll('.app-theme-dot').forEach(function(d) {
+        d.classList.toggle('active', d.getAttribute('data-theme') === t);
+      });
+      var meta = document.querySelector('meta[name="theme-color"]');
+      var colors = {gold:'#0b0b0a',midnight:'#0a0a0a',glass:'#0a0a0f',chrome:'#1a1a1a',white:'#f5f5f7',chromatic:'#0d0e12',liquid:'#131316',rainbow:'#111118'};
+      if (meta) meta.content = colors[t] || '#0b0b0a';
+    }
+
     function sendFromLanding() {
       var text = landingInput ? landingInput.value.trim() : '';
       if (!text) return;
-
       if (landingSendBtn) landingSendBtn.disabled = true;
-
-      // Store message for when chat opens
       window._landingMessage = text;
-
-      // Start phase animation
-      showPhaseAnimation(function() {
-        // Phase complete — transition to chat
-        transitionToChat();
-      });
+      showPhaseAnimation(function() { transitionToChat(); });
     }
 
-    // Thinking → Planning → Coding phases
     function showPhaseAnimation(callback) {
-      if (!phaseOverlay) return callback();
-
+      if (!phaseOverlay) { if (callback) callback(); return; }
       var phases = [
-        { icon: '💭', title: 'Thinking', subtexts: [
-          'analyzing the request structure…',
-          'identifying key requirements…',
-          'considering edge cases…'
-        ]},
-        { icon: '📋', title: 'Planning', subtexts: [
-          'breaking down into components…',
-          'selecting optimal approach…',
-          'outlining the architecture…'
-        ]},
-        { icon: '⚡', title: 'Coding', subtexts: [
-          'generating implementation…',
-          'applying best practices…',
-          'optimizing for performance…'
-        ]}
+        { icon: '💭', title: 'Thinking', subtexts: ['analyzing the request structure…','identifying key requirements…','considering edge cases…'] },
+        { icon: '📋', title: 'Planning', subtexts: ['breaking down into components…','selecting optimal approach…','outlining the architecture…'] },
+        { icon: '⚡', title: 'Coding', subtexts: ['generating implementation…','applying best practices…','optimizing for performance…'] }
       ];
-
       var iconEl = document.getElementById('phaseIcon');
       var titleEl = document.getElementById('phaseTitle');
       var subtextEl = document.getElementById('phaseSubtext');
       var progressEl = document.getElementById('phaseProgress');
-
       phaseOverlay.classList.add('visible');
-
       function runPhase(index) {
         if (index >= phases.length) {
-          // All phases done
-          setTimeout(function() {
-            phaseOverlay.classList.remove('visible');
-            if (callback) callback();
-          }, 400);
+          setTimeout(function() { phaseOverlay.classList.remove('visible'); if (callback) callback(); }, 400);
           return;
         }
-
-        var phase = phases[index];
-        if (iconEl) iconEl.textContent = phase.icon;
-        if (titleEl) titleEl.textContent = phase.title;
+        var p = phases[index];
+        if (iconEl) iconEl.textContent = p.icon;
+        if (titleEl) titleEl.textContent = p.title;
         if (progressEl) progressEl.style.width = ((index / phases.length) * 100) + '%';
-
-        // Cycle subtexts
-        var subIdx = 0;
-        if (subtextEl) subtextEl.textContent = phase.subtexts[0];
-
-        var subInterval = setInterval(function() {
-          subIdx++;
-          if (subIdx >= phase.subtexts.length) {
-            clearInterval(subInterval);
-            // Move to next phase
+        var si = 0;
+        if (subtextEl) { subtextEl.textContent = p.subtexts[0]; subtextEl.style.opacity = '1'; }
+        var iv = setInterval(function() {
+          si++;
+          if (si >= p.subtexts.length) {
+            clearInterval(iv);
             if (progressEl) progressEl.style.width = (((index + 1) / phases.length) * 100) + '%';
             setTimeout(function() { runPhase(index + 1); }, 300);
-          } else {
-            if (subtextEl) {
-              subtextEl.style.opacity = '0';
-              setTimeout(function() {
-                subtextEl.textContent = phase.subtexts[subIdx];
-                subtextEl.style.opacity = '1';
-              }, 200);
-            }
+          } else if (subtextEl) {
+            subtextEl.style.opacity = '0';
+            setTimeout(function() { subtextEl.textContent = p.subtexts[si]; subtextEl.style.opacity = '1'; }, 200);
           }
         }, 800);
       }
-
       if (progressEl) progressEl.style.width = '0%';
       runPhase(0);
     }
 
-    // Transition landing → full chat
     function transitionToChat() {
-      // GSAP animate landing out
       if (typeof gsap !== 'undefined' && landingContainer) {
-        gsap.to(landingContainer, {
-          opacity: 0,
-          scale: 0.95,
-          duration: 0.5,
-          ease: 'power2.in',
-          onComplete: function() {
-            landingContainer.classList.add('hidden');
-            showChatLayout();
-          }
-        });
+        gsap.to(landingContainer, { opacity: 0, y: -20, duration: 0.45, ease: 'power2.in', onComplete: function() {
+          landingContainer.classList.add('hidden');
+          showChatLayout();
+        }});
       } else {
         landingContainer.classList.add('hidden');
         showChatLayout();
@@ -349,107 +350,95 @@
     }
 
     function showChatLayout() {
-      if (chatContainer) {
-        chatContainer.classList.add('visible');
-        if (typeof gsap !== 'undefined') {
-          gsap.fromTo(chatContainer, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' });
-        }
+      if (!chatContainer) return;
+      chatContainer.classList.add('visible');
+      if (typeof gsap !== 'undefined') {
+        gsap.fromTo(chatContainer, { opacity: 0, filter: 'blur(8px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.55, ease: 'power2.out' });
       }
-
-      // Initialize the app if it hasn't been
       if (typeof init === 'function') {
-        if (!window._appInitialized) {
-          init();
-          window._appInitialized = true;
-        } else {
-          // Re-grab DOM in case elements were recreated
-          if (typeof grabDOM === 'function') grabDOM();
-        }
+        if (!window._appInitialized) { init(); window._appInitialized = true; }
+        else { if (typeof grabDOM === 'function') grabDOM(); }
       }
-
-      // Auto-send the landing message into the chat
       setTimeout(function() {
         if (window._landingMessage && typeof inputEl !== 'undefined' && inputEl) {
           inputEl.value = window._landingMessage;
           inputEl.style.height = 'auto';
           inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
-          if (typeof sendMessage === 'function') {
-            sendMessage();
-          }
+          if (typeof sendMessage === 'function') sendMessage();
           window._landingMessage = null;
-        }
-        // Scroll to input
-        if (typeof messagesEl !== 'undefined' && messagesEl) {
-          messagesEl.scrollTop = messagesEl.scrollHeight;
         }
       }, 300);
     }
 
     // ═══════════════════════════════════════════
-    //  3D ICON MESH (Mini version for landing)
+    //  3D ICON MESH — clean, touch-draggable
     // ═══════════════════════════════════════════
     (function initLandingMesh() {
       var canvas = document.getElementById('landingMeshCanvas');
-      var container = document.getElementById('landingMesh');
-      if (!canvas || !container || typeof THREE === 'undefined') return;
+      var wrap = document.getElementById('landingMeshWrap');
+      if (!canvas || !wrap || typeof THREE === 'undefined') return;
 
+      var size = 160;
       var scene = new THREE.Scene();
-      var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-      camera.position.z = 3;
+      var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+      camera.position.z = 3.2;
 
       var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-      renderer.setSize(180, 180);
+      renderer.setSize(size, size);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x000000, 0);
 
-      // Lights
-      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-      var key = new THREE.DirectionalLight(0xffffff, 1);
-      key.position.set(5, 5, 5);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+      var key = new THREE.DirectionalLight(0xffffff, 0.9);
+      key.position.set(4, 4, 5);
       scene.add(key);
-      var rim = new THREE.DirectionalLight(0xd4a574, 0.5);
-      rim.position.set(-3, 0, 3);
+      var rim = new THREE.DirectionalLight(0xd4a574, 0.45);
+      rim.position.set(-3, -1, 3);
       scene.add(rim);
 
-      // Load icon texture
+      var mesh;
       var img = new Image();
       img.crossOrigin = 'anonymous';
       img.src = 'icon.png';
       img.onload = function() {
         var texture = new THREE.CanvasTexture(img);
-        var geo = new THREE.TorusGeometry(0.7, 0.35, 32, 64);
-        var mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.3, metalness: 0.5, color: 0xffffff });
-        var mesh = new THREE.Mesh(geo, mat);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        var geo = new THREE.TorusGeometry(0.72, 0.38, 48, 80);
+        var mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.25, metalness: 0.55, color: 0xffffff });
+        mesh = new THREE.Mesh(geo, mat);
         scene.add(mesh);
-
-        function anim() {
-          requestAnimationFrame(anim);
-          mesh.rotation.y += 0.005;
-          mesh.rotation.x += 0.002;
-          renderer.render(scene, camera);
-        }
-        anim();
+      };
+      img.onerror = function() {
+        var geo = new THREE.TorusGeometry(0.72, 0.38, 48, 80);
+        var mat = new THREE.MeshStandardMaterial({ roughness: 0.25, metalness: 0.6, color: 0xd4a574 });
+        mesh = new THREE.Mesh(geo, mat);
+        scene.add(mesh);
       };
 
-      // Simple drag
-      var isDragging = false, prevX = 0, prevY = 0;
-      container.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        prevX = e.clientX;
-        prevY = e.clientY;
-        container.style.cursor = 'grabbing';
-      });
-      window.addEventListener('mousemove', function(e) {
-        if (!isDragging || !scene.children.length) return;
-        var mesh = scene.children[scene.children.length - 1];
-        mesh.rotation.y += (e.clientX - prevX) * 0.01;
-        mesh.rotation.x += (e.clientY - prevY) * 0.01;
-        prevX = e.clientX;
-        prevY = e.clientY;
-      });
-      window.addEventListener('mouseup', function() {
-        isDragging = false;
-        if (container) container.style.cursor = 'grab';
-      });
+      function anim() {
+        requestAnimationFrame(anim);
+        if (mesh) { mesh.rotation.y += 0.004; mesh.rotation.x += 0.0015; }
+        renderer.render(scene, camera);
+      }
+      anim();
+
+      // Touch + mouse drag
+      var dragging = false, px = 0, py = 0;
+      function onStart(x, y) { dragging = true; px = x; py = y; wrap.style.cursor = 'grabbing'; }
+      function onMove(x, y) {
+        if (!dragging || !mesh) return;
+        mesh.rotation.y += (x - px) * 0.008;
+        mesh.rotation.x += (y - py) * 0.008;
+        px = x; py = y;
+      }
+      function onEnd() { dragging = false; wrap.style.cursor = 'grab'; }
+      wrap.addEventListener('mousedown', function(e) { e.preventDefault(); onStart(e.clientX, e.clientY); });
+      window.addEventListener('mousemove', function(e) { onMove(e.clientX, e.clientY); });
+      window.addEventListener('mouseup', onEnd);
+      wrap.addEventListener('touchstart', function(e) { if (e.touches.length === 1) { e.preventDefault(); onStart(e.touches[0].clientX, e.touches[0].clientY); } }, {passive: false});
+      wrap.addEventListener('touchmove', function(e) { if (e.touches.length === 1) { e.preventDefault(); onMove(e.touches[0].clientX, e.touches[0].clientY); } }, {passive: false});
+      wrap.addEventListener('touchend', onEnd);
     })();
   </script>
   <script src="app.js"></script>
