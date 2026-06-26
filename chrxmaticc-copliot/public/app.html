@@ -20,11 +20,16 @@
    ═══════════════════════════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;width:100%;overflow:hidden;position:fixed;inset:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;transition:background .5s cubic-bezier(.22,1,.36,1),color .5s cubic-bezier(.22,1,.36,1)}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;transition:background .5s cubic-bezier(.22,1,.36,1),color .5s cubic-bezier(.22,1,.36,1);background:var(--t-bg)!important;color:var(--t-text)!important}
+
+/* ═══════════════════════════════════════════════════════
+   IMAGE CONSTRAINTS
+   ═══════════════════════════════════════════════════════ */
+.sidebar-avatar img,.sidebar-profile img,.chat-item img{max-width:28px!important;max-height:28px!important;width:28px!important;height:28px!important;object-fit:cover!important;border-radius:50%!important;flex-shrink:0!important}
+.topbar-logo{max-width:26px!important;max-height:26px!important;width:26px!important;height:26px!important;object-fit:cover!important;border-radius:50%!important}
 
 /* ═══════════════════════════════════════════════════════
    THEME-AWARE CSS VARIABLES
-   Injected per theme via JS — fallback to gold
    ═══════════════════════════════════════════════════════ */
 :root{
   --t-accent:#d4a574;--t-accent2:#c9956b;--t-glow:rgba(212,165,116,0.25);
@@ -116,7 +121,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 
 /* ── Effort Slider ── */
 .landing-effort-wrap{display:flex;align-items:center;gap:8px}
-.landing-effort-label{font-size:10px;color:var(--t-muted);letter-spacing:.3px;white-space:nowrap}
 .effort-track{
   position:relative;width:110px;height:5px;
   background:rgba(255,255,255,.08);border-radius:4px;cursor:pointer;
@@ -133,8 +137,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
   box-shadow:0 0 8px var(--t-glow);cursor:grab;
 }
 .effort-thumb:active{cursor:grabbing}
-.effort-labels{display:flex;justify-content:space-between;margin-top:4px;width:110px}
-.effort-labels span{font-size:8px;color:var(--t-muted);opacity:.6;letter-spacing:.1px}
 
 /* Ultracode effect overlay */
 .ultracode-flare{
@@ -203,7 +205,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 .l-theme-dot:hover::after{opacity:1}
 
 /* ═══════════════════════════════════════════════════════
-   PHASE OVERLAY (thinking animation pre-chat)
+   PHASE OVERLAY
    ═══════════════════════════════════════════════════════ */
 .phase-overlay{
   position:fixed;inset:0;z-index:50;display:none;
@@ -252,7 +254,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 }
 .sidebar.open{left:0}
 .sidebar-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.sidebar-avatar img{width:28px;height:28px;border-radius:50%;object-fit:cover}
 .sidebar-title{font-size:17px;font-weight:700;flex:1;color:var(--t-text)}
 .sidebar-close{background:none;border:none;font-size:20px;cursor:pointer;padding:4px;color:var(--t-muted);margin-left:auto}
 .sidebar-new{
@@ -279,7 +280,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
   transition:background .15s;
 }
 .sidebar-profile:hover{background:var(--t-glow)}
-.sidebar-profile img{width:28px;height:28px;border-radius:50%;object-fit:cover}
 .overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
   z-index:99;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
@@ -287,68 +287,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 .overlay.visible{display:block}
 
 /* ═══════════════════════════════════════════════════════
-   MAIN CHAT AREA
+   MAIN CHAT AREA (NO TOPBAR)
    ═══════════════════════════════════════════════════════ */
-.main{flex:1;display:flex;flex-direction:column;max-width:720px;margin:0 auto;width:100%;position:relative}
+.main{flex:1;display:flex;flex-direction:column;max-width:800px;margin:0 auto;width:100%;position:relative;padding:0 8px}
 
-/* ── Topbar ── */
-.topbar{
-  padding:10px 16px;display:flex;align-items:center;gap:8px;
-  border-bottom:1px solid var(--t-border);flex-shrink:0;
-  background:var(--t-surface);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  position:sticky;top:0;z-index:10;
+/* ── Header (minimal: just logo + sidebar toggle) ── */
+.chat-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 8px 4px;flex-shrink:0;
 }
-.topbar-back-btn{
-  background:none;border:none;cursor:pointer;padding:4px 6px;
-  color:var(--t-accent);font-size:24px;line-height:1;display:flex;align-items:center;gap:6px;
+.chat-header-left{display:flex;align-items:center;gap:8px}
+.chat-header-toggle{
+  background:none;border:none;cursor:pointer;padding:6px;
+  color:var(--t-accent);font-size:20px;display:flex;align-items:center;
 }
-.topbar-logo{width:26px;height:26px;border-radius:50%;object-fit:cover}
-.topbar-center{flex:1;cursor:pointer;min-width:0}
-.topbar-name{
-  font-size:15px;font-weight:700;letter-spacing:-.3px;
+.chat-header-logo{width:24px;height:24px;border-radius:50%;object-fit:cover}
+.chat-header-name{
+  font-size:14px;font-weight:700;letter-spacing:-.2px;
   background:linear-gradient(135deg,var(--t-accent2),var(--t-accent),var(--t-accent2));
   background-size:200% 200%;-webkit-background-clip:text;
   -webkit-text-fill-color:transparent;background-clip:text;
   animation:greetShimmer 4s ease-in-out infinite;
 }
-.topbar-status{font-size:10px;display:flex;align-items:center;gap:4px;color:var(--t-muted);margin-top:1px}
-.status-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.status-dot.online{background:#30d158;box-shadow:0 0 5px rgba(48,209,88,.5);animation:dotPulse 2.5s ease-in-out infinite}
-.status-dot.thinking{background:var(--t-accent);animation:dotPulse 1s ease-in-out infinite}
-.status-dot.offline{background:#ff453a}
-@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:.4}}
-.topbar-util{display:flex;align-items:center;gap:4px}
-.topbar-util-btn{
-  background:none;border:none;cursor:pointer;padding:6px;
-  color:var(--t-muted);border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  transition:color .2s,background .2s;
-}
-.topbar-util-btn:hover{color:var(--t-accent);background:var(--t-glow)}
-.topbar-util-btn svg{width:16px;height:16px}
-.tts-select{
-  background:var(--t-surface);border:1px solid var(--t-border);
-  color:var(--t-muted);font-size:11px;border-radius:7px;
-  padding:4px 6px;font-family:inherit;cursor:pointer;outline:none;
-}
 
 /* ── Messages ── */
 .messages{
-  flex:1;overflow-y:auto;padding:16px;
+  flex:1;overflow-y:auto;padding:12px 4px;
   display:flex;flex-direction:column;gap:8px;min-height:0;
 }
 .messages::-webkit-scrollbar{display:none}
 
 /* ── Bubble Row ── */
 .bubble-row{
-  display:flex;flex-direction:column;max-width:82%;
+  display:flex;flex-direction:column;max-width:85%;
   animation:bubblePop .32s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes bubblePop{from{opacity:0;transform:scale(.9) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .bubble-row.user{align-self:flex-end;align-items:flex-end}
 .bubble-row.ai{align-self:flex-start;align-items:flex-start}
 .bubble{
-  padding:12px 16px;border-radius:18px;font-size:14px;
+  padding:12px 16px;border-radius:16px;font-size:14px;
   line-height:1.65;word-break:break-word;white-space:pre-wrap;
 }
 .bubble-row.user .bubble{border-bottom-right-radius:4px}
@@ -357,9 +335,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 .bubble-row:hover .timestamp{opacity:1}
 .provider-badge{font-size:9px;margin:2px 8px;opacity:.45;font-style:italic;letter-spacing:.3px;color:var(--t-muted)}
 
-/* ── Thinking Block (inline, collapsible) ── */
+/* ── Thinking Block ── */
 .thinking-block{
-  align-self:flex-start;max-width:82%;
+  align-self:flex-start;max-width:85%;
   background:rgba(255,255,255,.03);border:1px solid var(--t-border);
   border-radius:12px;overflow:hidden;margin-bottom:4px;
   animation:bubblePop .3s cubic-bezier(.34,1.56,.64,1);
@@ -445,7 +423,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 
 /* ── Code Blocks ── */
-.code-block{margin:6px 0;overflow:hidden}
+.code-block{margin:6px 0;overflow:hidden;border-radius:10px}
 .code-header{
   display:flex;justify-content:space-between;align-items:center;
   padding:7px 12px;font-size:10px;
@@ -502,23 +480,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 .file-clear:hover{color:#ff453a}
 
 /* ═══════════════════════════════════════════════════════
-   INPUT BAR (Chat)
+   INPUT BAR — Full width, square chatbox
    ═══════════════════════════════════════════════════════ */
 .inputbar{
-  padding:10px 12px;border-top:1px solid var(--t-border);
-  display:flex;flex-direction:column;gap:8px;flex-shrink:0;
+  padding:8px;border-top:1px solid var(--t-border);
+  display:flex;flex-direction:column;gap:6px;flex-shrink:0;
   background:var(--t-surface);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-radius:16px 16px 0 0;
 }
 
-/* ── Top row: workflow + model + effort ── */
-.inputbar-top{
-  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+/* ── Main input row: full-width square textarea ── */
+.inputbar-main-row{
+  display:flex;align-items:stretch;gap:6px;
+}
+.chat-input-wrap{
+  flex:1;background:rgba(255,255,255,.04);border:1px solid var(--t-border);
+  border-radius:10px;transition:border-color .25s,box-shadow .25s;
+  display:flex;align-items:stretch;
+}
+.chat-input-wrap:focus-within{border-color:var(--t-accent);box-shadow:0 0 0 3px var(--t-glow)}
+#userInput{
+  background:transparent;border:none;outline:none;width:100%;
+  color:var(--t-text);font-size:14px;font-family:inherit;
+  resize:none;max-height:120px;padding:14px;line-height:1.45;
+  border-radius:10px;
+}
+#userInput::placeholder{color:var(--t-muted);opacity:.55}
+.send-btn{
+  width:44px;min-height:44px;border-radius:10px;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:linear-gradient(135deg,var(--t-accent2),var(--t-accent));
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+  align-self:stretch;
+}
+.send-btn:hover{transform:scale(1.03);box-shadow:0 0 24px var(--t-glow)}
+.send-btn:active{transform:scale(.97)}
+.send-btn svg{width:16px;height:16px;fill:var(--t-bg)}
+
+/* ── Bottom row: left quadrant (workflow) + right quadrant (mic, model) ── */
+.inputbar-bottom-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:0 2px;
 }
 
-/* Workflow pill */
+/* Left quadrant: workflow pill + settings gear */
+.inputbar-left{display:flex;align-items:center;gap:6px}
 .workflow-pill{
-  display:flex;align-items:center;gap:5px;padding:6px 12px;
-  border-radius:20px;border:1px solid var(--t-border);
+  display:flex;align-items:center;gap:5px;padding:5px 10px;
+  border-radius:16px;border:1px solid var(--t-border);
   background:var(--t-surface);color:var(--t-text);
   font-size:11px;font-weight:600;cursor:pointer;
   font-family:inherit;transition:all .22s cubic-bezier(.22,1,.36,1);
@@ -528,60 +537,138 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 .workflow-pill.active{
   border-color:var(--t-accent);
   background:var(--t-glow);
-  box-shadow:0 0 16px var(--t-glow),0 0 32px var(--t-glow);
+  box-shadow:0 0 16px var(--t-glow);
   animation:workflowGlow 2.5s ease-in-out infinite;
 }
 @keyframes workflowGlow{
   0%,100%{box-shadow:0 0 12px var(--t-glow)}
-  50%{box-shadow:0 0 28px var(--t-glow),0 0 50px var(--t-glow)}
+  50%{box-shadow:0 0 28px var(--t-glow)}
 }
 .workflow-pill svg{width:12px;height:12px;stroke:var(--t-accent)}
 .gh-badge{
-  position:absolute;top:-6px;right:-6px;width:17px;height:17px;
+  position:absolute;top:-5px;right:-5px;width:16px;height:16px;
   border-radius:50%;background:var(--t-bg);border:1.5px solid var(--t-accent);
   display:none;align-items:center;justify-content:center;
 }
 .gh-badge.visible{display:flex}
-.gh-badge svg{width:10px;height:10px;fill:var(--t-accent)}
+.gh-badge svg{width:9px;height:9px;fill:var(--t-accent)}
 
-/* Model selector */
+/* Right quadrant: mic + model */
+.inputbar-right{display:flex;align-items:center;gap:6px}
+.input-icon-btn{
+  background:none;border:none;cursor:pointer;padding:5px;
+  color:var(--t-muted);display:flex;align-items:center;justify-content:center;
+  border-radius:8px;transition:color .2s,background .2s;flex-shrink:0;
+}
+.input-icon-btn:hover{color:var(--t-accent);background:var(--t-glow)}
+.input-icon-btn svg{width:17px;height:17px}
 .model-select-wrap{position:relative;display:flex;align-items:center}
 .model-select{
   appearance:none;-webkit-appearance:none;
   background:var(--t-surface);border:1px solid var(--t-border);
-  color:var(--t-text);font-size:11px;font-weight:600;font-family:inherit;
-  padding:6px 24px 6px 10px;border-radius:20px;cursor:pointer;outline:none;
+  color:var(--t-text);font-size:10px;font-weight:600;font-family:inherit;
+  padding:5px 20px 5px 8px;border-radius:14px;cursor:pointer;outline:none;
   transition:border-color .2s,box-shadow .2s;white-space:nowrap;
 }
-.model-select:hover,.model-select:focus{border-color:var(--t-accent);box-shadow:0 0 12px var(--t-glow)}
+.model-select:hover,.model-select:focus{border-color:var(--t-accent);box-shadow:0 0 10px var(--t-glow)}
 .model-chevron{
-  position:absolute;right:8px;pointer-events:none;
-  color:var(--t-muted);width:10px;height:10px;
+  position:absolute;right:6px;pointer-events:none;
+  color:var(--t-muted);width:9px;height:9px;
 }
 
-/* Effort bar (chat) */
-.effort-wrap{
-  display:flex;align-items:center;gap:8px;margin-left:auto;
+/* GitHub connect button */
+.github-connect-btn{
+  display:flex;align-items:center;gap:4px;padding:5px 9px;
+  border-radius:14px;border:1px solid var(--t-border);
+  background:var(--t-surface);color:var(--t-muted);
+  font-size:10px;font-weight:600;cursor:pointer;
+  font-family:inherit;transition:all .22s cubic-bezier(.22,1,.36,1);
+  white-space:nowrap;
 }
-.effort-name{font-size:10px;color:var(--t-muted);min-width:52px;text-align:right;letter-spacing:.2px;transition:color .2s}
+.github-connect-btn:hover{border-color:var(--t-accent);color:var(--t-accent);background:var(--t-glow)}
+.github-connect-btn.connected{border-color:var(--t-accent);color:var(--t-accent);background:var(--t-glow)}
+.github-connect-btn svg{width:12px;height:12px}
+
+/* Commit button */
+.commit-btn{
+  display:none;align-items:center;gap:5px;padding:5px 10px;
+  border-radius:14px;border:1px solid var(--t-border);
+  background:var(--t-glow);color:var(--t-accent);
+  font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;
+  white-space:nowrap;transition:all .2s;
+}
+.commit-btn.visible{display:flex}
+.commit-btn:hover{border-color:var(--t-accent);box-shadow:0 0 12px var(--t-glow)}
+.commit-btn svg{width:11px;height:11px;fill:var(--t-accent)}
+
+/* ═══════════════════════════════════════════════════════
+   WORKFLOW SETTINGS POPOVER
+   ═══════════════════════════════════════════════════════ */
+.workflow-popover{
+  position:absolute;bottom:calc(100% + 8px);left:0;
+  background:var(--t-surface);border:1px solid var(--t-border);
+  border-radius:16px;padding:16px;min-width:280px;
+  box-shadow:0 8px 40px rgba(0,0,0,.55);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  display:none;flex-direction:column;gap:12px;z-index:300;
+  animation:menuPop .2s cubic-bezier(.34,1.56,.64,1);
+}
+.workflow-popover.open{display:flex}
+@keyframes menuPop{from{opacity:0;transform:scale(.94) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.wf-pop-header{font-size:13px;font-weight:700;color:var(--t-accent);letter-spacing:-.2px}
+.wf-pop-section{display:flex;flex-direction:column;gap:6px}
+.wf-pop-label{font-size:10px;color:var(--t-muted);text-transform:uppercase;letter-spacing:.5px}
+.wf-pop-toggles{display:flex;flex-wrap:wrap;gap:5px}
+.wf-pop-toggle{
+  padding:5px 10px;border-radius:14px;border:1px solid var(--t-border);
+  background:rgba(255,255,255,.03);color:var(--t-muted);
+  font-size:11px;cursor:pointer;font-family:inherit;
+  transition:all .15s;white-space:nowrap;
+}
+.wf-pop-toggle:hover{border-color:var(--t-accent);color:var(--t-text)}
+.wf-pop-toggle.active{border-color:var(--t-accent);background:var(--t-glow);color:var(--t-accent)}
+
+/* ── Typing Speed Slider (inside popover) ── */
+.wf-speed-wrap{display:flex;align-items:center;gap:8px}
+.wf-speed-label{font-size:10px;color:var(--t-muted);white-space:nowrap;min-width:40px}
+.wf-speed-track{
+  position:relative;flex:1;height:6px;
+  background:rgba(255,255,255,.08);border-radius:4px;cursor:pointer;
+}
+.wf-speed-fill{
+  position:absolute;left:0;top:0;height:100%;border-radius:4px;
+  background:linear-gradient(90deg,var(--t-accent2),var(--t-accent));
+  transition:width .15s ease;pointer-events:none;
+}
+.wf-speed-thumb{
+  position:absolute;top:50%;width:14px;height:14px;border-radius:50%;
+  background:var(--t-accent);border:2px solid var(--t-bg);
+  transform:translate(-50%,-50%);cursor:grab;
+  box-shadow:0 0 8px var(--t-glow);transition:left .15s ease;
+}
+.wf-speed-thumb:active{cursor:grabbing}
+.wf-speed-value{font-size:10px;color:var(--t-text);white-space:nowrap;min-width:28px;text-align:right}
+
+/* ── Effort Bar (inside popover) ── */
+.effort-wrap{display:flex;align-items:center;gap:8px}
+.effort-name{font-size:10px;color:var(--t-muted);min-width:48px;letter-spacing:.2px;transition:color .2s}
 .effort-name.ultracode{color:var(--t-accent);font-weight:700;animation:greetShimmer 1.5s ease-in-out infinite}
 .chat-effort-track{
-  position:relative;width:100px;height:5px;
-  background:rgba(255,255,255,.07);border-radius:4px;cursor:pointer;flex-shrink:0;
+  position:relative;flex:1;height:6px;
+  background:rgba(255,255,255,.07);border-radius:4px;cursor:pointer;
 }
 .chat-effort-fill{
   position:absolute;left:0;top:0;height:100%;border-radius:4px;
   background:linear-gradient(90deg,var(--t-accent2),var(--t-accent));
-  transition:width .2s ease;pointer-events:none;
+  transition:width .15s ease;pointer-events:none;
 }
 .chat-effort-thumb{
   position:absolute;top:50%;width:13px;height:13px;border-radius:50%;
   background:var(--t-accent);border:2px solid var(--t-bg);
-  transform:translateY(-50%);cursor:grab;
-  box-shadow:0 0 8px var(--t-glow);transition:left .2s ease;
+  transform:translate(-50%,-50%);cursor:grab;
+  box-shadow:0 0 8px var(--t-glow);transition:left .15s ease;
 }
 .chat-effort-thumb:active{cursor:grabbing}
-/* Ultracode burst from thumb */
 .effort-burst{
   position:absolute;top:50%;width:100%;height:100%;
   left:0;transform:translateY(-50%);pointer-events:none;
@@ -592,96 +679,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 .effort-burst.active{opacity:.5;animation:burstFlow 1.5s ease-in-out infinite}
 @keyframes burstFlow{0%,100%{background-position:0% 50%;opacity:.4}50%{background-position:100% 50%;opacity:.8}}
 
-/* ── Bottom row: mic, text, attach, send ── */
-.inputbar-bottom{display:flex;align-items:center;gap:8px}
-.input-icon-btn{
-  background:none;border:none;cursor:pointer;padding:6px;
-  color:var(--t-muted);display:flex;align-items:center;justify-content:center;
-  border-radius:9px;transition:color .2s,background .2s;flex-shrink:0;
-}
-.input-icon-btn:hover{color:var(--t-accent);background:var(--t-glow)}
-.input-icon-btn svg{width:18px;height:18px}
-.input-icon-btn.mic-active svg{stroke:var(--t-accent);animation:micPulse 1s ease-in-out infinite}
-@keyframes micPulse{0%,100%{opacity:1}50%{opacity:.4}}
-.chat-input-wrap{
-  flex:1;background:rgba(255,255,255,.04);border:1px solid var(--t-border);
-  border-radius:14px;padding:0 12px;transition:border-color .25s,box-shadow .25s;
-}
-.chat-input-wrap:focus-within{border-color:var(--t-accent);box-shadow:0 0 0 3px var(--t-glow)}
-#userInput{
-  background:transparent;border:none;outline:none;width:100%;
-  color:var(--t-text);font-size:14px;font-family:inherit;
-  resize:none;max-height:100px;padding:11px 0;line-height:1.45;
-}
-#userInput::placeholder{color:var(--t-muted);opacity:.55}
-
-/* ── Attach + menu ── */
-.attach-btn-wrap{position:relative;flex-shrink:0}
-.attach-menu{
-  position:absolute;bottom:calc(100% + 8px);right:0;
-  background:var(--t-surface);border:1px solid var(--t-border);
-  border-radius:14px;padding:6px;min-width:180px;
-  box-shadow:0 8px 40px rgba(0,0,0,.5);
-  display:none;flex-direction:column;gap:2px;
-  animation:menuPop .2s cubic-bezier(.34,1.56,.64,1);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:200;
-}
-.attach-menu.open{display:flex}
-@keyframes menuPop{from{opacity:0;transform:scale(.94) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.attach-menu-item{
-  display:flex;align-items:center;gap:10px;padding:10px 12px;
-  border-radius:9px;cursor:pointer;font-size:13px;color:var(--t-text);
-  background:none;border:none;font-family:inherit;text-align:left;
-  transition:background .15s;
-}
-.attach-menu-item:hover{background:var(--t-glow);color:var(--t-accent)}
-.attach-menu-item svg{width:16px;height:16px;flex-shrink:0;stroke:var(--t-muted)}
-.attach-menu-item:hover svg{stroke:var(--t-accent)}
-
-/* GitHub repo selector */
-.repo-selector{
-  display:none;flex-direction:column;gap:6px;
-  padding:10px 12px;border-top:1px solid var(--t-border);margin-top:2px;
-}
-.repo-selector.visible{display:flex}
-.repo-search{
-  background:rgba(255,255,255,.04);border:1px solid var(--t-border);
-  border-radius:9px;padding:7px 10px;color:var(--t-text);
-  font-size:12px;font-family:inherit;outline:none;width:100%;
-}
-.repo-search:focus{border-color:var(--t-accent)}
-.repo-list{max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
-.repo-item{
-  display:flex;align-items:center;gap:8px;padding:7px 8px;
-  border-radius:8px;cursor:pointer;font-size:12px;color:var(--t-text);
-  transition:background .15s;
-}
-.repo-item:hover{background:var(--t-glow)}
-.repo-item svg{width:13px;height:13px;flex-shrink:0;fill:var(--t-muted)}
-
-/* ── Send button ── */
-.send-btn{
-  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  background:linear-gradient(135deg,var(--t-accent2),var(--t-accent));
-  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
-}
-.send-btn:hover{transform:scale(1.1);box-shadow:0 0 24px var(--t-glow)}
-.send-btn:active{transform:scale(.92)}
-.send-btn svg{width:15px;height:15px;fill:var(--t-bg)}
-
-/* ── Commit button ── */
-.commit-btn{
-  display:none;align-items:center;gap:6px;padding:7px 13px;
-  border-radius:20px;border:1px solid var(--t-border);
-  background:var(--t-glow);color:var(--t-accent);
-  font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;
-  white-space:nowrap;transition:all .2s;
-}
-.commit-btn.visible{display:flex}
-.commit-btn:hover{border-color:var(--t-accent);box-shadow:0 0 14px var(--t-glow)}
-.commit-btn svg{width:13px;height:13px;fill:var(--t-accent)}
-
 /* ── Typing cursor ── */
 .typing-cursor{display:inline-block;animation:blink .7s infinite;font-weight:200;color:var(--t-accent)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
@@ -689,56 +686,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue"
 /* ═══════════════════════════════════════════════════════
    FLOATING ELEMENTS
    ═══════════════════════════════════════════════════════ */
-
-/* Theme pill (chat) */
 .theme-pill{
-  position:fixed;bottom:96px;right:12px;z-index:150;
-  display:flex;flex-direction:column;gap:5px;padding:5px;
-  border-radius:22px;border:1px solid var(--t-border);
+  position:fixed;bottom:120px;right:10px;z-index:150;
+  display:flex;flex-direction:column;gap:4px;padding:4px;
+  border-radius:20px;border:1px solid var(--t-border);
   background:var(--t-surface);backdrop-filter:blur(20px);
   box-shadow:0 4px 24px rgba(0,0,0,.4);
   opacity:.35;transition:opacity .3s;
 }
 .theme-pill:hover{opacity:1}
 .t-dot{
-  width:22px;height:22px;border-radius:50%;cursor:pointer;
+  width:20px;height:20px;border-radius:50%;cursor:pointer;
   border:2px solid transparent;transition:all .22s cubic-bezier(.22,1,.36,1);
 }
 .t-dot:hover{transform:scale(1.18)}
-.t-dot.active{border-color:var(--t-accent);box-shadow:0 0 10px var(--t-glow)}
-
-/* WWCD button */
+.t-dot.active{border-color:var(--t-accent);box-shadow:0 0 8px var(--t-glow)}
 .wwcd-btn{
-  position:fixed;bottom:96px;left:16px;z-index:150;
-  width:36px;height:36px;border-radius:50%;
+  position:fixed;bottom:120px;left:12px;z-index:150;
+  width:34px;height:34px;border-radius:50%;
   border:1px solid var(--t-border);background:var(--t-surface);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   backdrop-filter:blur(10px);opacity:.45;transition:opacity .2s,box-shadow .2s;
 }
-.wwcd-btn:hover{opacity:1;box-shadow:0 0 16px var(--t-glow)}
-.wwcd-btn svg{width:15px;height:15px}
-
-/* Toast */
+.wwcd-btn:hover{opacity:1;box-shadow:0 0 14px var(--t-glow)}
+.wwcd-btn svg{width:14px;height:14px}
 .app-toast{
-  position:fixed;bottom:136px;left:50%;transform:translateX(-50%);
-  padding:10px 18px;border-radius:12px;font-size:12px;z-index:300;
+  position:fixed;bottom:140px;left:50%;transform:translateX(-50%);
+  padding:10px 16px;border-radius:12px;font-size:12px;z-index:300;
   backdrop-filter:blur(20px);display:flex;align-items:center;gap:10px;
   animation:toastIn .3s ease,toastOut .3s ease 2.5s forwards;
-  pointer-events:none;font-weight:500;max-width:360px;
+  pointer-events:none;font-weight:500;max-width:340px;
   border:1px solid var(--t-border);border-left:3px solid var(--t-accent);
   background:var(--t-surface);color:var(--t-text);
 }
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateX(-50%) translateY(-6px)}}
 .app-toast svg{width:15px;height:15px;flex-shrink:0;fill:var(--t-accent)}
-
-/* Confetti canvas */
 .confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:500;display:none}
 
 /* ═══════════════════════════════════════════════════════
    THEME VARIABLE OVERRIDES
-   These override --t-* vars per body class
-   so every component auto-adapts
    ═══════════════════════════════════════════════════════ */
 body.theme-midnight{
   --t-accent:#9090d8;--t-accent2:#6060b0;--t-glow:rgba(130,130,220,.2);
@@ -805,19 +792,16 @@ body.theme-rainbow .bubble-row.user .bubble{background:rgba(255,255,255,.08);bor
   .chip{font-size:11px;padding:7px 13px}
   .landing-mesh-wrap,.landing-mesh-wrap canvas{width:120px!important;height:120px!important}
   .landing-themes{gap:7px;padding:18px 0 0}
-  .inputbar-top{gap:5px}
-  .chat-effort-track{width:80px}
-  .effort-name{min-width:44px}
+  .inputbar-left{gap:4px}
+  .inputbar-right{gap:4px}
   .plan-options{grid-template-columns:1fr}
+  .main{padding:0 4px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body class="theme-gold">
 
-<!-- ═══════════════════════════════════════════════════════
-     ULTRACODE FLARE
-     ═══════════════════════════════════════════════════════ -->
 <div class="ultracode-flare" id="ultraFlare"></div>
 
 <!-- ═══════════════════════════════════════════════════════
@@ -825,18 +809,12 @@ body.theme-rainbow .bubble-row.user .bubble{background:rgba(255,255,255,.08);bor
      ═══════════════════════════════════════════════════════ -->
 <div class="landing-container" id="landingContainer">
   <div class="landing-inner">
-
-    <!-- 3D Mesh -->
     <div class="landing-mesh-wrap" id="landingMeshWrap">
       <div class="mesh-glow"></div>
       <canvas id="landingMeshCanvas"></canvas>
     </div>
-
-    <!-- Greeting -->
     <div class="landing-greeting" id="landingGreeting">Good evening, Chrxmaticc.</div>
     <div class="landing-sub">what are we building today?</div>
-
-    <!-- Chatbox -->
     <div class="landing-chatbox-wrap" style="width:100%;position:relative;z-index:2">
       <div class="landing-box" id="landingBox">
         <textarea class="landing-textarea" id="landingInput" rows="1" placeholder="Type / for skills…"></textarea>
@@ -846,7 +824,6 @@ body.theme-rainbow .bubble-row.user .bubble{background:rgba(255,255,255,.08);bor
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
             </button>
             <input type="file" id="landingFileInput" style="display:none" accept="image/*,.js,.json,.html,.css,.md,.txt,.py">
-            <!-- Effort bar (landing) -->
             <div class="landing-effort-wrap">
               <div class="effort-track" id="landingEffortTrack">
                 <div class="effort-fill" id="landingEffortFill" style="width:50%"></div>
@@ -863,8 +840,6 @@ body.theme-rainbow .bubble-row.user .bubble{background:rgba(255,255,255,.08);bor
         </div>
       </div>
     </div>
-
-    <!-- Suggestion Chips -->
     <div class="landing-chips">
       <button class="chip" onclick="chipSend('Build a responsive React navbar component')">🖥️ React component</button>
       <button class="chip" onclick="chipSend('Create a dark mode toggle with CSS variables')">🎨 Dark mode toggle</button>
@@ -875,8 +850,6 @@ body.theme-rainbow .bubble-row.user .bubble{background:rgba(255,255,255,.08);bor
       <button class="chip" onclick="chipSend('Write comprehensive unit tests with Jest')">🧪 Unit tests</button>
       <button class="chip" onclick="chipSend('Optimize this React render loop')">⚡ Optimize</button>
     </div>
-
-    <!-- Theme dots (landing) -->
     <div class="landing-themes">
       <div class="l-theme-dot active" data-theme="gold" data-label="Gold" onclick="setTheme('gold')" style="background:#0b0b0a"></div>
       <div class="l-theme-dot" data-theme="midnight" data-label="Midnight" onclick="setTheme('midnight')" style="background:#08080f"></div>
@@ -907,8 +880,6 @@ body.theme-rainbow .bubble-row.user .bubble{background:rgba(255,255,255,.08);bor
      ═══════════════════════════════════════════════════════ -->
 <div class="chat-wrap" id="chatWrap">
   <div id="app" style="display:flex;height:100%;width:100%;position:relative">
-
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-avatar"><img src="icon.png" alt=""></div>
@@ -922,155 +893,116 @@ body.theme-rainbow .bubble-row.user .bubble{background:rgba(255,255,255,.08);bor
       <div class="sidebar-chats" id="savedChatsList"></div>
       <div class="sidebar-footer">
         <div class="sidebar-profile" onclick="location.href='settings.html'">
-          <img src="icon.png" alt="" id="profileAvatar">
-          <span id="profileName">Guest</span>
+          <img src="icon.png" alt="" id="profileAvatar"><span id="profileName">Guest</span>
         </div>
       </div>
     </div>
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Main -->
     <div class="main" id="main">
-
-      <!-- Topbar -->
-      <div class="topbar">
-        <button class="topbar-back-btn" onclick="toggleSidebar()">
-          <span style="font-size:22px;line-height:1">&lsaquo;</span>
-          <img class="topbar-logo" src="chrome.gif" alt="Chrxmaticc" onerror="this.src='icon.png'">
-        </button>
-        <div class="topbar-center">
-          <div class="topbar-name">Chrxmaticc Copilot</div>
-          <div class="topbar-status">
-            <span class="status-dot online" id="statusDot"></span>
-            <span id="statusText">Online</span>
-          </div>
-        </div>
-        <div class="topbar-util">
-          <select class="tts-select" id="typingSpeedSelect" onchange="changeTypingSpeed(this.value)">
-            <option value="0">Off</option><option value="10" selected>1x</option>
-            <option value="20">2x</option><option value="30">3x</option>
-            <option value="40">4x</option><option value="50">5x</option>
-          </select>
-          <button class="topbar-util-btn" onclick="toggleChatSearch()" title="Search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </button>
-          <button class="topbar-util-btn" onclick="toggleTTS()" title="Text to speech">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
-          </button>
-          <button class="topbar-util-btn" onclick="location.href='settings.html'" title="Settings">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-          </button>
+      <!-- Minimal header -->
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <button class="chat-header-toggle" onclick="toggleSidebar()">&lsaquo;</button>
+          <img class="chat-header-logo" src="chrome.gif" alt="Chrxmaticc" onerror="this.src='icon.png'">
+          <div class="chat-header-name">Chrxmaticc Copilot</div>
         </div>
       </div>
 
-      <!-- Messages -->
       <div class="messages" id="messages">
-        <div class="typing-indicator" id="typing">
-          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
-        </div>
+        <div class="typing-indicator" id="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
       </div>
 
-      <!-- Live Preview -->
       <div class="preview-panel" id="previewPanel">
-        <div class="preview-header">
-          <span>Live Preview</span>
-          <button class="preview-close" onclick="togglePreview()">✕</button>
-        </div>
+        <div class="preview-header"><span>Live Preview</span><button class="preview-close" onclick="togglePreview()">✕</button></div>
         <iframe class="preview-iframe" id="previewIframe" sandbox="allow-scripts"></iframe>
       </div>
 
-      <!-- File preview bar -->
       <div class="file-preview-bar" id="filePreviewBar">
-        <img id="filePreviewImg" src="" style="display:none" alt="">
-        <span class="file-preview-info" id="filePreviewInfo"></span>
-        <button class="file-clear" onclick="clearFile()">✕</button>
+        <img id="filePreviewImg" src="" style="display:none" alt=""><span class="file-preview-info" id="filePreviewInfo"></span><button class="file-clear" onclick="clearFile()">✕</button>
       </div>
 
-      <!-- Input bar -->
-      <div class="inputbar">
-
-        <!-- Top row -->
-        <div class="inputbar-top">
-          <!-- Workflow pill -->
-          <button class="workflow-pill" id="workflowPill" onclick="cycleWorkflow()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M8 3H7a4 4 0 00-4 4v2.5A1.5 1.5 0 004.5 11h0A1.5 1.5 0 006 12.5V14a4 4 0 004 4h1"/><path d="M16 21h1a4 4 0 004-4v-2.5A1.5 1.5 0 0019.5 13h0a1.5 1.5 0 01-1.5-1.5V10a4 4 0 00-4-4h-1"/></svg>
-            <span id="workflowLabel">Code</span>
-            <div class="gh-badge" id="workflowGhBadge">
-              <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            </div>
-          </button>
-
-          <!-- Model selector -->
-          <div class="model-select-wrap">
-            <select class="model-select" id="modelSelect" onchange="changeModel(this.value)">
-              <option value="conversational">Chrxmaticc Conversational 2.0</option>
-              <option value="sonnet" selected>Chrxmaticc Sonnet 2.3</option>
-              <option value="intermediate">Chrxmaticc Intermediate 1.5</option>
-              <option value="speed">Chrxmaticc Speed 1.0</option>
-              <option value="vision">Chrxmaticc Vision 2.0</option>
-            </select>
-            <svg class="model-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-
-          <!-- Effort bar (chat) -->
-          <div class="effort-wrap">
-            <div class="chat-effort-track" id="chatEffortTrack">
-              <div class="chat-effort-fill" id="chatEffortFill" style="width:50%"></div>
-              <div class="effort-burst" id="effortBurst"></div>
-              <div class="chat-effort-thumb" id="chatEffortThumb" style="left:calc(50% - 6px)"></div>
-            </div>
-            <div class="effort-name" id="effortName">medium</div>
-          </div>
-
-          <!-- Commit button -->
-          <button class="commit-btn" id="commitBtn" onclick="commitToRepo()">
-            <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            Commit
-          </button>
-        </div>
-
-        <!-- Bottom row -->
-        <div class="inputbar-bottom">
-          <button class="input-icon-btn" id="micBtn" onclick="toggleMic()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
-
+      <div class="inputbar" style="position:relative">
+        <!-- Square full-width input -->
+        <div class="inputbar-main-row">
           <div class="chat-input-wrap">
             <textarea id="userInput" rows="1" placeholder="Message Chrxmaticc…"></textarea>
           </div>
-
-          <!-- Attach + menu -->
-          <div class="attach-btn-wrap">
-            <button class="input-icon-btn" onclick="toggleAttachMenu()" title="Attach">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-            <div class="attach-menu" id="attachMenu">
-              <button class="attach-menu-item" onclick="triggerFileUpload()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-                Attach file
-              </button>
-              <button class="attach-menu-item" onclick="toggleRepoSelector()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
-                Connect GitHub
-              </button>
-              <!-- Repo selector -->
-              <div class="repo-selector" id="repoSelector">
-                <input class="repo-search" type="text" placeholder="Search repos…" oninput="filterRepos(this.value)">
-                <div class="repo-list" id="repoList"></div>
-              </div>
-            </div>
-          </div>
-          <input type="file" id="fileInput" style="display:none" accept="image/*,.js,.json,.html,.css,.md,.txt,.py,.glsl,.yml,.yaml,.xml,.svg" onchange="handleFileUpload(event)">
-
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">
             <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
           </button>
         </div>
-      </div><!-- /inputbar -->
-    </div><!-- /main -->
-  </div><!-- /app -->
 
-  <!-- Floating: theme pill -->
+        <!-- Bottom row: left (workflow + settings) | right (mic + model + github + commit) -->
+        <div class="inputbar-bottom-row">
+          <div class="inputbar-left">
+            <button class="workflow-pill" id="workflowPill" onclick="cycleWorkflow()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M8 3H7a4 4 0 00-4 4v2.5A1.5 1.5 0 004.5 11h0A1.5 1.5 0 006 12.5V14a4 4 0 004 4h1"/><path d="M16 21h1a4 4 0 004-4v-2.5A1.5 1.5 0 0019.5 13h0a1.5 1.5 0 01-1.5-1.5V10a4 4 0 00-4-4h-1"/></svg>
+              <span id="workflowLabel">Code</span>
+              <div class="gh-badge" id="workflowGhBadge"><svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></div>
+            </button>
+            <button class="input-icon-btn" id="workflowSettingsBtn" onclick="toggleWorkflowSettings()" title="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+
+            <!-- Workflow Settings Popover -->
+            <div class="workflow-popover" id="workflowPopover">
+              <div class="wf-pop-header" id="wfPopHeader">Code Settings</div>
+              <div class="wf-pop-section">
+                <div class="wf-pop-label">Effort</div>
+                <div class="effort-wrap">
+                  <div class="chat-effort-track" id="chatEffortTrack">
+                    <div class="chat-effort-fill" id="chatEffortFill" style="width:50%"></div>
+                    <div class="effort-burst" id="effortBurst"></div>
+                    <div class="chat-effort-thumb" id="chatEffortThumb" style="left:calc(50% - 6px)"></div>
+                  </div>
+                  <div class="effort-name" id="effortName">medium</div>
+                </div>
+              </div>
+              <div class="wf-pop-section">
+                <div class="wf-pop-label">Typing Speed</div>
+                <div class="wf-speed-wrap">
+                  <span class="wf-speed-label">Speed</span>
+                  <div class="wf-speed-track" id="wfSpeedTrack">
+                    <div class="wf-speed-fill" id="wfSpeedFill" style="width:20%"></div>
+                    <div class="wf-speed-thumb" id="wfSpeedThumb" style="left:20%"></div>
+                  </div>
+                  <span class="wf-speed-value" id="wfSpeedValue">1x</span>
+                </div>
+              </div>
+              <div class="wf-pop-section">
+                <div class="wf-pop-label">Options</div>
+                <div class="wf-pop-toggles" id="wfPopToggles"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="inputbar-right">
+            <button class="input-icon-btn" id="micBtn" onclick="toggleMic()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+            </button>
+            <div class="model-select-wrap">
+              <select class="model-select" id="modelSelect" onchange="changeModel(this.value)">
+                <option value="conversational">Conversational</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="speed">Speed</option>
+              </select>
+              <svg class="model-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <button class="github-connect-btn" id="githubConnectBtn" onclick="handleGitHubClick()">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              <span id="githubBtnLabel">GitHub</span>
+            </button>
+            <button class="commit-btn" id="commitBtn" onclick="commitToRepo()">
+              <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              Commit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="theme-pill" id="themePill">
     <div class="t-dot active" data-theme="gold" onclick="setTheme('gold')" title="Gold" style="background:#0b0b0a"></div>
     <div class="t-dot" data-theme="midnight" onclick="setTheme('midnight')" title="Midnight" style="background:#08080f"></div>
@@ -1081,14 +1013,11 @@ body.theme-rainbow .bubble-row.user .bubble{background:rgba(255,255,255,.08);bor
     <div class="t-dot" data-theme="liquid" onclick="setTheme('liquid')" title="Liquid" style="background:linear-gradient(135deg,#888,#bbb)"></div>
     <div class="t-dot" data-theme="rainbow" onclick="setTheme('rainbow')" title="Rainbow" style="background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#ff9ff3)"></div>
   </div>
-
-  <!-- WWCD -->
   <button class="wwcd-btn" onclick="whatWouldChrxmaticcDo()" title="Surprise me">
     <svg viewBox="0 0 24 24" fill="var(--t-accent)"><path d="M12 0l2.5 7.5L22 3l-4 7.5L24 12l-8 1.5L18 21l-3-6.5L10 22l1-8.5L2 15l5-5.5L0 6l8-3L12 0z"/></svg>
   </button>
-
   <canvas class="confetti-canvas" id="confettiCanvas"></canvas>
-</div><!-- /chat-wrap -->
+</div>
 
 <script>
 /* ═══════════════════════════════════════════════════════
@@ -1098,9 +1027,7 @@ var THEME_META={gold:'#0b0b0a',midnight:'#08080f',glass:'#0a0a0f',chrome:'#14141
 function setTheme(t){
   document.body.className='theme-'+t;
   localStorage.setItem('chrxmaticc_theme',t);
-  document.querySelectorAll('[data-theme]').forEach(function(el){
-    el.classList.toggle('active',el.getAttribute('data-theme')===t);
-  });
+  document.querySelectorAll('[data-theme]').forEach(function(el){el.classList.toggle('active',el.getAttribute('data-theme')===t)});
   var meta=document.querySelector('meta[name="theme-color"]');
   if(meta)meta.content=THEME_META[t]||'#0b0b0a';
   updateMeshTheme(t);
@@ -1110,367 +1037,163 @@ function setTheme(t){
 /* ═══════════════════════════════════════════════════════
    GREETING
    ═══════════════════════════════════════════════════════ */
-(function(){
-  var h=new Date().getHours();
-  var g=h<5?'Good night':h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night';
-  var el=document.getElementById('landingGreeting');
-  if(el)el.textContent=g+', Chrxmaticc.';
-})();
+(function(){var h=new Date().getHours();var g=h<5?'Good night':h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night';var el=document.getElementById('landingGreeting');if(el)el.textContent=g+', Chrxmaticc.';})();
 
 /* ═══════════════════════════════════════════════════════
-   3D MESH — WebGL wireframe (Three.js)
+   3D MESH
    ═══════════════════════════════════════════════════════ */
 var _meshScene,_meshRenderer,_meshCamera,_meshMesh,_meshAnimId;
 function initMesh(){
-  var canvas=document.getElementById('landingMeshCanvas');
-  var wrap=document.getElementById('landingMeshWrap');
+  var canvas=document.getElementById('landingMeshCanvas');var wrap=document.getElementById('landingMeshWrap');
   if(!canvas||!wrap||typeof THREE==='undefined')return;
-  var S=150;
-  _meshScene=new THREE.Scene();
-  _meshCamera=new THREE.PerspectiveCamera(40,1,.1,100);
-  _meshCamera.position.z=3.5;
-  _meshRenderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});
-  _meshRenderer.setSize(S,S);
-  _meshRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  _meshRenderer.setClearColor(0x000000,0);
-
-  /* Wireframe icosphere-style geometry */
-  var geo=new THREE.IcosahedronGeometry(1.1,3);
-  var edges=new THREE.EdgesGeometry(geo);
-  var mat=new THREE.LineBasicMaterial({color:0xd4a574,transparent:true,opacity:.55});
-  _meshMesh=new THREE.LineSegments(edges,mat);
-  _meshScene.add(_meshMesh);
-
-  /* Inner solid core */
-  var coreMat=new THREE.MeshBasicMaterial({color:0xd4a574,transparent:true,opacity:.06,wireframe:false});
-  var core=new THREE.Mesh(geo,coreMat);
-  _meshScene.add(core);
-
-  function animate(){
-    _meshAnimId=requestAnimationFrame(animate);
-    _meshMesh.rotation.y+=.004;
-    _meshMesh.rotation.x+=.0012;
-    core.rotation.y=_meshMesh.rotation.y;
-    core.rotation.x=_meshMesh.rotation.x;
-    _meshRenderer.render(_meshScene,_meshCamera);
-  }
-  animate();
-
-  /* Drag to rotate */
+  var S=150;_meshScene=new THREE.Scene();_meshCamera=new THREE.PerspectiveCamera(40,1,.1,100);_meshCamera.position.z=3.5;
+  _meshRenderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});_meshRenderer.setSize(S,S);_meshRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));_meshRenderer.setClearColor(0x000000,0);
+  var geo=new THREE.IcosahedronGeometry(1.1,3);var edges=new THREE.EdgesGeometry(geo);var mat=new THREE.LineBasicMaterial({color:0xd4a574,transparent:true,opacity:.55});
+  _meshMesh=new THREE.LineSegments(edges,mat);_meshScene.add(_meshMesh);
+  var coreMat=new THREE.MeshBasicMaterial({color:0xd4a574,transparent:true,opacity:.06});var core=new THREE.Mesh(geo,coreMat);_meshScene.add(core);
+  function animate(){_meshAnimId=requestAnimationFrame(animate);_meshMesh.rotation.y+=.004;_meshMesh.rotation.x+=.0012;core.rotation.y=_meshMesh.rotation.y;core.rotation.x=_meshMesh.rotation.x;_meshRenderer.render(_meshScene,_meshCamera)}animate();
   var drag=false,px=0,py=0;
   function ds(x,y){drag=true;px=x;py=y;wrap.style.cursor='grabbing'}
   function dm(x,y){if(!drag||!_meshMesh)return;_meshMesh.rotation.y+=(x-px)*.009;_meshMesh.rotation.x+=(y-py)*.009;core.rotation.y=_meshMesh.rotation.y;core.rotation.x=_meshMesh.rotation.x;px=x;py=y}
   function de(){drag=false;wrap.style.cursor='grab'}
-  wrap.addEventListener('mousedown',function(e){e.preventDefault();ds(e.clientX,e.clientY)});
-  window.addEventListener('mousemove',function(e){dm(e.clientX,e.clientY)});
-  window.addEventListener('mouseup',de);
+  wrap.addEventListener('mousedown',function(e){e.preventDefault();ds(e.clientX,e.clientY)});window.addEventListener('mousemove',function(e){dm(e.clientX,e.clientY)});window.addEventListener('mouseup',de);
   wrap.addEventListener('touchstart',function(e){if(e.touches.length===1){e.preventDefault();ds(e.touches[0].clientX,e.touches[0].clientY)}},{passive:false});
-  wrap.addEventListener('touchmove',function(e){if(e.touches.length===1){e.preventDefault();dm(e.touches[0].clientX,e.touches[0].clientY)}},{passive:false});
-  wrap.addEventListener('touchend',de);
+  wrap.addEventListener('touchmove',function(e){if(e.touches.length===1){e.preventDefault();dm(e.touches[0].clientX,e.touches[0].clientY)}},{passive:false});wrap.addEventListener('touchend',de);
 }
-
-function updateMeshTheme(t){
-  if(!_meshMesh)return;
-  var COLS={gold:0xd4a574,midnight:0x9090d8,glass:0xa0b8e8,chrome:0xcccccc,white:0x0a84ff,chromatic:0xd4a574,liquid:0xbbbbbb,rainbow:0xff9ff3};
-  _meshMesh.material.color.setHex(COLS[t]||0xd4a574);
-}
+function updateMeshTheme(t){if(!_meshMesh)return;var COLS={gold:0xd4a574,midnight:0x9090d8,glass:0xa0b8e8,chrome:0xcccccc,white:0x0a84ff,chromatic:0xd4a574,liquid:0xbbbbbb,rainbow:0xff9ff3};_meshMesh.material.color.setHex(COLS[t]||0xd4a574);}
 initMesh();
 
 /* ═══════════════════════════════════════════════════════
-   EFFORT SLIDER (shared logic)
+   EFFORT SLIDER
    ═══════════════════════════════════════════════════════ */
-var EFFORT_STEPS=['low','medium','high','extreme'];
-var _currentEffort='medium';
-
+var EFFORT_STEPS=['low','medium','high','extreme'],_currentEffort='medium';
 function makeEffortSlider(trackId,fillId,thumbId,nameId,isChat){
-  var track=document.getElementById(trackId);
-  var fill=document.getElementById(fillId);
-  var thumb=document.getElementById(thumbId);
-  var nameEl=nameId?document.getElementById(nameId):null;
-  var burst=isChat?document.getElementById('effortBurst'):null;
-  var flare=document.getElementById('ultraFlare');
+  var track=document.getElementById(trackId),fill=document.getElementById(fillId),thumb=document.getElementById(thumbId),nameEl=nameId?document.getElementById(nameId):null;
+  var burst=isChat?document.getElementById('effortBurst'):null,flare=document.getElementById('ultraFlare');
   if(!track||!fill||!thumb)return;
-
   var steps=4,dragging=false;
   function pct(idx){return(idx/(steps-1))*100}
   function setStep(idx){
-    idx=Math.max(0,Math.min(steps-1,idx));
-    var p=pct(idx);
-    fill.style.width=p+'%';
-    thumb.style.left='calc('+p+'% - '+(isChat?6:7)+'px)';
-    var label=EFFORT_STEPS[idx];
-    _currentEffort=label;
-    if(nameEl){
-      nameEl.textContent=label==='extreme'?'ultracode':label;
-      nameEl.className='effort-name'+(label==='extreme'?' ultracode':'');
-    }
+    idx=Math.max(0,Math.min(steps-1,idx));var p=pct(idx);
+    fill.style.width=p+'%';thumb.style.left=p+'%';
+    var label=EFFORT_STEPS[idx];_currentEffort=label;
+    if(nameEl){nameEl.textContent=label==='extreme'?'ultracode':label;nameEl.className='effort-name'+(label==='extreme'?' ultracode':'');}
     if(burst){burst.className='effort-burst'+(label==='extreme'?' active':'');}
     if(flare){flare.className='ultracode-flare'+(label==='extreme'?' active':'');}
   }
-  function posToStep(clientX){
-    var r=track.getBoundingClientRect();
-    var ratio=Math.max(0,Math.min(1,(clientX-r.left)/r.width));
-    return Math.round(ratio*(steps-1));
-  }
+  function posToStep(cx){var r=track.getBoundingClientRect();return Math.round(Math.max(0,Math.min(1,(cx-r.left)/r.width))*(steps-1));}
   track.addEventListener('mousedown',function(e){dragging=true;setStep(posToStep(e.clientX));e.preventDefault()});
-  window.addEventListener('mousemove',function(e){if(dragging)setStep(posToStep(e.clientX))});
-  window.addEventListener('mouseup',function(){dragging=false});
+  window.addEventListener('mousemove',function(e){if(dragging)setStep(posToStep(e.clientX))});window.addEventListener('mouseup',function(){dragging=false});
   track.addEventListener('touchstart',function(e){dragging=true;setStep(posToStep(e.touches[0].clientX));e.preventDefault()},{passive:false});
-  window.addEventListener('touchmove',function(e){if(dragging)setStep(posToStep(e.touches[0].clientX))},{passive:false});
-  window.addEventListener('touchend',function(){dragging=false});
-  setStep(1); // default: medium
+  window.addEventListener('touchmove',function(e){if(dragging)setStep(posToStep(e.touches[0].clientX))},{passive:false});window.addEventListener('touchend',function(){dragging=false});
+  setStep(1);
 }
 makeEffortSlider('landingEffortTrack','landingEffortFill','landingEffortThumb',null,false);
 makeEffortSlider('chatEffortTrack','chatEffortFill','chatEffortThumb','effortName',true);
 
 /* ═══════════════════════════════════════════════════════
-   LANDING TEXTAREA AUTO-RESIZE
+   TYPING SPEED SLIDER (inside workflow popover)
    ═══════════════════════════════════════════════════════ */
-var landingInput=document.getElementById('landingInput');
-if(landingInput){
-  landingInput.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px'});
-  landingInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendFromLanding()}});
-}
-function chipSend(text){
-  if(!landingInput)return;
-  landingInput.value=text;
-  landingInput.style.height='auto';
-  landingInput.style.height=Math.min(landingInput.scrollHeight,130)+'px';
-  sendFromLanding();
+var TYPING_SPEEDS=[0,10,20,30,40,50],TYPING_LABELS={0:'Off',10:'1x',20:'2x',30:'3x',40:'4x',50:'5x'},_typingSpeed=10;
+function initTypingSpeedSlider(){
+  var track=document.getElementById('wfSpeedTrack'),fill=document.getElementById('wfSpeedFill'),thumb=document.getElementById('wfSpeedThumb'),valEl=document.getElementById('wfSpeedValue');
+  if(!track||!fill||!thumb||!valEl)return;
+  var dragging=false;
+  function setSpeedFromPos(cx){
+    var r=track.getBoundingClientRect(),ratio=Math.max(0,Math.min(1,(cx-r.left)/r.width));
+    var idx=Math.round(ratio*(TYPING_SPEEDS.length-1));_typingSpeed=TYPING_SPEEDS[idx];
+    var pct=(idx/(TYPING_SPEEDS.length-1))*100;
+    fill.style.width=pct+'%';thumb.style.left=pct+'%';
+    valEl.textContent=TYPING_LABELS[_typingSpeed]||_typingSpeed;
+    localStorage.setItem('chrxmaticc_typing_speed',_typingSpeed);
+    if(typeof changeTypingSpeed==='function')changeTypingSpeed(_typingSpeed);
+  }
+  track.addEventListener('mousedown',function(e){dragging=true;setSpeedFromPos(e.clientX);e.preventDefault()});
+  window.addEventListener('mousemove',function(e){if(dragging)setSpeedFromPos(e.clientX)});window.addEventListener('mouseup',function(){dragging=false});
+  track.addEventListener('touchstart',function(e){dragging=true;setSpeedFromPos(e.touches[0].clientX);e.preventDefault()},{passive:false});
+  window.addEventListener('touchmove',function(e){if(dragging)setSpeedFromPos(e.touches[0].clientX)},{passive:false});window.addEventListener('touchend',function(){dragging=false});
+  var saved=parseInt(localStorage.getItem('chrxmaticc_typing_speed')||'10');_typingSpeed=saved;
+  var idx=TYPING_SPEEDS.indexOf(saved);if(idx===-1)idx=1;
+  var pct=(idx/(TYPING_SPEEDS.length-1))*100;fill.style.width=pct+'%';thumb.style.left=pct+'%';valEl.textContent=TYPING_LABELS[saved]||saved;
 }
 
 /* ═══════════════════════════════════════════════════════
-   PHASE ANIMATION → CHAT TRANSITION
+   WORKFLOW SETTINGS + TOGGLES
    ═══════════════════════════════════════════════════════ */
-function sendFromLanding(){
-  var text=landingInput?landingInput.value.trim():'';
-  if(!text)return;
-  var btn=document.getElementById('landingSendBtn');
-  if(btn)btn.disabled=true;
-  window._pendingMsg=text;
-  runPhaseAnimation(function(){transitionToChat()});
+var ALL_TOGGLES={
+  conversational:{code:['Explain','Compare','Tests'],plan:['Guided','Beginner'],review:['Readability','Clarity'],think:['Deep','Alternatives'],surprise:['Creative','Wholesome']},
+  intermediate:{code:['Minimal','Reuse','Ship'],plan:['Fast','Practical'],review:['Practicality','Simplify'],think:['Efficient'],surprise:['Useful','Shortcuts']},
+  speed:{code:['Single File','No Comments','Instant'],plan:['Rapid','Bullets'],review:['Quick','Critical'],think:['Snap'],surprise:['Random','Speedrun']}
+};
+var _activeToggles={},_currentModel='conversational',_currentWorkflowKey='code';
+function changeModel(v){_currentModel=v;updateWorkflowToggles();}
+function updateWorkflowToggles(){
+  var container=document.getElementById('wfPopToggles');if(!container)return;
+  var wf=ALL_TOGGLES[_currentModel]||ALL_TOGGLES.conversational;
+  var toggles=wf[_currentWorkflowKey]||wf.code||[];
+  container.innerHTML='';
+  toggles.forEach(function(t){var btn=document.createElement('button');btn.className='wf-pop-toggle'+(!!_activeToggles[t]?' active':'');btn.textContent=t;btn.onclick=function(){_activeToggles[t]=!_activeToggles[t];btn.classList.toggle('active',!!_activeToggles[t])};container.appendChild(btn)});
 }
-
-function runPhaseAnimation(done){
-  var overlay=document.getElementById('phaseOverlay');
-  if(!overlay){done&&done();return}
-  var phases=[
-    {icon:'💭',title:'Thinking',subs:['analyzing your request…','identifying key requirements…']},
-    {icon:'📋',title:'Planning',subs:['selecting optimal approach…','outlining architecture…']},
-    {icon:'⚡',title:'Generating',subs:['crafting the response…','applying best practices…']}
-  ];
-  var iconEl=document.getElementById('phaseIcon');
-  var titleEl=document.getElementById('phaseTitle');
-  var subEl=document.getElementById('phaseSub');
-  var fillEl=document.getElementById('phaseFill');
-  overlay.classList.add('visible');
-  var pi=0;
-  function runPhase(){
-    if(pi>=phases.length){
-      setTimeout(function(){overlay.classList.remove('visible');done&&done()},300);
-      return;
-    }
-    var p=phases[pi];
-    if(iconEl)iconEl.textContent=p.icon;
-    if(titleEl)titleEl.textContent=p.title;
-    if(fillEl)fillEl.style.width=Math.round(((pi+1)/phases.length)*100)+'%';
-    var si=0;
-    if(subEl)subEl.textContent=p.subs[0];
-    var iv=setInterval(function(){
-      si++;
-      if(si>=p.subs.length){clearInterval(iv);pi++;setTimeout(runPhase,200)}
-      else{if(subEl){subEl.style.opacity='0';setTimeout(function(){subEl.textContent=p.subs[si];subEl.style.opacity='1'},180)}}
-    },750);
-  }
-  if(fillEl)fillEl.style.width='0%';
-  runPhase();
-}
-
-function transitionToChat(){
-  var lc=document.getElementById('landingContainer');
-  var cw=document.getElementById('chatWrap');
-  if(typeof gsap!=='undefined'&&lc){
-    gsap.to(lc,{opacity:0,y:-18,duration:.4,ease:'power2.in',onComplete:function(){
-      lc.classList.add('hidden');showChat();
-    }});
-  }else{
-    if(lc)lc.classList.add('hidden');
-    showChat();
+function toggleWorkflowSettings(){
+  var pop=document.getElementById('workflowPopover');if(!pop)return;
+  pop.classList.toggle('open');
+  if(pop.classList.contains('open')){
+    var hdr=document.getElementById('wfPopHeader'),wfNames={code:'Code',plan:'Plan',review:'Review',think:'Think',surprise:'Surprise',cancel:'Chat'};
+    if(hdr)hdr.textContent=(wfNames[_currentWorkflowKey]||'Code')+' Settings';
+    updateWorkflowToggles();initTypingSpeedSlider();
   }
 }
-
-function showChat(){
-  var cw=document.getElementById('chatWrap');
-  if(!cw)return;
-  cw.classList.add('visible');
-  if(typeof gsap!=='undefined'){
-    gsap.fromTo(cw,{opacity:0,filter:'blur(6px)'},{opacity:1,filter:'blur(0px)',duration:.5,ease:'power2.out'});
-  }
-  if(typeof init==='function'&&!window._appInitialized){init();window._appInitialized=true}
-  setTimeout(function(){
-    var inp=document.getElementById('userInput');
-    if(window._pendingMsg&&inp){
-      inp.value=window._pendingMsg;
-      inp.style.height='auto';
-      inp.style.height=Math.min(inp.scrollHeight,100)+'px';
-      window._pendingMsg=null;
-      if(typeof sendMessage==='function')sendMessage();
-    }
-  },280);
-}
+document.addEventListener('click',function(e){var pop=document.getElementById('workflowPopover'),btn=document.getElementById('workflowSettingsBtn');if(pop&&pop.classList.contains('open')&&!e.target.closest('#workflowPopover')&&!e.target.closest('#workflowSettingsBtn'))pop.classList.remove('open')});
 
 /* ═══════════════════════════════════════════════════════
    WORKFLOW CYCLING
    ═══════════════════════════════════════════════════════ */
-var WORKFLOWS=[
-  {key:'code',label:'Code',color:'#30d158'},
-  {key:'plan',label:'Plan',color:'#0a84ff'},
-  {key:'review',label:'Review',color:'#ff9f0a'},
-  {key:'surprise',label:'Surprise',color:'#ff6b6b'},
-  {key:'cancel',label:'No workflow',color:null}
-];
-var _wfIdx=0;
-function cycleWorkflow(){
-  _wfIdx=(_wfIdx+1)%WORKFLOWS.length;
-  applyWorkflow(_wfIdx);
-}
-function applyWorkflow(idx){
-  var wf=WORKFLOWS[idx];
-  var pill=document.getElementById('workflowPill');
-  var label=document.getElementById('workflowLabel');
-  if(label)label.textContent=wf.label;
-  if(pill){
-    pill.classList.toggle('active',wf.key!=='cancel');
-    pill.style.setProperty('--wf-glow',wf.color?wf.color+'33':'transparent');
-    if(wf.key!=='cancel'&&wf.color){
-      pill.style.boxShadow='0 0 14px '+wf.color+'44,0 0 28px '+wf.color+'22';
-      pill.style.borderColor=wf.color+'66';
-    }else{
-      pill.style.boxShadow='';
-      pill.style.borderColor='';
-    }
-  }
-  window._currentWorkflow=wf.key;
-}
+var WORKFLOWS=[{key:'code',label:'Code',color:'#30d158'},{key:'plan',label:'Plan',color:'#0a84ff'},{key:'review',label:'Review',color:'#ff9f0a'},{key:'surprise',label:'Surprise',color:'#ff6b6b'},{key:'cancel',label:'Chat',color:null}],_wfIdx=0;
+function cycleWorkflow(){_wfIdx=(_wfIdx+1)%WORKFLOWS.length;applyWorkflow(_wfIdx)}
+function applyWorkflow(idx){var wf=WORKFLOWS[idx];_currentWorkflowKey=wf.key;var pill=document.getElementById('workflowPill'),label=document.getElementById('workflowLabel');if(label)label.textContent=wf.label;if(pill){pill.classList.toggle('active',wf.key!=='cancel');if(wf.key!=='cancel'&&wf.color){pill.style.boxShadow='0 0 14px '+wf.color+'44';pill.style.borderColor=wf.color+'66'}else{pill.style.boxShadow='';pill.style.borderColor=''}}updateWorkflowToggles()}
 applyWorkflow(0);
 
 /* ═══════════════════════════════════════════════════════
-   ATTACH MENU
+   GITHUB
    ═══════════════════════════════════════════════════════ */
-function toggleAttachMenu(){
-  var m=document.getElementById('attachMenu');
-  if(m)m.classList.toggle('open');
+var _githubToken=localStorage.getItem('chrxmaticc_github_token')||null,_githubRepo=localStorage.getItem('chrxmaticc_github_repo')||null,_githubConnected=!!_githubToken;
+function updateGitHubUI(){
+  var btn=document.getElementById('githubConnectBtn'),label=document.getElementById('githubBtnLabel'),badge=document.getElementById('workflowGhBadge'),commitBtn=document.getElementById('commitBtn');
+  if(_githubConnected&&_githubRepo){if(label)label.textContent=_githubRepo;if(btn)btn.classList.add('connected');if(badge)badge.classList.add('visible');if(commitBtn)commitBtn.classList.add('visible')}
+  else if(_githubConnected){if(label)label.textContent='Select Repo';if(btn)btn.classList.add('connected');if(badge)badge.classList.remove('visible');if(commitBtn)commitBtn.classList.remove('visible')}
+  else{if(label)label.textContent='GitHub';if(btn)btn.classList.remove('connected');if(badge)badge.classList.remove('visible');if(commitBtn)commitBtn.classList.remove('visible')}
 }
-document.addEventListener('click',function(e){
-  var m=document.getElementById('attachMenu');
-  if(m&&m.classList.contains('open')&&!e.target.closest('.attach-btn-wrap'))m.classList.remove('open');
-});
-function triggerFileUpload(){
-  var fi=document.getElementById('fileInput');
-  if(fi)fi.click();
-  var m=document.getElementById('attachMenu');
-  if(m)m.classList.remove('open');
-}
-function toggleRepoSelector(){
-  var rs=document.getElementById('repoSelector');
-  if(rs)rs.classList.toggle('visible');
-}
-function filterRepos(q){
-  var items=document.querySelectorAll('.repo-item');
-  items.forEach(function(it){it.style.display=it.textContent.toLowerCase().includes(q.toLowerCase())?'flex':'none'});
-}
+function handleGitHubClick(){if(_githubConnected&&_githubRepo)commitToRepo();else if(_githubConnected)selectGitHubRepo();else connectGitHub()}
+function connectGitHub(){sessionStorage.setItem('chrxmaticc_github_redirect','app');window.location.href='/api/auth/github'}
+async function selectGitHubRepo(){if(!_githubToken){toast('Connect GitHub first');return}try{var r=await fetch('/api/github/repos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:_githubToken})});var d=await r.json();if(!d.success||!d.repos){toast('Failed to load repos');return}showRepoPicker(d.repos)}catch(e){toast('Failed to load repos')}}
+function showRepoPicker(repos){var ex=document.getElementById('repoPickerOverlay');if(ex)ex.remove();var overlay=document.createElement('div');overlay.id='repoPickerOverlay';overlay.style.cssText='position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);';overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};var h='<div style="background:var(--t-surface);border:1px solid var(--t-border);border-radius:16px;padding:20px;max-width:420px;width:90%;max-height:65vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.6);">';h+='<div style="font-size:14px;font-weight:700;color:var(--t-accent);margin-bottom:12px;position:sticky;top:0;padding-bottom:8px;">Select Repository</div>';for(var i=0;i<Math.min(repos.length,20);i++){var rp=repos[i];h+='<div onclick="pickGitHubRepo(\''+rp.name.replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;margin-bottom:4px;color:var(--t-text);font-size:13px;" onmouseover="this.style.background=\'var(--t-glow)\'" onmouseout="this.style.background=\'transparent\'"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--t-accent)"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg><div style="flex:1;min-width:0;"><div style="font-weight:500;">'+rp.name+'</div>'+(rp.description?'<div style="font-size:10px;color:var(--t-muted);">'+rp.description+'</div>':'')+'</div>'+(rp.private?'<span style="font-size:10px;color:var(--t-muted);">Private</span>':'')+'</div>'}h+='<button onclick="document.getElementById(\'repoPickerOverlay\').remove()" style="width:100%;padding:10px;margin-top:8px;border-radius:10px;border:1px solid var(--t-border);background:var(--t-surface);color:var(--t-muted);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button></div>';overlay.innerHTML=h;document.body.appendChild(overlay)}
+function pickGitHubRepo(name){_githubRepo=name;localStorage.setItem('chrxmaticc_github_repo',name);var overlay=document.getElementById('repoPickerOverlay');if(overlay)overlay.remove();updateGitHubUI();toast('Repository: '+name)}
+async function commitToRepo(){if(!_githubToken||!_githubRepo){toast('Connect a GitHub repo first');return}var code=window._lastGeneratedCode||'';var fn=prompt('File name:','index.html');if(!fn)return;var msg=prompt('Commit message:','Generated by Chrxmaticc Copilot');if(!msg)return;try{var r=await fetch('/api/github/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:_githubToken,repo:_githubRepo,files:[{path:fn,content:code}],message:msg})});var d=await r.json();if(d.success)toast('Committed to '+_githubRepo);else toast('Commit failed')}catch(e){toast('Commit failed')}}
+(function(){var params=new URLSearchParams(window.location.search),userParam=params.get('user');if(userParam){try{var userData=JSON.parse(decodeURIComponent(userParam));localStorage.setItem('chrxmaticc_user',JSON.stringify(userData));if(userData.provider==='github'&&userData.githubToken){_githubToken=userData.githubToken;_githubConnected=true;localStorage.setItem('chrxmaticc_github_token',_githubToken);updateGitHubUI();toast('GitHub connected!');if(sessionStorage.getItem('chrxmaticc_github_redirect')==='app'){sessionStorage.removeItem('chrxmaticc_github_redirect');setTimeout(function(){selectGitHubRepo()},1500)}}window.history.replaceState({},document.title,window.location.pathname)}catch(e){}}updateGitHubUI()})();
 
 /* ═══════════════════════════════════════════════════════
-   THINKING BLOCK HELPERS (called by app.js)
+   LANDING → CHAT TRANSITION
    ═══════════════════════════════════════════════════════ */
-window.createThinkingBlock=function(workflowLabel){
-  var block=document.createElement('div');
-  block.className='thinking-block';
-  block.innerHTML='<div class="thinking-header" onclick="this.parentElement.classList.toggle(\'expanded\')">'
-    +'<div class="thinking-dot"></div><div class="thinking-dot d2"></div><div class="thinking-dot d3"></div>'
-    +'<div class="thinking-label">'+workflowLabel+' — thinking…</div>'
-    +'<svg class="thinking-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'
-    +'</div>'
-    +'<div class="thinking-body"><div class="thinking-text" id="thinkingText_'+Date.now()+'"></div></div>';
-  return block;
-};
-window.collapseThinkingBlock=function(block){
-  block.classList.remove('expanded');
-  var dots=block.querySelectorAll('.thinking-dot');
-  dots.forEach(function(d){d.style.animation='none'});
-  var lbl=block.querySelector('.thinking-label');
-  if(lbl)lbl.textContent=lbl.textContent.replace('thinking…','done');
-};
+var landingInput=document.getElementById('landingInput');
+if(landingInput){landingInput.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px'});landingInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendFromLanding()}})}
+function chipSend(text){if(!landingInput)return;landingInput.value=text;landingInput.style.height='auto';landingInput.style.height=Math.min(landingInput.scrollHeight,130)+'px';sendFromLanding()}
+function sendFromLanding(){var text=landingInput?landingInput.value.trim():'';if(!text)return;var btn=document.getElementById('landingSendBtn');if(btn)btn.disabled=true;window._pendingMsg=text;runPhaseAnimation(function(){transitionToChat()})}
+function runPhaseAnimation(done){var overlay=document.getElementById('phaseOverlay');if(!overlay){done&&done();return}var phases=[{icon:'💭',title:'Thinking',subs:['analyzing your request…','identifying key requirements…']},{icon:'📋',title:'Planning',subs:['selecting optimal approach…','outlining architecture…']},{icon:'⚡',title:'Generating',subs:['crafting the response…','applying best practices…']}];var iconEl=document.getElementById('phaseIcon'),titleEl=document.getElementById('phaseTitle'),subEl=document.getElementById('phaseSub'),fillEl=document.getElementById('phaseFill');overlay.classList.add('visible');var pi=0;function runPhase(){if(pi>=phases.length){setTimeout(function(){overlay.classList.remove('visible');done&&done()},300);return}var p=phases[pi];if(iconEl)iconEl.textContent=p.icon;if(titleEl)titleEl.textContent=p.title;if(fillEl)fillEl.style.width=Math.round(((pi+1)/phases.length)*100)+'%';var si=0;if(subEl)subEl.textContent=p.subs[0];var iv=setInterval(function(){si++;if(si>=p.subs.length){clearInterval(iv);pi++;setTimeout(runPhase,200)}else{if(subEl){subEl.style.opacity='0';setTimeout(function(){subEl.textContent=p.subs[si];subEl.style.opacity='1'},180)}}},750)}if(fillEl)fillEl.style.width='0%';runPhase()}
+function transitionToChat(){var lc=document.getElementById('landingContainer'),cw=document.getElementById('chatWrap');if(typeof gsap!=='undefined'&&lc){gsap.to(lc,{opacity:0,y:-18,duration:.4,ease:'power2.in',onComplete:function(){lc.classList.add('hidden');showChat()}})}else{if(lc)lc.classList.add('hidden');showChat()}}
+function showChat(){var cw=document.getElementById('chatWrap');if(!cw)return;cw.classList.add('visible');if(typeof gsap!=='undefined')gsap.fromTo(cw,{opacity:0,filter:'blur(6px)'},{opacity:1,filter:'blur(0px)',duration:.5,ease:'power2.out'});if(typeof init==='function'&&!window._appInitialized){init();window._appInitialized=true}setTimeout(function(){var inp=document.getElementById('userInput');if(window._pendingMsg&&inp){inp.value=window._pendingMsg;inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,100)+'px';window._pendingMsg=null;if(typeof sendMessage==='function')sendMessage()}},280)}
 
 /* ═══════════════════════════════════════════════════════
-   PLAN QA BLOCK HELPERS (called by app.js)
+   HELPERS
    ═══════════════════════════════════════════════════════ */
-window.createPlanBlock=function(question,options,qNum,qTotal){
-  var block=document.createElement('div');
-  block.className='plan-block';
-  var pct=qNum&&qTotal?Math.round((qNum/qTotal)*100):0;
-  var opts='';
-  options.forEach(function(o){
-    if(o==='Custom'||o==='custom'){
-      opts+='<button class="plan-option custom-opt" data-custom="true" onclick="showPlanCustom(this)">✏️ Custom</button>'
-          +'<div class="plan-custom-input" id="planCustomInput_'+qNum+'">'
-          +'<input type="text" placeholder="Type your own answer…" onkeydown="planCustomKey(event,this)">'
-          +'<button class="plan-custom-send" onclick="sendPlanCustom(this)">Send</button>'
-          +'</div>';
-    }else{
-      opts+='<button class="plan-option" onclick="selectPlanOption(this,\''+o.replace(/'/g,"\\'")+'\')">'+o+'</button>';
-    }
-  });
-  block.innerHTML='<div class="plan-progress-row">'
-    +'<div class="plan-progress-track"><div class="plan-progress-fill" style="width:'+pct+'%"></div></div>'
-    +'<div class="plan-q-count">Question '+(qNum||'?')+' of ~'+(qTotal||5)+'</div>'
-    +'</div>'
-    +'<div class="plan-question">'+question+'</div>'
-    +'<div class="plan-options">'+opts+'</div>';
-  return block;
-};
-window.showPlanCustom=function(btn){
-  var wrap=btn.parentElement;
-  var inp=wrap.querySelector('.plan-custom-input');
-  if(inp){inp.classList.add('visible');inp.querySelector('input').focus()}
-};
-window.planCustomKey=function(e,inp){
-  if(e.key==='Enter'){e.preventDefault();sendPlanCustom(inp.nextElementSibling)}
-};
-window.sendPlanCustom=function(btn){
-  var inp=btn.previousElementSibling;
-  var val=inp?inp.value.trim():'';
-  if(!val)return;
-  if(typeof selectPlanOption==='function')selectPlanOption(btn,val);
-};
-
-/* ═══════════════════════════════════════════════════════
-   MODEL CHANGE
-   ═══════════════════════════════════════════════════════ */
-function changeModel(v){window._currentModel=v}
-
-/* ═══════════════════════════════════════════════════════
-   SIDEBAR
-   ═══════════════════════════════════════════════════════ */
-function toggleSidebar(){
-  var s=document.getElementById('sidebar');
-  var o=document.getElementById('overlay');
-  if(s)s.classList.toggle('open');
-  if(o)o.classList.toggle('visible');
-}
-
-/* ═══════════════════════════════════════════════════════
-   MISC
-   ═══════════════════════════════════════════════════════ */
-function togglePreview(){
-  var p=document.getElementById('previewPanel');
-  if(p)p.classList.toggle('visible');
-}
-function clearFile(){
-  var bar=document.getElementById('filePreviewBar');
-  if(bar)bar.classList.remove('visible');
-  window._currentFile=null;
-}
+function toggleSidebar(){var s=document.getElementById('sidebar'),o=document.getElementById('overlay');if(s)s.classList.toggle('open');if(o)o.classList.toggle('visible')}
+function togglePreview(){var p=document.getElementById('previewPanel');if(p)p.classList.toggle('visible')}
+function clearFile(){var bar=document.getElementById('filePreviewBar');if(bar)bar.classList.remove('visible');window._currentFile=null}
+function toast(msg){var t=document.createElement('div');t.className='app-toast';t.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 0l2.5 7.5L22 3l-4 7.5L24 12l-8 1.5L18 21l-3-6.5L10 22l1-8.5L2 15l5-5.5L0 6l8-3L12 0z"/></svg>'+msg;document.body.appendChild(t);setTimeout(function(){if(t.parentNode)t.remove()},3000)}
+window.createThinkingBlock=function(wf){var block=document.createElement('div');block.className='thinking-block';block.innerHTML='<div class="thinking-header" onclick="this.parentElement.classList.toggle(\'expanded\')"><div class="thinking-dot"></div><div class="thinking-dot d2"></div><div class="thinking-dot d3"></div><div class="thinking-label">'+wf+' — thinking…</div><svg class="thinking-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="thinking-body"><div class="thinking-text"></div></div>';return block}
+window.collapseThinkingBlock=function(block){block.classList.remove('expanded');var lbl=block.querySelector('.thinking-label');if(lbl)lbl.textContent=lbl.textContent.replace('thinking…','done')}
+window.createPlanBlock=function(q,opts,qn,qt){var block=document.createElement('div');block.className='plan-block';var pct=qn&&qt?Math.round((qn/qt)*100):0;var ohtml='';opts.forEach(function(o){if(o==='Custom'){ohtml+='<button class="plan-option custom-opt" onclick="showPlanCustom(this)">✏️ Custom</button><div class="plan-custom-input"><input type="text" placeholder="Type your own answer…" onkeydown="if(event.key===\'Enter\'){sendPlanCustom(this.nextElementSibling)}"><button class="plan-custom-send" onclick="sendPlanCustom(this)">Send</button></div>'}else{ohtml+='<button class="plan-option" onclick="selectPlanOption(this,\''+o.replace(/'/g,"\\'")+'\')">'+o+'</button>'}});block.innerHTML='<div class="plan-progress-row"><div class="plan-progress-track"><div class="plan-progress-fill" style="width:'+pct+'%"></div></div><div class="plan-q-count">Q'+(qn||'?')+'/'+(qt||'?')+'</div></div><div class="plan-question">'+q+'</div><div class="plan-options">'+ohtml+'</div>';return block}
+window.showPlanCustom=function(btn){var inp=btn.parentElement.querySelector('.plan-custom-input');if(inp){inp.classList.add('visible');inp.querySelector('input').focus()}}
+window.sendPlanCustom=function(btn){var inp=btn.previousElementSibling,val=inp?inp.value.trim():'';if(val&&typeof selectPlanOption==='function')selectPlanOption(btn,val)}
 </script>
 <script src="app.js"></script>
 </body>
