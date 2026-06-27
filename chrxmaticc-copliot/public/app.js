@@ -1,6 +1,6 @@
 // ╔══════════════════════════════════════════╗
-// ║  Chrxmaticc Copilot — Engine v6.0       ║
-// ║  Matches new app.html inline script      ║
+// ║  Chrxmaticc Copilot — Engine v7.0       ║
+// ║  Scroll fixed • Roast wired • Clean     ║
 // ╚══════════════════════════════════════════╝
 
 var messagesEl, inputEl, sendBtn, typingEl, statusDot, statusText, micBtn;
@@ -8,9 +8,8 @@ var sidebar, overlay, savedChatsList, profileName, profileAvatar, confettiCanvas
 var conversation = [], savedChats = {}, currentChatId = null;
 var isListening = false, ttsEnabled = true, lastAIResponse = '', recognition = null;
 var messageCount = 0, confettiActive = false, pendingFile = null;
-var sneakLevel = 0;
 
-// ═══ DOM GRAB ═══
+/* ═══ DOM ═══ */
 function grabDOM() {
   messagesEl = document.getElementById('messages');
   inputEl = document.getElementById('userInput');
@@ -27,12 +26,25 @@ function grabDOM() {
   confettiCanvas = document.getElementById('confettiCanvas');
 }
 
-// ═══ INIT ═══
+/* ═══ SCROLL ═══ */
+function scrollToBottom() {
+  if (!messagesEl) return;
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function checkScrollButton() {
+  var btn = document.getElementById('scrollBtm');
+  if (!messagesEl || !btn) return;
+  var nearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 200;
+  btn.classList.toggle('visible', !nearBottom);
+}
+
+/* ═══ INIT ═══ */
 function init() {
   grabDOM();
   try { savedChats = JSON.parse(localStorage.getItem('chrxmaticc_chats') || '{}'); } catch(e) { savedChats = {}; }
   ttsEnabled = localStorage.getItem('chrxmaticc_tts') !== 'false';
-  
+
   if (Object.keys(savedChats).length === 0) {
     var id = 'chat_' + Date.now();
     savedChats[id] = { name: 'New Chat', conversation: [], timestamp: Date.now() };
@@ -44,14 +56,26 @@ function init() {
   localStorage.setItem('chrxmaticc_chats', JSON.stringify(savedChats));
   loadSavedChats();
   updateSidebarProfile();
+
   if (conversation.length > 0 && messagesEl) {
     messagesEl.innerHTML = '';
     conversation.forEach(function(m) { addBubbleNoSave(m.content, m.role === 'user' ? 'user' : 'ai'); });
     messagesEl.appendChild(typingEl);
   }
+
   setupSpeech();
-  
-  // Handle GitHub callback
+
+  // Scroll listener
+  if (messagesEl) {
+    messagesEl.addEventListener('scroll', checkScrollButton);
+    var obs = new MutationObserver(function() {
+      scrollToBottom();
+      checkScrollButton();
+    });
+    obs.observe(messagesEl, { childList: true, subtree: true, characterData: true });
+  }
+
+  // GitHub callback
   var params = new URLSearchParams(window.location.search);
   var userParam = params.get('user');
   if (userParam) {
@@ -68,7 +92,7 @@ function init() {
   }
 }
 
-// ═══ SIDEBAR ═══
+/* ═══ SIDEBAR ═══ */
 function toggleSidebar() {
   if (sidebar) sidebar.classList.toggle('open');
   if (overlay) overlay.classList.toggle('on');
@@ -88,10 +112,7 @@ function loadSavedChats() {
   }
 }
 
-function newChat() {
-  saveCurrentChat();
-  goToLanding();
-}
+function newChat() { saveCurrentChat(); if (typeof goToLanding === 'function') goToLanding(); }
 
 function loadChat(id) {
   if (id === currentChatId) { toggleSidebar(); return; }
@@ -130,7 +151,7 @@ function updateSidebarProfile() {
   if (profileAvatar && u && u.avatar) profileAvatar.src = u.avatar;
 }
 
-// ═══ PRESENCE ═══
+/* ═══ PRESENCE ═══ */
 function setPresence(s) {
   if (!statusDot || !statusText) return;
   statusDot.className = 'sdot ' + s;
@@ -138,12 +159,47 @@ function setPresence(s) {
   statusText.textContent = labels[s] || 'Online';
 }
 
-// ═══ MESSAGING ═══
+/* ═══ FILE ═══ */
+function readFileContent(file) {
+  return new Promise(function(resolve) {
+    if (!file) { resolve(null); return; }
+    if (file.type.startsWith('image/')) { resolve(null); return; }
+    var reader = new FileReader();
+    reader.onload = function() { resolve(reader.result); };
+    reader.onerror = function() { resolve(null); };
+    if (file.type.startsWith('text/') || file.name.match(/\.(js|json|html|css|md|txt|py|glsl|yml|yaml|xml|svg)$/)) {
+      reader.readAsText(file);
+    } else { resolve('[Binary file: ' + file.name + ']'); }
+  });
+}
+
+function handleFileUpload(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  pendingFile = file;
+  var bar = document.getElementById('fileBar');
+  var info = document.getElementById('fileInfo');
+  var img = document.getElementById('filePreviewImg');
+  if (bar) bar.classList.add('on');
+  if (info) info.textContent = file.name;
+  if (img && file.type.startsWith('image/')) {
+    img.src = URL.createObjectURL(file);
+    img.style.display = 'block';
+  }
+}
+
+function clearFile() {
+  pendingFile = null;
+  var bar = document.getElementById('fileBar');
+  if (bar) bar.classList.remove('on');
+}
+
+/* ═══ MESSAGING ═══ */
 async function sendMessage() {
   if (!inputEl) return;
   var text = inputEl.value.trim();
   if (!text && !pendingFile) return;
-  
+
   var displayText = text || (pendingFile ? pendingFile.name : '');
   addBubble(displayText, 'user');
   conversation.push({ role: 'user', content: displayText });
@@ -152,7 +208,7 @@ async function sendMessage() {
   if (sendBtn) sendBtn.disabled = true;
   if (typingEl) typingEl.classList.add('on');
   setPresence('thinking');
-  if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+  scrollToBottom();
   messageCount++;
 
   // Get settings from inline script
@@ -162,13 +218,14 @@ async function sendMessage() {
   var model = settings.model || 'sonnet';
   var effort = settings.effort || 'medium';
   var buttons = settings.buttons || [];
+  var roastLevel = settings.roastLevel || 0;
 
-  // Add thinking block
+  // Thinking block
   var thinkBlock = null;
   if (typeof addThinkingBlock === 'function') {
     thinkBlock = addThinkingBlock('Thinking…', '');
-    var thinkText = thinkBlock.querySelector('.think-text');
-    if (thinkText) thinkText.textContent = 'analyzing: "' + displayText.slice(0, 80) + '"…';
+    var tt = thinkBlock.querySelector('.think-text');
+    if (tt) tt.textContent = 'analyzing: "' + displayText.slice(0, 80) + '"…';
   }
 
   try {
@@ -177,10 +234,22 @@ async function sendMessage() {
       model: model,
       workflow: workflow,
       effort: effort,
-      buttons: buttons
+      buttons: buttons,
+      roastLevel: roastLevel
     };
 
-    // Personal info from profile
+    // File upload
+    if (pendingFile) {
+      body.fileName = pendingFile.name;
+      body.fileType = pendingFile.type;
+      if (pendingFile.type.startsWith('image/')) {
+        body.imageUrl = URL.createObjectURL(pendingFile);
+      } else {
+        body.fileContent = await readFileContent(pendingFile);
+      }
+    }
+
+    // Personal info
     try {
       var prof = JSON.parse(localStorage.getItem('chrxmaticc_profile') || '{}');
       var parts = [];
@@ -204,11 +273,9 @@ async function sendMessage() {
     });
     var data = await res.json();
 
-    // Finish thinking
     if (thinkBlock && typeof finishThinkingBlock === 'function') {
       finishThinkingBlock(thinkBlock, 'Thinking — done');
     }
-
     if (typingEl) typingEl.classList.remove('on');
 
     if (data.type === 'qa' && typeof createPlanBlock === 'function') {
@@ -216,16 +283,13 @@ async function sendMessage() {
       if (messagesEl) messagesEl.appendChild(planBlock);
       setPresence('online');
     } else if (data.thinking) {
-      // Stream thinking text
       if (thinkBlock) {
-        var tt = thinkBlock.querySelector('.think-text');
-        if (tt) tt.textContent = data.thinking;
+        var ttx = thinkBlock.querySelector('.think-text');
+        if (ttx) ttx.textContent = data.thinking;
       }
-      // Show todo if present
       if (data.todo && data.todo.length && typeof addTodoBlock === 'function') {
         addTodoBlock(data.todo);
       }
-      // Show response
       if (data.response) {
         setPresence('online');
         lastAIResponse = data.response;
@@ -260,7 +324,7 @@ async function sendMessage() {
   if (typeof resetChipsAfterSend === 'function') resetChipsAfterSend();
 }
 
-// ═══ BUBBLES ═══
+/* ═══ BUBBLES ═══ */
 function addBubble(text, who) {
   if (!messagesEl) return;
   if (typingEl?.parentNode) typingEl.remove();
@@ -269,14 +333,49 @@ function addBubble(text, who) {
   var b = document.createElement('div');
   b.className = 'bubble';
   b.innerHTML = formatCodeBlocks(text);
+
+  // Double-click to edit own messages
+  if (who === 'user') {
+    b.ondblclick = function() {
+      var current = b.innerText;
+      inputEl.value = current;
+      inputEl.focus();
+      row.remove();
+    };
+  }
+
   row.appendChild(b);
+
+  // Quick reply buttons on AI messages
+  if (who === 'ai') {
+    var qr = document.createElement('div');
+    qr.className = 'quick-replies';
+    qr.innerHTML = '<button class="qr-btn" onclick="quickReply(\'Can you explain this in more detail?\')">Explain more</button>'
+      + '<button class="qr-btn" onclick="quickReply(\'Show me an example\')">Show example</button>'
+      + '<button class="qr-btn" onclick="quickReply(\'Make this simpler\')">Simplify</button>';
+    row.appendChild(qr);
+  }
+
+  // Message actions
+  var actions = document.createElement('div');
+  actions.className = 'msg-actions';
+  if (who === 'ai') {
+    actions.innerHTML = '<button class="msg-act-btn" onclick="copyBubbleText(this)">Copy</button>'
+      + '<button class="msg-act-btn" onclick="retryMessage()">Retry</button>';
+  } else {
+    actions.innerHTML = '<button class="msg-act-btn" onclick="editBubble(this)">Edit</button>'
+      + '<button class="msg-act-btn" onclick="this.closest(\'.bubble-row\').remove()">Delete</button>';
+  }
+  row.appendChild(actions);
+
   var ts = document.createElement('div');
   ts.className = 'ts';
   ts.textContent = getTime();
   row.appendChild(ts);
+
   messagesEl.appendChild(row);
   if (typingEl) messagesEl.appendChild(typingEl);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  scrollToBottom();
 }
 
 function addBubbleNoSave(text, who) {
@@ -298,13 +397,43 @@ function addError(msg) {
   el.textContent = msg;
   messagesEl.appendChild(el);
   if (typingEl) messagesEl.appendChild(typingEl);
+  scrollToBottom();
 }
 
 function getTime() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// ═══ TYPING ═══
+/* ═══ QUICK ACTIONS ═══ */
+function quickReply(text) {
+  if (inputEl) { inputEl.value = text; sendMessage(); }
+}
+
+function copyBubbleText(btn) {
+  var text = btn.closest('.bubble-row').querySelector('.bubble').innerText;
+  navigator.clipboard.writeText(text);
+  btn.textContent = 'Copied!';
+  setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+}
+
+function retryMessage() {
+  if (conversation.length < 2) return;
+  var lastUser = conversation[conversation.length - 2];
+  if (lastUser && lastUser.role === 'user') {
+    conversation.pop();
+    if (inputEl) { inputEl.value = lastUser.content; sendMessage(); }
+  }
+}
+
+function editBubble(btn) {
+  var bubble = btn.closest('.bubble-row').querySelector('.bubble');
+  var text = bubble.innerText;
+  inputEl.value = text;
+  inputEl.focus();
+  btn.closest('.bubble-row').remove();
+}
+
+/* ═══ TYPING ═══ */
 function typeBubble(text, who, provider, isCode) {
   if (!messagesEl) return;
   if (typingEl?.parentNode) typingEl.remove();
@@ -313,10 +442,7 @@ function typeBubble(text, who, provider, isCode) {
   var b = document.createElement('div');
   b.className = 'bubble';
   row.appendChild(b);
-  var ts = document.createElement('div');
-  ts.className = 'ts';
-  ts.textContent = getTime();
-  row.appendChild(ts);
+
   if (provider && who === 'ai') {
     var badge = document.createElement('div');
     badge.className = 'pbadge';
@@ -325,16 +451,16 @@ function typeBubble(text, who, provider, isCode) {
   }
   messagesEl.appendChild(row);
   if (typingEl) messagesEl.appendChild(typingEl);
-  
+
   var formatted = formatCodeBlocks(text);
   var speed = parseInt(localStorage.getItem('chrxmaticc_typing_speed') || '10');
   if (speed === 0) {
     b.innerHTML = formatted;
     if (isCode) addCodeActions(row, text);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    scrollToBottom();
     return;
   }
-  
+
   var temp = document.createElement('div');
   temp.innerHTML = formatted;
   var plain = temp.textContent;
@@ -345,12 +471,28 @@ function typeBubble(text, who, provider, isCode) {
       b.textContent = plain.slice(0, i + 1);
       b.innerHTML += '<span class="typing-cur">|</span>';
       i++;
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+      scrollToBottom();
       var delay = (8 + Math.random() * 12) / (speed / 10);
       setTimeout(typeChar, delay);
     } else {
       b.innerHTML = formatted;
       if (isCode) addCodeActions(row, text);
+      // Add quick replies + actions for AI
+      var qr = document.createElement('div');
+      qr.className = 'quick-replies';
+      qr.innerHTML = '<button class="qr-btn" onclick="quickReply(\'Can you explain this in more detail?\')">Explain more</button>'
+        + '<button class="qr-btn" onclick="quickReply(\'Show me an example\')">Show example</button>'
+        + '<button class="qr-btn" onclick="quickReply(\'Make this simpler\')">Simplify</button>';
+      row.appendChild(qr);
+      var actions = document.createElement('div');
+      actions.className = 'msg-actions';
+      actions.innerHTML = '<button class="msg-act-btn" onclick="copyBubbleText(this)">Copy</button>'
+        + '<button class="msg-act-btn" onclick="retryMessage()">Retry</button>';
+      row.appendChild(actions);
+      var ts = document.createElement('div');
+      ts.className = 'ts';
+      ts.textContent = getTime();
+      row.appendChild(ts);
     }
   }
   typeChar();
@@ -388,7 +530,7 @@ function previewCode(btn) {
   panel.classList.add('on');
 }
 
-// ═══ CODE FORMATTING ═══
+/* ═══ CODE FORMATTING ═══ */
 function formatCodeBlocks(text) {
   return text.replace(/```(\w*)\n?([\s\S]*?)```/g, function(m, lang, code) {
     return '<div class="code-block"><div class="code-hdr"><span>'+(lang||'code')+'</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div><pre><code>'+escapeHtml(code.trim())+'</code></pre></div>';
@@ -407,7 +549,7 @@ function copyCode(btn) {
   });
 }
 
-// ═══ TTS ═══
+/* ═══ TTS ═══ */
 function toggleTTS() {
   ttsEnabled = !ttsEnabled;
   localStorage.setItem('chrxmaticc_tts', ttsEnabled);
@@ -422,7 +564,7 @@ function speakText(text) {
   window.speechSynthesis.speak(u);
 }
 
-// ═══ SPEECH ═══
+/* ═══ SPEECH ═══ */
 function setupSpeech() {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return;
@@ -443,29 +585,7 @@ function toggleMic() {
   else { try { recognition.start(); isListening = true; } catch(e) {} }
 }
 
-// ═══ FILE ═══
-function handleFileUpload(e) {
-  var file = e.target.files[0];
-  if (!file) return;
-  pendingFile = file;
-  var bar = document.getElementById('fileBar');
-  var info = document.getElementById('fileInfo');
-  var img = document.getElementById('filePreviewImg');
-  if (bar) bar.classList.add('on');
-  if (info) info.textContent = file.name;
-  if (img && file.type.startsWith('image/')) {
-    img.src = URL.createObjectURL(file);
-    img.style.display = 'block';
-  }
-}
-
-function clearFile() {
-  pendingFile = null;
-  var bar = document.getElementById('fileBar');
-  if (bar) bar.classList.remove('on');
-}
-
-// ═══ CONFETTI ═══
+/* ═══ CONFETTI ═══ */
 function launchConfetti() {
   if (confettiActive || !confettiCanvas) return;
   confettiActive = true;
@@ -502,12 +622,7 @@ function launchConfetti() {
   anim();
 }
 
-// ═══ HELPERS ═══
-function whatWouldChrxmaticcDo() {
-  var quips = ['start typing. i don\'t have all day.', 'your indentation is inconsistent.', 'changing themes again?'];
-  toast(quips[Math.floor(Math.random() * quips.length)]);
-}
-
+/* ═══ HELPERS ═══ */
 function toast(msg) {
   var t = document.createElement('div');
   t.className = 'app-toast';
@@ -521,13 +636,9 @@ function togglePreview() {
   if (p) p.classList.toggle('on');
 }
 
-function toggleChatSearch() {
-  toast('Search coming soon');
-}
+function toggleChatSearch() { toast('wait properly for search, jk'); }
 
-function changeTypingSpeed(v) {
-  localStorage.setItem('chrxmaticc_typing_speed', v);
-}
+function changeTypingSpeed(v) { localStorage.setItem('chrxmaticc_typing_speed', v); }
 
 function commitToRepo() {
   var repo = localStorage.getItem('chrxmaticc_github_repo');
@@ -535,5 +646,5 @@ function commitToRepo() {
   toast('Committing to ' + repo + '…');
 }
 
-// ═══ STARTUP ═══
+/* ═══ STARTUP ═══ */
 init();
