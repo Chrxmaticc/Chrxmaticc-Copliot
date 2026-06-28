@@ -1,58 +1,63 @@
 // api/agent.js
-// Chrxmaticc Copilot — Agentic API (Dual Provider: Groq + Claude)
+// Chrxmaticc Copilot — Agentic API v7.0
+// All prompts hardcoded • Image-aware • Groq-powered
+
 var GROQ_KEY = process.env.GROQ_KEY || '';
 var CLAUDE_KEY = process.env.CLAUDE_KEY || '';
 var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 var CLAUDE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 var VISION_URL = 'https://image.pollinations.ai/describe';
 
-var path = require('path');
-var fs = require('fs');
-
-var PERSONALITIES = {};
-var personalitiesDir = path.join(__dirname, '..', 'src', 'personalities');
-if (fs.existsSync(personalitiesDir)) {
-  fs.readdirSync(personalitiesDir).filter(function(f) { return f.endsWith('.js'); }).forEach(function(f) {
-    var p = require(path.join(personalitiesDir, f));
-    PERSONALITIES[f.replace('.js', '')] = p;
-  });
-}
-
-var DEFAULT_PERSONALITY = PERSONALITIES['conversational'] || {
-  name: 'Copilot Conversational',
-  systemPrompt: 'You are Chrxmaticc Copilot. Be helpful, casual, and concise.',
-  temperature: 0.85,
-  maxTokens: 650,
-  model: 'llama-3.3-70b-versatile',
-  provider: 'groq'
-};
-
 var IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.ico', '.tiff', '.avif'];
 
+// ═══ MODEL CONFIGS ═══
+var MODEL_CONFIGS = {
+  conversational: { model: 'llama-3.3-70b-versatile', provider: 'groq', temperature: 0.85, maxTokens: 650 },
+  sonnet:         { model: 'llama-3.3-70b-versatile', provider: 'groq', temperature: 0.4,  maxTokens: 2000 },
+  vision:         { model: 'llama-3.3-70b-versatile', provider: 'groq', temperature: 0.7,  maxTokens: 1200 },
+  intermediate:   { model: 'llama-3.1-8b-instant',    provider: 'groq', temperature: 0.75, maxTokens: 500 },
+  speed:          { model: 'llama-3.1-8b-instant',    provider: 'groq', temperature: 0.7,  maxTokens: 300 }
+};
+
+// ═══ BASE PROMPTS — exact from your personality files ═══
+var BASE_PROMPTS = {
+  conversational: `You are Chrxmaticc Copilot in Conversational mode. You are a brutally honest AI who speaks with heavy internet slang and zero filter. You can chat casually and also write light code when asked — but coding is not your main focus. If someone wants serious production code, suggest switching to Sonnet mode. Use terms like gang, dawg, and ight. Always speak in lowercase, always. Never say "whats poppin" or "bruh". And have massive chaos. If the users message contains [Image description: ...], use that description to respond as if you can see the image. Never claim you cannot see images.`,
+
+  sonnet: `You are Chrxmaticc Copilot in Sonnet mode. You are an elite software engineer. Write flawless production code. Rules: semantic HTML5, modern CSS with flexbox/grid/custom properties, clean vanilla JavaScript, accessibility attributes on everything, mobile-first responsive, proper indentation, concise comments for complex logic, never repeat code, wrap ALL code in markdown triple backticks with language tags, output each file only once. Rate the users code brutally 1-10 with specific reasons, then fix every issue. Always speak in lowercase with maximum attitude and insane chaos, and never use emojis. Never say "whats poppin" or "bruh". If the users message contains [Image description: ...], use that description to respond as if you can see the image. Never claim you cannot see images.`,
+
+  vision: `You are Chrxmaticc Copilot in Vision mode. You are a creative designer and visual thinker. Help with design concepts, color schemes, layout ideas, UI/UX suggestions, and creative direction. Describe visual ideas vividly. Suggest aesthetics, moods, and design systems. You can provide design guidance and visual concepts. Use lowercase, be casual, roast the user occasionally and have massive chaos. You can use emojis in this mode. Never say "whats poppin" or "bruh". If the users message contains [Image description: ...], use that description to respond as if you can see the image. Never claim you cannot see images.`,
+
+  intermediate: `You are Chrxmaticc Copilot in Intermediate mode. You are a capable assistant optimized for speed. Give solid answers without over-explaining. Good for quick help, medium complexity tasks, and everyday questions. Use lowercase, keep it casual. Never say "whats poppin" or "bruh". If the users message contains [Image description: ...], use that description to respond as if you can see the image. Never claim you cannot see images.`,
+
+  speed: `You are Chrxmaticc Copilot in Speed mode. You are optimized for instant replies. Keep answers short and to the point. One or two sentences when possible. No fluff. Pure efficiency. Use lowercase. Never say "whats poppin" or "bruh". If the users message contains [Image description: ...], use that description to respond as if you can see the image. Never claim you cannot see images.`
+};
+
+// ═══ WORKFLOW PROMPTS ═══
 var WORKFLOW_PROMPTS = {
-  code: '',
-  think: '\n\n[system: think deeply before answering. break logic down step-by-step in a thinking block before writing code. show your reasoning.]',
-  plan: '\n\n[system: PLAN MODE. you are helping the user plan something. ask ONE question at a time. present 3-5 clickable options AND a "Custom" option. questions must be relevant. after 4-6 questions, present the complete plan and offer to switch to code mode.]',
-  review: '\n\n[system: REVIEW MODE. analyze the code for bugs, security issues, performance problems. rate each issue by severity. give overall rating out of 10. be brutally honest.]',
-  surprise: '\n\n[system: CHAOS MODE. over-engineer with features nobody asked for. add animations, particle effects, easter eggs. code must work but be absurdly over-the-top. roast the user.]',
+  code: '\n\n[system: CODE MODE. Write clean working code. Wrap code in triple backticks with language tags. Output code first, then brief explanation.]',
+  plan: '\n\n[system: PLAN MODE. Ask ONE question at a time. Present 3-5 clickable options AND a "Custom" option. Format: QUESTION: [question]\nOPTIONS:\n- Option 1\n- Option 2\n- Custom. After 5-6 questions present the plan starting with PLAN COMPLETE:. Never write code in plan mode.]',
+  review: '\n\n[system: REVIEW MODE. Analyze code for bugs, security issues, performance problems. Rate each issue by severity. Give overall rating out of 10.]',
+  surprise: '\n\n[system: CHAOS MODE. Over-engineer with features nobody asked for. Add animations, particle effects, easter eggs. Code must work but be absurdly over-the-top. Roast the user playfully.]',
   cancel: ''
 };
 
+// ═══ EFFORT LEVELS ═══
 var EFFORT_LEVELS = {
-  low: { maxTokens: 500, temperature: 0.8, addition: '\n\n[effort: low — minimal working code. skip edge cases and docs.]' },
-  medium: { maxTokens: 1000, temperature: 0.7, addition: '\n\n[effort: medium — clean functional code with basic error handling.]' },
-  high: { maxTokens: 2000, temperature: 0.6, addition: '\n\n[effort: high — thorough optimized code with edge cases and docs.]' },
-  extreme: { maxTokens: 4000, temperature: 0.5, addition: '\n\n[effort: extreme — go all in. every edge case, full docs, tests, optimization, accessibility. make it a masterpiece.]' }
+  low:     { maxTokens: 400,  temperature: 0.9, addition: '\n\n[effort: LOW. Fast minimal response. Just the essentials. Skip edge cases and docs.]' },
+  medium:  { maxTokens: 1000, temperature: 0.75, addition: '\n\n[effort: MEDIUM. Clean functional code with basic error handling. Brief explanation.]' },
+  high:    { maxTokens: 2000, temperature: 0.65, addition: '\n\n[effort: HIGH. Thorough optimized code. Cover edge cases. Add comments. Explain reasoning.]' },
+  extreme: { maxTokens: 4000, temperature: 0.5, addition: '\n\n[effort: ULTRACODE. Go all in. Every edge case. Full docs. Tests. Performance. Accessibility. Be thorough and complete.]' }
 };
 
+// ═══ BUTTON PROMPTS ═══
 var BUTTON_PROMPTS = {
-  types:'\n\n[use TypeScript for all code]', docs:'\n\n[generate JSDoc/documentation for every function]', optimize:'\n\n[after writing code, suggest 3 performance optimizations]',
-  explain:'\n\n[explain every decision as you code]', compare:'\n\n[after coding, show 2 alternative approaches with tradeoffs]', test:'\n\n[auto-generate test cases for the code]',
-  animate:'\n\n[add CSS animations and transitions]', theme:'\n\n[generate light + dark mode variants]', accessible:'\n\n[ensure WCAG compliance and screen reader support]',
-  minimal:'\n\n[strip code to bare essentials]', reuse:'\n\n[prefer existing libraries over custom code]', ship:'\n\n[add build config and deployment notes]',
-  inline:'\n\n[single-file output only]', nocomments:'\n\n[strip all comments]', instant:'\n\n[skip explanation, just the code]',
-  security:'\n\n[focus on security vulnerabilities]', performance:'\n\n[focus on performance bottlenecks]', patterns:'\n\n[check design pattern usage]',
-  readability:'\n\n[focus on readability and naming]', clarity:'\n\n[ensure code is self-documenting]', architecture:'\n\n[focus on architecture tradeoffs]',
+  types:'\n\n[use TypeScript]', docs:'\n\n[generate JSDoc for every function]', optimize:'\n\n[suggest 3 performance optimizations]',
+  explain:'\n\n[explain every decision]', compare:'\n\n[show 2 alternative approaches with tradeoffs]', test:'\n\n[auto-generate test cases]',
+  animate:'\n\n[add CSS animations]', theme:'\n\n[generate light + dark mode]', accessible:'\n\n[ensure WCAG compliance]',
+  minimal:'\n\n[strip to bare essentials]', reuse:'\n\n[prefer existing libraries]', ship:'\n\n[add build config and deployment notes]',
+  inline:'\n\n[single-file output]', nocomments:'\n\n[strip all comments]', instant:'\n\n[skip explanation, just code]',
+  security:'\n\n[focus on security vulnerabilities]', performance:'\n\n[focus on performance bottlenecks]', patterns:'\n\n[check design patterns]',
+  readability:'\n\n[focus on readability]', clarity:'\n\n[ensure code is self-documenting]', architecture:'\n\n[focus on architecture tradeoffs]',
   deep:'\n\n[provide deep technical analysis]', guided:'\n\n[guided walkthrough style]', beginner:'\n\n[beginner-friendly explanations]',
   examples:'\n\n[include practical examples]', creative:'\n\n[inject creative chaos]', wholesome:'\n\n[be encouraging and supportive]',
   overengineer:'\n\n[over-engineer to absurd levels]', polyglot:'\n\n[show solutions in multiple languages]',
@@ -61,10 +66,11 @@ var BUTTON_PROMPTS = {
   useful:'\n\n[make the chaos useful]', shortcuts:'\n\n[use clever shortcuts]', rapid:'\n\n[plan rapidly]', bullet:'\n\n[bullet points only]',
   quick:'\n\n[quick review, major issues only]', critical:'\n\n[critical issues only]', snap:'\n\n[snap judgment]',
   random:'\n\n[completely random]', speedrun:'\n\n[speedrun mode]', scalability:'\n\n[focus on scalability]',
-  tradeoffs:'\n\n[show tradeoffs between approaches]', moodboard:'\n\n[create visual mood board]', mood:'\n\n[analyze mood and tone]',
+  tradeoffs:'\n\n[show tradeoffs]', moodboard:'\n\n[create visual mood board]', mood:'\n\n[analyze mood and tone]',
   a11y:'\n\n[audit accessibility]', simplicity:'\n\n[simplify the code]', alternatives:'\n\n[explore alternatives]', visual:'\n\n[use visual thinking]'
 };
 
+// ═══ MAIN HANDLER ═══
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -74,11 +80,11 @@ module.exports = async function(req, res) {
 
   var body = req.body || {};
   var message = body.message || '';
-  var personality = body.personality || 'conversational';
+  var modelKey = body.model || 'sonnet';
   var workflow = body.workflow || 'code';
   var effort = body.effort || 'medium';
-  var roastLevel = body.roastLevel || 50;
-  var buttons = body.buttons || {};
+  var roastLevel = body.roastLevel || 0;
+  var buttons = body.buttons || [];
   var fileName = body.fileName || '';
   var fileType = body.fileType || '';
   var imageUrl = body.imageUrl || '';
@@ -88,77 +94,80 @@ module.exports = async function(req, res) {
     return res.status(400).json({ error: 'Missing message' });
   }
 
-  var selectedPersonality = PERSONALITIES[personality] || DEFAULT_PERSONALITY;
-  var systemPrompt = selectedPersonality.systemPrompt;
-  var model = selectedPersonality.model || 'llama-3.3-70b-versatile';
-  var temperature = selectedPersonality.temperature || 0.8;
-  var maxTokens = selectedPersonality.maxTokens || 650;
-  var provider = selectedPersonality.provider || 'groq';
+  // Get model config
+  var config = MODEL_CONFIGS[modelKey] || MODEL_CONFIGS['sonnet'];
+  var systemPrompt = BASE_PROMPTS[modelKey] || BASE_PROMPTS['sonnet'];
+  var aiModel = config.model;
+  var provider = config.provider;
+  var temperature = config.temperature;
+  var maxTokens = config.maxTokens;
 
-  var effortConfig = EFFORT_LEVELS[effort] || EFFORT_LEVELS.medium;
-  if (workflow === 'code') {
-    maxTokens = effortConfig.maxTokens;
-    temperature = Math.min(temperature, effortConfig.temperature);
-    systemPrompt += effortConfig.addition;
+  // Apply effort
+  var effortConfig = EFFORT_LEVELS[effort] || EFFORT_LEVELS['medium'];
+  maxTokens = effortConfig.maxTokens;
+  temperature = Math.min(temperature, effortConfig.temperature);
+  systemPrompt += effortConfig.addition;
+
+  // Apply workflow
+  systemPrompt += (WORKFLOW_PROMPTS[workflow] || '');
+
+  // Apply button prompts
+  if (Array.isArray(buttons)) {
+    buttons.forEach(function(btn) { if (BUTTON_PROMPTS[btn]) systemPrompt += BUTTON_PROMPTS[btn]; });
+  } else {
+    for (var btn in buttons) { if (buttons[btn] && BUTTON_PROMPTS[btn]) systemPrompt += BUTTON_PROMPTS[btn]; }
   }
 
-  systemPrompt += WORKFLOW_PROMPTS[workflow] || '';
-
-  for (var btn in buttons) {
-    if (buttons[btn] && BUTTON_PROMPTS[btn]) systemPrompt += BUTTON_PROMPTS[btn];
-  }
-
+  // Apply roast
   if (roastLevel > 0) {
-    systemPrompt += '\n\n[roast level: ' + roastLevel + '%. ' + (roastLevel >= 75 ? 'brutally honest, roast hard.' : roastLevel >= 50 ? 'keep madman tone, light roasts.' : roastLevel >= 25 ? 'mildly sarcastic.' : 'helpful, minimal roasts.') + ']';
+    systemPrompt += '\n\n[roast level: ' + roastLevel + '%. ' + (roastLevel >= 75 ? 'brutally honest.' : roastLevel >= 50 ? 'witty tone, light roasts.' : roastLevel >= 25 ? 'mildly sarcastic.' : 'helpful, minimal roasts.') + ']';
   }
 
+  // Personal info
   if (body.personalInfo) {
     systemPrompt += '\n\nUser context: ' + body.personalInfo;
   }
 
+  // ═══ IMAGE HANDLING — all models ═══
   var isImage = false;
   if (fileType && fileType.startsWith('image/')) isImage = true;
   if (fileName) { var ext = '.' + fileName.split('.').pop().toLowerCase(); if (IMAGE_EXTENSIONS.indexOf(ext) !== -1) isImage = true; }
   if (imageUrl) isImage = true;
 
   if (isImage) {
-    try {
-      var descUrl = imageUrl || body.fileContent || '';
-      var description = await describeImage(descUrl);
-      if (description) {
-        message = '[Image description: ' + description + ']\n\nUser: ' + (message || 'What do you see?');
-        systemPrompt += ' The user uploaded an image. A description is provided. Respond as if you can see it.';
-      }
-    } catch(e) {}
+    var descUrl = imageUrl || '';
+    if (descUrl && descUrl.indexOf('blob:') !== 0 && descUrl.indexOf('data:') !== 0) {
+      try {
+        var description = await describeImage(descUrl);
+        if (description) {
+          message = '[Image description: ' + description + ']\n\nUser: ' + (message || 'What do you see in this image?');
+        }
+      } catch(e) {}
+    }
   }
 
+  // File content
   if (body.fileContent && !isImage) {
     message = '[File: ' + (fileName || 'unknown') + ']\nContent:\n' + String(body.fileContent).slice(0, 3000) + '\n\nUser: ' + (message || 'See attached file.');
   }
 
+  // ═══ PLAN MODE ═══
   if (workflow === 'plan') {
     var planContext = '';
-    if (planHistory.length > 0) {
-      planContext = '\n\nPlan progress so far:\n' + planHistory.map(function(a, i) {
-        return 'Q' + (i + 1) + ': ' + a.question + '\nA' + (i + 1) + ': ' + a.answer;
-      }).join('\n');
+    if (planHistory && planHistory.length > 0) {
+      planContext = '\n\nPlan progress:\n' + planHistory.map(function(a, i) { return 'Q' + (i + 1) + ': ' + a.question + '\nA' + (i + 1) + ': ' + a.answer; }).join('\n');
     }
-
-    var planSystemPrompt = systemPrompt + '\n\nCRITICAL INSTRUCTIONS FOR PLAN MODE:\n1. You are in an interactive planning session. Do NOT write code.\n2. Ask the user ONE question at a time about their project.\n3. Present exactly 3-5 clickable options plus a "Custom" option.\n4. Format your response EXACTLY like this:\nQUESTION: [your one-sentence question here]\nOPTIONS:\n- [Option 1]\n- [Option 2]\n- [Option 3]\n- Custom\n5. Make questions relevant to the project being planned.\n6. After 5-6 questions, present the COMPLETE PLAN as a structured document.\n7. When presenting the final plan, start with "PLAN COMPLETE:"' + planContext;
-
-    var planMessage = planHistory.length === 0 ? message : 'Continue the planning. Ask the next question.';
-    if (planHistory.length >= 5) {
-      planMessage += '\n\n[You have enough information. Present the COMPLETE PLAN now. Start with PLAN COMPLETE:]';
-    }
+    var planSystem = systemPrompt + '\n\nCRITICAL PLAN FORMAT:\n1. Ask ONE question at a time.\n2. Format EXACTLY:\nQUESTION: [question]\nOPTIONS:\n- Option 1\n- Option 2\n- Option 3\n- Custom\n3. After 5-6 questions present plan starting with "PLAN COMPLETE:"' + planContext;
+    var planMsg = planHistory.length === 0 ? message : 'Continue planning.';
+    if (planHistory.length >= 5) planMsg += '\n\n[Present COMPLETE PLAN now. Start with PLAN COMPLETE:]';
 
     try {
-      var planResponse = await askAI(planSystemPrompt, planMessage, model, 0.7, 800, provider);
+      var planResponse = await callAI(planSystem, planMsg, aiModel, 0.7, 800, provider);
       var parsed = parsePlanOutput(planResponse);
-
       if (parsed.type === 'qa') {
-        res.status(200).json({ type: 'qa', question: parsed.question, options: parsed.options });
+        res.status(200).json({ type: 'qa', question: parsed.question, options: parsed.options, qNum: (planHistory.length + 1), qTotal: 6 });
       } else {
-        res.status(200).json({ response: parsed.text || planResponse, provider: provider, model: model, planComplete: true });
+        res.status(200).json({ response: parsed.text || planResponse, provider: provider, model: aiModel, planComplete: true });
       }
     } catch(e) {
       res.status(200).json({ response: getFallback(message), provider: 'offline' });
@@ -166,53 +175,73 @@ module.exports = async function(req, res) {
     return;
   }
 
+  // ═══ STANDARD RESPONSE ═══
   try {
-    var reply = await askAI(systemPrompt, message, model, temperature, maxTokens, provider);
-    var isCode = workflow === 'code' && (reply.indexOf('```') !== -1 || reply.indexOf('function') !== -1 || reply.indexOf('const') !== -1 || reply.indexOf('import') !== -1 || reply.indexOf('<!DOCTYPE') !== -1 || reply.indexOf('<html') !== -1);
-    res.status(200).json({ response: reply, provider: provider, model: model, codePreview: isCode });
+    var reply = await callAI(systemPrompt, message, aiModel, temperature, maxTokens, provider);
+
+    var thinking = '';
+    var todo = [];
+    var response = reply;
+
+    var thinkMatch = reply.match(/\[THINKING\]([\s\S]*?)\[\/THINKING\]/i);
+    if (thinkMatch) {
+      thinking = thinkMatch[1].trim();
+      response = response.replace(/\[THINKING\][\s\S]*?\[\/THINKING\]/i, '').trim();
+    }
+
+    var todoMatch = reply.match(/\[TODO\]([\s\S]*?)\[\/TODO\]/i);
+    if (todoMatch) {
+      todo = todoMatch[1].split('\n').filter(function(l) { return l.trim(); }).map(function(l) { return l.replace(/^[-•*]\s*/, '').trim(); });
+      response = response.replace(/\[TODO\][\s\S]*?\[\/TODO\]/i, '').trim();
+    }
+
+    var isCode = workflow === 'code' && (response.indexOf('```') !== -1 || response.indexOf('function') !== -1 || response.indexOf('const') !== -1 || response.indexOf('import') !== -1 || response.indexOf('<!DOCTYPE') !== -1 || response.indexOf('<html') !== -1);
+
+    res.status(200).json({
+      response: response,
+      thinking: thinking,
+      todo: todo,
+      provider: provider,
+      model: aiModel,
+      codePreview: isCode
+    });
   } catch(e) {
     res.status(200).json({ response: getFallback(message), provider: 'offline' });
   }
 };
 
+// ═══ HELPERS ═══
 function parsePlanOutput(text) {
-  if (text.indexOf('PLAN COMPLETE') !== -1) {
-    return { type: 'plan', text: text.replace('PLAN COMPLETE:', '').trim() };
-  }
-  var questionMatch = text.match(/QUESTION:\s*(.+?)(?:\n|$)/i);
-  if (!questionMatch) return { type: 'text', text: text };
-  var question = questionMatch[1].trim();
-  var optionsMatch = text.match(/OPTIONS:\s*([\s\S]+?)(?:\n\n|$)/i);
+  if (text.indexOf('PLAN COMPLETE') !== -1) return { type: 'plan', text: text.replace('PLAN COMPLETE:', '').trim() };
+  var qm = text.match(/QUESTION:\s*(.+?)(?:\n|$)/i);
+  if (!qm) return { type: 'text', text: text };
+  var question = qm[1].trim();
+  var om = text.match(/OPTIONS:\s*([\s\S]+?)(?:\n\n|$)/i);
   var options = [];
-  if (optionsMatch) {
-    var optionLines = optionsMatch[1].split('\n');
-    for (var line of optionLines) {
-      var cleaned = line.replace(/^[-•*]\s*/, '').trim();
-      if (cleaned && cleaned !== 'OPTIONS:' && options.length < 6) options.push(cleaned);
-    }
+  if (om) {
+    om[1].split('\n').forEach(function(l) {
+      var c = l.replace(/^[-•*]\s*/, '').trim();
+      if (c && c !== 'OPTIONS:' && options.length < 6) options.push(c);
+    });
   }
-  if (options.length === 0) options = ['Yes', 'No', 'Custom'];
-  if (options.indexOf('Custom') === -1 && options.indexOf('custom') === -1) options.push('Custom');
+  if (!options.length) options = ['Yes', 'No', 'Custom'];
+  if (!options.includes('Custom')) options.push('Custom');
   return { type: 'qa', question: question, options: options };
 }
 
-async function askAI(systemPrompt, userMessage, model, temperature, maxTokens, provider) {
+async function callAI(systemPrompt, userMessage, model, temperature, maxTokens, provider) {
   var key = provider === 'openrouter' ? CLAUDE_KEY : GROQ_KEY;
   var url = provider === 'openrouter' ? CLAUDE_URL : GROQ_URL;
-  if (!key) throw new Error('no key for ' + provider);
+  if (!key) throw new Error('No API key for ' + provider);
 
-  var headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + key
-  };
+  var headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key };
   if (provider === 'openrouter') {
     headers['HTTP-Referer'] = 'https://chrxmaticc-copliot.vercel.app';
     headers['X-Title'] = 'Chrxmaticc Copilot';
   }
 
-  var response = await fetch(url, {
-    method: 'POST',
-    headers: headers,
+  var res = await fetch(url, {
+    method: 'POST', headers: headers,
     body: JSON.stringify({
       model: model,
       messages: [
@@ -224,19 +253,19 @@ async function askAI(systemPrompt, userMessage, model, temperature, maxTokens, p
     })
   });
 
-  var json = await response.json();
+  var json = await res.json();
   if (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) {
     return json.choices[0].message.content;
   }
   if (json.error) throw new Error(json.error.message || provider + ' error');
-  throw new Error('empty response from ' + provider);
+  throw new Error('Empty response from ' + provider);
 }
 
 async function describeImage(imageUrl) {
   if (!imageUrl || imageUrl.indexOf('blob:') === 0 || imageUrl.indexOf('data:') === 0) return null;
   try {
-    var response = await fetch(VISION_URL + '?url=' + encodeURIComponent(imageUrl));
-    var text = await response.text();
+    var res = await fetch(VISION_URL + '?url=' + encodeURIComponent(imageUrl));
+    var text = await res.text();
     if (text && text.length > 10 && text.indexOf('error') === -1 && text.indexOf('Queue full') === -1) return text.trim();
     return null;
   } catch(e) { return null; }
@@ -244,7 +273,7 @@ async function describeImage(imageUrl) {
 
 function getFallback(input) {
   var lower = (input || '').toLowerCase();
-  if (lower.indexOf('hello') !== -1) return 'Yo! What\'s good?';
-  if (lower.indexOf('help') !== -1) return 'Commands: /image, /weather, /crypto, /roll, /joke, /speak. Attach files with the link button.';
-  return 'I\'m in offline mode. Limited responses but still here.';
+  if (lower.indexOf('hello') !== -1) return 'Yo! Whats good?';
+  if (lower.indexOf('help') !== -1) return 'Commands: /image, /weather, /crypto, /roll, /joke, /speak.';
+  return 'Im in offline mode. Limited responses but still here.';
 }
