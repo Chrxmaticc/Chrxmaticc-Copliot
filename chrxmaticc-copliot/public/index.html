@@ -2,7 +2,7 @@
 <html lang="en" class="index-page">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0b0b0a">
@@ -11,509 +11,444 @@
   <link rel="manifest" href="/manifest.json">
   <title>Chrxmaticc Copilot — Offbrand. Hyper-intelligent.</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="analytics.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     /* ═══════════════════════════════════════
-       INDEX — 8 THEMES • FULLY ANIMATED • v2.0
+       INDEX — PORTFOLIO POLISHED • v3.0
        ═══════════════════════════════════════ */
     html.index-page, body.index-page {
       height: auto !important; min-height: 100vh !important;
       overflow-x: hidden !important; overflow-y: auto !important;
       position: relative !important;
+      scroll-behavior: smooth;
     }
+    
+    /* ═══ DARK MODE VARIABLES (default) ═══ */
     :root {
-      --bg: #0b0b0a; --panel: rgba(18,18,16,0.8); --border: rgba(212,165,116,0.1);
-      --text: #e8d5c4; --muted: #8a7a6a; --accent: #d4a574; --accent2: #c9956b;
-      --glow: rgba(212,165,116,0.15); --card-bg: rgba(18,18,16,0.8);
+      --bg: #0b0b0a; --bg2: #111010; --panel: rgba(20,18,16,0.85);
+      --border: rgba(212,165,116,0.12); --text: #e8d5c4; --text2: #c4b098;
+      --muted: #8a7a6a; --accent: #d4a574; --accent2: #c9956b;
+      --glow: rgba(212,165,116,0.15); --card: rgba(20,18,16,0.7);
+      --card-hover: rgba(30,27,24,0.9); --shadow: 0 4px 24px rgba(0,0,0,0.4);
     }
-    [data-theme="midnight"] {
-      --bg: #0a0a0a; --panel: rgba(13,13,13,0.9); --border: #1a1a1a; --text: #e0e0e0;
-      --muted: #8e8e93; --accent: #a0a0d0; --accent2: #8888bb; --glow: rgba(150,150,200,0.1);
-      --card-bg: rgba(13,13,13,0.9);
-    }
-    [data-theme="glass"] {
-      --bg: #0a0a0f; --panel: rgba(20,20,30,0.5); --border: rgba(255,255,255,0.06);
-      --text: #e0e0e0; --muted: #999; --accent: #a0b0d0; --accent2: #8899cc;
-      --glow: rgba(150,180,220,0.1); --card-bg: rgba(20,20,30,0.4);
-    }
-    [data-theme="chrome"] {
-      --bg: #1a1a1a; --panel: rgba(28,28,28,0.9); --border: #2a2a2a; --text: #e0e0e0;
-      --muted: #999; --accent: #bbb; --accent2: #aaa; --glow: rgba(200,200,220,0.08);
-      --card-bg: rgba(28,28,28,0.9);
-    }
-    [data-theme="white"] {
-      --bg: #f5f5f7; --panel: #fff; --border: #e5e5e5; --text: #1a1a1a;
-      --muted: #999; --accent: #0a84ff; --accent2: #0070e0; --glow: rgba(10,132,255,0.1);
-      --card-bg: #fff;
-    }
-    [data-theme="chromatic"] {
-      --bg: #0d0e14; --panel: rgba(20,20,28,0.9); --border: rgba(140,130,180,0.16); --text: #e8d5c4;
-      --muted: #8a8a9a; --accent: #d4a574; --accent2: #4a7fc0; --glow: rgba(150,130,200,0.2);
-      --card-bg: rgba(20,20,28,0.85);
-    }
-    [data-theme="liquid"] {
-      --bg: #111114; --panel: rgba(24,24,28,0.9); --border: rgba(140,140,150,0.2); --text: #d4d4d8;
-      --muted: #777; --accent: #bbb; --accent2: #888; --glow: rgba(180,180,200,0.18);
-      --card-bg: rgba(24,24,28,0.9);
-    }
-    [data-theme="rainbow"] {
-      --bg: #0e0e18; --panel: rgba(18,18,28,0.9); --border: rgba(255,255,255,0.08); --text: #f0f0f8;
-      --muted: #888; --accent: #ff9ff3; --accent2: #ff6b6b; --glow: rgba(255,150,200,0.18);
-      --card-bg: rgba(18,18,28,0.85);
+    
+    /* ═══ LIGHT MODE VARIABLES ═══ */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #faf8f5; --bg2: #f5f0ea; --panel: rgba(255,253,250,0.9);
+        --border: rgba(180,130,80,0.15); --text: #1a1410; --text2: #4a3a2a;
+        --muted: #b8a898; --accent: #b8742a; --accent2: #d4a574;
+        --glow: rgba(180,130,80,0.1); --card: rgba(255,255,255,0.85);
+        --card-hover: rgba(255,255,255,0.95); --shadow: 0 4px 24px rgba(180,130,80,0.1);
+      }
     }
 
-    .index-page {
+    body.index-page {
       background: var(--bg); color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-      scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
       transition: background 0.5s ease, color 0.5s ease;
+      line-height: 1.6;
     }
     .index-page::-webkit-scrollbar { width: 4px; }
     .index-page::-webkit-scrollbar-track { background: transparent; }
     .index-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    /* ═══ CURSOR GLOW ═══ */
-    .cursor-glow {
-      position: fixed; pointer-events: none; z-index: 9999;
-      width: 300px; height: 300px; border-radius: 50%;
-      background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
-      transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.3s;
-    }
-    .cursor-glow.active { opacity: 1; }
-
-    /* ═══ BACKGROUND ═══ */
-    .index-bg-wrapper { position: fixed; inset: 0; z-index: 0; pointer-events: none; touch-action: none; }
-    .index-bg-gif {
-      position: absolute; inset: 0;
-      background: url('chrome.gif') center/cover no-repeat;
-      opacity: 0.04; will-change: transform;
-    }
-    .index-bg-texture {
-      position: absolute; inset: 0;
-      background: url('chrome2.jpeg') center/cover no-repeat;
-      opacity: 0.03; mix-blend-mode: overlay;
-    }
-    .index-bg-gradient {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, var(--glow) 0%, transparent 70%);
+    /* ═══ AMBIENT BACKGROUND ═══ */
+    .index-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: 
+        radial-gradient(ellipse at 20% 0%, var(--glow) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, var(--glow) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.3) 0%, transparent 100%);
+      opacity: 0.6;
     }
 
-    .index-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 0 24px; pointer-events: auto; }
+    /* ═══ CONTENT WRAPPER ═══ */
+    .index-content { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 32px; }
 
-    /* ═══ THEME PILL ═══ */
-    .index-theme-pill {
-      position: fixed; bottom: 24px; right: 24px; z-index: 100;
-      display: flex; gap: 6px; padding: 6px;
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    }
-    .index-theme-dot {
-      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: all 0.2s;
-    }
-    .index-theme-dot:hover { transform: scale(1.15); }
-    .index-theme-dot.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
-    .index-theme-dot.gold { background: #0b0b0a; }
-    .index-theme-dot.midnight { background: #0a0a0a; }
-    .index-theme-dot.glass { background: rgba(20,20,30,0.8); backdrop-filter: blur(10px); }
-    .index-theme-dot.chrome { background: #1a1a1a; }
-    .index-theme-dot.white { background: #f5f5f7; }
-    .index-theme-dot.chromatic { background: linear-gradient(135deg, #d4a574, #4a7fc0); }
-    .index-theme-dot.liquid { background: linear-gradient(135deg, #888, #bbb); }
-    .index-theme-dot.rainbow { background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3); }
-
-    /* ═══ NAV ═══ */
+    /* ═══ NAVIGATION ═══ */
     .index-nav {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 24px 0; position: relative; z-index: 2;
+      padding: 28px 0; position: sticky; top: 0; z-index: 100;
+      background: var(--bg); border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
     }
-    .index-nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .index-nav-logo img { width: 32px; height: 32px; object-fit: contain; }
+    .index-nav.scrolled {
+      border-bottom-color: var(--border);
+      background: var(--panel);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+    .index-nav-logo {
+      display: flex; align-items: center; gap: 12px; text-decoration: none;
+      font-size: 18px; font-weight: 700; letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    .index-nav-logo img { width: 34px; height: 34px; border-radius: 50%; }
     .index-nav-logo span {
-      font-size: 16px; font-weight: 700; letter-spacing: -0.3px;
-      background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent2));
-      background-size: 200% 200%;
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      animation: goldShimmer 3s ease-in-out infinite;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    @keyframes goldShimmer {
-      0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
+    .index-nav-links { display: flex; gap: 32px; align-items: center; }
+    .index-nav-link {
+      color: var(--muted); text-decoration: none; font-size: 13px;
+      font-weight: 500; letter-spacing: 0.3px; transition: color 0.2s;
+      position: relative;
     }
-    .index-nav-links { display: flex; gap: 24px; align-items: center; }
-    .index-nav-link { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 0.3px; transition: color 0.2s; }
     .index-nav-link:hover { color: var(--accent); }
-    .index-discord-btn {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--panel); border: 1px solid var(--border);
-      color: var(--accent); padding: 8px 16px; border-radius: 10px;
-      font-size: 13px; font-weight: 600; text-decoration: none;
-      transition: all 0.2s ease; letter-spacing: 0.3px;
+    .index-nav-link::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1.5px;
+      background: var(--accent); transition: width 0.3s ease;
     }
-    .index-discord-btn:hover { background: var(--card-bg); border-color: var(--accent); box-shadow: 0 0 24px var(--glow); }
-    .index-discord-btn svg { width: 18px; height: 18px; }
+    .index-nav-link:hover::after { width: 100%; }
+    .index-nav-cta {
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: var(--bg); padding: 10px 20px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .index-nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px var(--glow); }
 
     /* ═══ HERO ═══ */
-    .index-hero { text-align: center; padding: 60px 0 40px; animation: fadeInUp 0.8s ease; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-    .index-hero-mesh {
-      width: 120px; height: 120px; margin: 0 auto 20px; position: relative;
-      filter: drop-shadow(0 0 32px var(--glow));
+    .index-hero {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 80px 0 60px; gap: 60px; min-height: 70vh;
     }
-    .index-hero-mesh canvas { width: 120px !important; height: 120px !important; display: block; }
+    .index-hero-left { flex: 1; }
+    .index-hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--card); border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 20px; font-size: 12px;
+      color: var(--accent); margin-bottom: 24px;
+    }
+    .index-hero-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #30d158;
+      box-shadow: 0 0 6px rgba(48,209,88,0.5);
+    }
     .index-hero h1 {
-      font-size: clamp(32px, 6vw, 48px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1;
+      font-size: clamp(40px, 6vw, 64px); font-weight: 800;
+      letter-spacing: -2px; line-height: 1.05; margin-bottom: 20px;
+      color: var(--text);
+    }
+    .index-hero h1 .highlight {
       background: linear-gradient(135deg, var(--accent2), var(--accent), var(--accent2));
-      background-size: 300% 300%;
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      animation: goldShimmer 4s ease-in-out infinite; margin-bottom: 12px;
+      background-size: 200% 200%; -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; animation: heroShimmer 4s ease-in-out infinite;
     }
-    .index-hero .typewriter {
-      font-size: 16px; color: var(--muted); letter-spacing: 0.2px; max-width: 520px;
-      margin: 0 auto 8px; line-height: 1.6; min-height: 48px;
+    @keyframes heroShimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    .index-hero p {
+      font-size: 17px; color: var(--muted); max-width: 480px;
+      line-height: 1.7; margin-bottom: 32px;
     }
-    .index-hero .typewriter .cursor { animation: blink 0.8s infinite; color: var(--accent); font-weight: 200; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-    .index-visitor-badge { text-align: center; padding: 4px 0; font-size: 11px; color: var(--muted); letter-spacing: 0.5px; opacity: 0.7; margin-bottom: 16px; }
-    .index-visitor-count { color: var(--accent); font-weight: 700; }
-    .index-hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .index-hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
     .index-btn {
-      padding: 14px 28px; border-radius: 14px; font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: all 0.25s ease; letter-spacing: 0.3px;
-      font-family: inherit; text-decoration: none; display: inline-block;
+      padding: 15px 30px; border-radius: 14px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.25s ease; font-family: inherit;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
     }
     .index-btn.primary {
       background: linear-gradient(135deg, var(--accent2), var(--accent));
-      color: var(--bg); border: none;
-      box-shadow: 0 4px 20px var(--glow), 0 0 40px var(--glow);
+      color: var(--bg); border: none; box-shadow: 0 4px 24px var(--glow);
     }
-    .index-btn.primary:hover { box-shadow: 0 6px 28px var(--glow), 0 0 60px var(--glow); transform: translateY(-2px); }
-    .index-btn.primary:active { transform: scale(0.97); }
-    .index-btn.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); }
-    .index-btn.secondary:hover { background: var(--panel); border-color: var(--accent); }
+    .index-btn.primary:hover { box-shadow: 0 6px 32px var(--glow); transform: translateY(-2px); }
+    .index-btn.ghost {
+      background: transparent; color: var(--accent);
+      border: 1.5px solid var(--border);
+    }
+    .index-btn.ghost:hover { border-color: var(--accent); background: var(--card); }
+
+    /* ═══ HERO MESH ═══ */
+    .index-hero-right {
+      flex-shrink: 0; width: 280px; height: 280px;
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .index-hero-mesh {
+      width: 280px; height: 280px; position: relative;
+      filter: drop-shadow(0 0 60px var(--glow));
+    }
+    .index-hero-mesh canvas { width: 280px !important; height: 280px !important; }
+    .index-hero-orb {
+      position: absolute; width: 200px; height: 200px; border-radius: 50%;
+      background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+      animation: orbPulse 3s ease-in-out infinite;
+    }
+    @keyframes orbPulse { 0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.2);opacity:.8} }
+
+    /* ═══ STATS BAR ═══ */
+    .index-stats-bar {
+      display: flex; gap: 40px; padding: 32px 0;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      justify-content: center; flex-wrap: wrap;
+    }
+    .index-stat { text-align: center; }
+    .index-stat-number {
+      font-size: 28px; font-weight: 800; color: var(--accent);
+      letter-spacing: -1px;
+    }
+    .index-stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
 
     /* ═══ SECTIONS ═══ */
-    .index-section { padding: 60px 0; }
-    .index-section-label { text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
-    .index-section-title { text-align: center; font-size: clamp(22px, 4vw, 28px); font-weight: 700; letter-spacing: -0.5px; color: var(--text); margin-bottom: 40px; }
+    .index-section { padding: 80px 0; }
+    .index-section-header { text-align: center; margin-bottom: 60px; }
+    .index-section-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 3px;
+      color: var(--accent); margin-bottom: 12px; font-weight: 700;
+    }
+    .index-section-title {
+      font-size: clamp(26px, 4vw, 36px); font-weight: 700;
+      letter-spacing: -0.8px; color: var(--text);
+    }
+    .index-section-sub {
+      font-size: 15px; color: var(--muted); margin-top: 12px; max-width: 500px;
+      margin-left: auto; margin-right: auto;
+    }
 
-    /* ═══ FEATURES ═══ */
-    .index-features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    /* ═══ FEATURES GRID ═══ */
+    .index-features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
     .index-feature-card {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px; text-align: center;
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      opacity: 0; transform: translateY(30px);
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px; transition: all 0.3s ease;
+      position: relative; overflow: hidden;
     }
-    .index-feature-card.visible { opacity: 1; transform: translateY(0); transition: all 0.6s cubic-bezier(0.22,1,0.36,1); }
-    .index-feature-card:hover { border-color: var(--accent); box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px var(--glow); transform: translateY(-2px); }
-    .index-feature-card h3 { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 6px; letter-spacing: 0.2px; }
-    .index-feature-card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-    /* ═══ STATS ═══ */
-    .index-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .index-stat-card {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px; text-align: center;
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-      opacity: 0; transform: translateY(30px);
+    .index-feature-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0; transition: opacity 0.3s;
     }
-    .index-stat-card.visible { opacity: 1; transform: translateY(0); transition: all 0.6s cubic-bezier(0.22,1,0.36,1); }
-    .index-stat-number { font-size: 32px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
-    .index-stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.3px; }
+    .index-feature-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: var(--shadow); }
+    .index-feature-card:hover::before { opacity: 1; }
+    .index-feature-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--glow); display: flex; align-items: center;
+      justify-content: center; margin-bottom: 16px; font-size: 20px;
+    }
+    .index-feature-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.3px; }
+    .index-feature-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
     /* ═══ REVIEWS ═══ */
-    .index-reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .index-review-card {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px;
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      opacity: 0; transform: translateY(30px);
+    .index-reviews-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
     }
-    .index-review-card.visible { opacity: 1; transform: translateY(0); transition: all 0.6s cubic-bezier(0.22,1,0.36,1); }
-    .index-review-card:hover { border-color: var(--accent); box-shadow: 0 8px 32px rgba(0,0,0,0.3); transform: translateY(-2px); }
-    .index-review-stars { color: var(--accent); font-size: 14px; letter-spacing: 2px; margin-bottom: 10px; font-weight: 600; }
-    .index-review-text { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; font-style: italic; }
-    .index-review-author { display: flex; align-items: center; gap: 8px; }
+    .index-review-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px; transition: all 0.3s ease;
+    }
+    .index-review-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .index-review-stars { color: var(--accent); font-size: 14px; letter-spacing: 2px; margin-bottom: 12px; }
+    .index-review-text { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 16px; font-style: italic; }
+    .index-review-author { display: flex; align-items: center; gap: 10px; }
     .index-review-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
+      width: 32px; height: 32px; border-radius: 50%;
       background: linear-gradient(135deg, var(--accent2), var(--accent));
       display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700; color: var(--bg); flex-shrink: 0;
+      font-size: 13px; font-weight: 700; color: var(--bg);
     }
-    .index-review-name { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }
+    .index-review-name { font-size: 14px; font-weight: 600; color: var(--text); }
 
     /* ═══ CTA ═══ */
     .index-cta {
-      text-align: center; padding: 80px 0;
+      text-align: center; padding: 100px 0;
       background: radial-gradient(ellipse at 50% 50%, var(--glow) 0%, transparent 70%);
-      border-radius: 24px; margin: 40px 0 60px;
+      border-radius: 32px; margin: 40px 0 80px;
     }
-    .index-cta h2 { font-size: clamp(24px, 5vw, 32px); font-weight: 700; letter-spacing: -0.8px; color: var(--text); margin-bottom: 10px; }
-    .index-cta p { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
-    .index-cta .index-btn.primary { font-size: 15px; padding: 16px 36px; }
+    .index-cta h2 { font-size: clamp(28px, 5vw, 40px); font-weight: 800; letter-spacing: -1px; color: var(--text); margin-bottom: 12px; }
+    .index-cta p { font-size: 16px; color: var(--muted); margin-bottom: 32px; }
+    .index-cta .index-btn.primary { font-size: 16px; padding: 18px 40px; }
 
     /* ═══ FOOTER ═══ */
-    .index-footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--border); }
+    .index-footer {
+      text-align: center; padding: 40px 0; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 16px;
+    }
     .index-footer p { font-size: 12px; color: var(--muted); letter-spacing: 0.5px; }
+    .index-footer-links { display: flex; gap: 20px; }
+    .index-footer-links a { color: var(--muted); text-decoration: none; font-size: 12px; transition: color 0.2s; }
+    .index-footer-links a:hover { color: var(--accent); }
 
     /* ═══ MOBILE ═══ */
     @media (max-width: 768px) {
-      .index-content { padding: 0 16px; }
-      .index-nav { padding: 16px 0; }
-      .index-nav-links { gap: 12px; }
+      .index-content { padding: 0 20px; }
+      .index-nav { padding: 20px 0; }
+      .index-nav-links { gap: 16px; }
       .index-nav-link { font-size: 12px; }
-      .index-discord-btn { padding: 6px 12px; font-size: 12px; }
-      .index-discord-btn span { display: none; }
-      .index-hero { padding: 30px 0 30px; }
-      .index-hero-mesh { width: 90px; height: 90px; margin-bottom: 14px; }
-      .index-hero-mesh canvas { width: 90px !important; height: 90px !important; }
-      .index-hero .typewriter { font-size: 14px; }
-      .index-btn { padding: 12px 22px; font-size: 13px; }
-      .index-section { padding: 40px 0; }
-      .index-features-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .index-feature-card { padding: 16px; }
-      .index-feature-card h3 { font-size: 13px; }
-      .index-feature-card p { font-size: 11px; }
-      .index-stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .index-stat-number { font-size: 26px; }
+      .index-hero { flex-direction: column; padding: 40px 0; gap: 40px; min-height: auto; text-align: center; }
+      .index-hero-left { order: 2; }
+      .index-hero-right { order: 1; width: 200px; height: 200px; }
+      .index-hero-mesh, .index-hero-mesh canvas { width: 200px !important; height: 200px !important; }
+      .index-hero p { margin: 0 auto 24px; }
+      .index-hero-buttons { justify-content: center; }
+      .index-stats-bar { gap: 24px; }
+      .index-stat-number { font-size: 22px; }
+      .index-features-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+      .index-feature-card { padding: 24px; }
       .index-reviews-grid {
-        grid-template-columns: 1fr; display: flex; gap: 12px;
-        overflow-x: auto; scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch; padding-bottom: 8px;
-        touch-action: pan-x;
+        grid-template-columns: 1fr; display: flex; gap: 14px;
+        overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px;
       }
-      .index-reviews-grid::-webkit-scrollbar { display: none; }
       .index-review-card { min-width: 280px; flex-shrink: 0; scroll-snap-align: start; }
-      .index-cta { padding: 48px 16px; margin: 24px 0 40px; }
-      .index-cta h2 { font-size: 22px; }
-      .index-theme-pill { bottom: 16px; right: 16px; padding: 4px; gap: 4px; }
-      .index-theme-dot { width: 24px; height: 24px; }
+      .index-cta { padding: 60px 24px; }
+      .index-footer { flex-direction: column; text-align: center; }
     }
     @media (max-width: 400px) {
       .index-features-grid { grid-template-columns: 1fr; }
-      .index-stats-grid { grid-template-columns: 1fr 1fr; }
-      .index-hero h1 { font-size: 26px; }
-      .index-nav-links { gap: 8px; }
+      .index-hero h1 { font-size: 32px; }
     }
   </style>
 </head>
-<body class="index-page" data-theme="gold">
-  <div class="cursor-glow" id="cursorGlow"></div>
-  <div class="index-bg-wrapper">
-    <div class="index-bg-gif" id="parallaxBg"></div>
-    <div class="index-bg-texture"></div>
-    <div class="index-bg-gradient"></div>
-  </div>
-
-  <div class="index-theme-pill" id="themePill">
-    <div class="index-theme-dot gold active" data-theme="gold" title="Gold"></div>
-    <div class="index-theme-dot midnight" data-theme="midnight" title="Midnight"></div>
-    <div class="index-theme-dot glass" data-theme="glass" title="Glass"></div>
-    <div class="index-theme-dot chrome" data-theme="chrome" title="Chrome"></div>
-    <div class="index-theme-dot white" data-theme="white" title="Light"></div>
-    <div class="index-theme-dot chromatic" data-theme="chromatic" title="Chromatic"></div>
-    <div class="index-theme-dot liquid" data-theme="liquid" title="Liquid Metal"></div>
-    <div class="index-theme-dot rainbow" data-theme="rainbow" title="Rainbow"></div>
-  </div>
+<body class="index-page">
+  <div class="index-bg"></div>
 
   <div class="index-content">
-    <nav class="index-nav">
+    <!-- ═══ NAV ═══ -->
+    <nav class="index-nav" id="navbar">
       <a href="index.html" class="index-nav-logo">
         <img src="icon.png" alt="Chrxmaticc">
         <span>Chrxmaticc</span>
       </a>
       <div class="index-nav-links">
         <a href="#features" class="index-nav-link">Features</a>
-        <a href="#stats" class="index-nav-link">Stats</a>
         <a href="#reviews" class="index-nav-link">Reviews</a>
-        <a href="https://discord.gg/MHbgXsvUJb" target="_blank" class="index-discord-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-          <span>Discord</span>
-        </a>
+        <a href="app.html" class="index-nav-cta">Open App</a>
       </div>
     </nav>
 
+    <!-- ═══ HERO ═══ -->
     <section class="index-hero">
-      <div class="index-hero-mesh" id="heroMesh"><canvas id="heroMeshCanvas"></canvas></div>
-      <h1>Chrxmaticc Copilot</h1>
-      <p class="typewriter" id="typewriter"></p>
-      <div class="index-visitor-badge">Online right now: <span class="index-visitor-count" id="visitorCount">--</span></div>
-      <div class="index-hero-buttons">
-        <a href="accounts.html" class="index-btn primary" id="heroSignIn">Sign In</a>
-        <a href="accounts.html?mode=signup" class="index-btn secondary">Create Account</a>
+      <div class="index-hero-left">
+        <div class="index-hero-badge"><span class="dot"></span> v2.0 — Live on Vercel</div>
+        <h1>The <span class="highlight">chrome demon</span> that codes.</h1>
+        <p>Offbrand. Hyper-intelligent. No subscription. Chrxmaticc Copilot is an AI-powered coding assistant with 8 themes, 5 personalities, and zero limits.</p>
+        <div class="index-hero-buttons">
+          <a href="app.html" class="index-btn primary">Try It Free</a>
+          <a href="https://discord.gg/MHbgXsvUJb" target="_blank" class="index-btn ghost">Join Discord</a>
+        </div>
+      </div>
+      <div class="index-hero-right">
+        <div class="index-hero-orb"></div>
+        <div class="index-hero-mesh" id="heroMesh"><canvas id="heroMeshCanvas"></canvas></div>
       </div>
     </section>
 
+    <!-- ═══ STATS BAR ═══ -->
+    <div class="index-stats-bar">
+      <div class="index-stat"><div class="index-stat-number">429</div><div class="index-stat-label">Commits</div></div>
+      <div class="index-stat"><div class="index-stat-number">8</div><div class="index-stat-label">Themes</div></div>
+      <div class="index-stat"><div class="index-stat-number">5</div><div class="index-stat-label">AI Models</div></div>
+      <div class="index-stat"><div class="index-stat-number">4</div><div class="index-stat-label">Workflows</div></div>
+      <div class="index-stat"><div class="index-stat-number">∞</div><div class="index-stat-label">Possibilities</div></div>
+    </div>
+
+    <!-- ═══ FEATURES ═══ -->
     <section class="index-section" id="features">
-      <div class="index-section-label">Capabilities</div>
-      <h2 class="index-section-title">Everything you need. Nothing you don't.</h2>
+      <div class="index-section-header">
+        <div class="index-section-label">Capabilities</div>
+        <h2 class="index-section-title">Everything you need. Nothing you don't.</h2>
+        <p class="index-section-sub">Built for developers who want power without the price tag.</p>
+      </div>
       <div class="index-features-grid">
-        <div class="index-feature-card"><h3>5 AI Personalities</h3><p>Conversational, Sonnet for coding, Vision for creativity, Intermediate, and Speed mode.</p></div>
-        <div class="index-feature-card"><h3>8 Premium Themes</h3><p>Gold, Midnight, Glass, Chrome, Light, Chromatic, Liquid Metal, and Rainbow. Swap anywhere.</p></div>
-        <div class="index-feature-card"><h3>Voice Input & TTS</h3><p>Speak your messages. Hear the AI respond. Hands-free when you need it.</p></div>
-        <div class="index-feature-card"><h3>Code Highlighting</h3><p>Syntax highlighting with one-click copy. Built for developers who build.</p></div>
-        <div class="index-feature-card"><h3>File Support</h3><p>Attach images, code files, documents. The AI reads and responds intelligently.</p></div>
-        <div class="index-feature-card"><h3>Persistent Chats</h3><p>Everything saved locally. Pick up any conversation exactly where you left off.</p></div>
+        <div class="index-feature-card">
+          <div class="index-feature-icon">🧠</div>
+          <h3>5 AI Personalities</h3>
+          <p>Conversational, Sonnet for coding, Vision for creativity, Intermediate, and Speed mode. Each tuned for a specific task.</p>
+        </div>
+        <div class="index-feature-card">
+          <div class="index-feature-icon">🎨</div>
+          <h3>8 Premium Themes</h3>
+          <p>Gold, Midnight, Glass, Chrome, Light, Chromatic, Liquid Metal, and Rainbow. Auto light/dark mode detection.</p>
+        </div>
+        <div class="index-feature-card">
+          <div class="index-feature-icon">⚡</div>
+          <h3>4 Workflows</h3>
+          <p>Code, Plan, Review, and Surprise. Switch contexts instantly and the AI adapts its entire behavior.</p>
+        </div>
+        <div class="index-feature-card">
+          <div class="index-feature-icon">🎤</div>
+          <h3>Voice & TTS</h3>
+          <p>Speak your messages. Hear the AI respond. Full speech-to-text and text-to-speech built in.</p>
+        </div>
+        <div class="index-feature-card">
+          <div class="index-feature-icon">📁</div>
+          <h3>File & Image Support</h3>
+          <p>Attach code files, documents, and images. The AI reads, describes, and responds intelligently to everything.</p>
+        </div>
+        <div class="index-feature-card">
+          <div class="index-feature-icon">💾</div>
+          <h3>Persistent Memory</h3>
+          <p>Chats saved locally. Personal info remembered. Pick up any conversation exactly where you left off.</p>
+        </div>
       </div>
     </section>
 
-    <section class="index-section" id="stats">
-      <div class="index-section-label">By the Numbers</div>
-      <h2 class="index-section-title">The chrome demon doesn't sleep.</h2>
-      <div class="index-stats-grid">
-        <div class="index-stat-card"><div class="index-stat-number">429</div><div class="index-stat-label">Total Commits</div></div>
-        <div class="index-stat-card"><div class="index-stat-number">8</div><div class="index-stat-label">Premium Themes</div></div>
-        <div class="index-stat-card"><div class="index-stat-number">5</div><div class="index-stat-label">AI Models</div></div>
-        <div class="index-stat-card"><div class="index-stat-number">5</div><div class="index-stat-label">Workflows</div></div>
-      </div>
-    </section>
-
+    <!-- ═══ REVIEWS ═══ -->
     <section class="index-section" id="reviews">
-      <div class="index-section-label">Reviews</div>
-      <h2 class="index-section-title">What the community says.</h2>
+      <div class="index-section-header">
+        <div class="index-section-label">Reviews</div>
+        <h2 class="index-section-title">What the community says.</h2>
+      </div>
       <div class="index-reviews-grid">
         <div class="index-review-card">
-          <div class="index-review-stars">5/5</div>
+          <div class="index-review-stars">★★★★★</div>
           <p class="index-review-text">"he thinks mangos are awesome 10/10"</p>
           <div class="index-review-author"><div class="index-review-avatar">M</div><span class="index-review-name">manguns</span></div>
         </div>
         <div class="index-review-card">
-          <div class="index-review-stars">5/5</div>
+          <div class="index-review-stars">★★★★★</div>
           <p class="index-review-text">"everything is a 10/10, i asked it to make a discord nuke bot and it refused. everything is a 10/10 and I can skid with it"</p>
           <div class="index-review-author"><div class="index-review-avatar">A</div><span class="index-review-name">axitel</span></div>
         </div>
         <div class="index-review-card">
-          <div class="index-review-stars">4.5/5</div>
+          <div class="index-review-stars">★★★★½</div>
           <p class="index-review-text">"the ui looks smooth, the ai responds fast and it overall looks nice"</p>
           <div class="index-review-author"><div class="index-review-avatar">A</div><span class="index-review-name">arcccy</span></div>
         </div>
         <div class="index-review-card">
-          <div class="index-review-stars">4/5</div>
-          <p class="index-review-text">"Bot has a memory of a goldfish btw but other then that it's cool"</p>
+          <div class="index-review-stars">★★★★☆</div>
+          <p class="index-review-text">"Bot has a memory of a goldfish btw but other than that it's cool"</p>
           <div class="index-review-author"><div class="index-review-avatar">A</div><span class="index-review-name">Agnes Tachyon</span></div>
         </div>
         <div class="index-review-card">
-          <div class="index-review-stars">4/5</div>
+          <div class="index-review-stars">★★★★☆</div>
           <p class="index-review-text">"AI is good, could be better (W chrx)"</p>
           <div class="index-review-author"><div class="index-review-avatar">D</div><span class="index-review-name">Denji</span></div>
         </div>
       </div>
     </section>
 
+    <!-- ═══ CTA ═══ -->
     <section class="index-cta">
       <h2>Ready to meet the chrome demon?</h2>
       <p>No subscription. No limits. Just raw AI power.</p>
-      <a href="accounts.html" class="index-btn primary">Get Started</a>
+      <a href="app.html" class="index-btn primary">Get Started — It's Free</a>
     </section>
 
-    <footer class="index-footer"><p>v1.2.0 — Chrxmee-Midnightt — Chrome Demon Copilot</p></footer>
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="index-footer">
+      <p>v2.0.0 — Chrxmee-Midnightt — Chrome Demon Copilot</p>
+      <div class="index-footer-links">
+        <a href="app.html">App</a>
+        <a href="settings.html">Settings</a>
+        <a href="https://discord.gg/MHbgXsvUJb" target="_blank">Discord</a>
+        <a href="https://github.com" target="_blank">GitHub</a>
+      </div>
+    </footer>
   </div>
 
   <script>
-    /* ═══ THEME SYSTEM ═══ */
-    var THEME_COLORS = {
-      gold: 0xd4a574, midnight: 0x9090d8, glass: 0xa0b8e8, chrome: 0xcccccc,
-      white: 0x0a84ff, chromatic: 0xd4a574, liquid: 0xbbbbbb, rainbow: 0xff9ff3
-    };
-    var currentTheme = localStorage.getItem('chrxmaticc_theme') || 'gold';
-    document.body.setAttribute('data-theme', currentTheme);
-    updateThemeDots();
-
-    document.querySelectorAll('.index-theme-dot').forEach(function(dot) {
-      dot.addEventListener('click', function() {
-        var theme = this.getAttribute('data-theme');
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('chrxmaticc_theme', theme);
-        currentTheme = theme;
-        updateThemeDots();
-        updateMeshColor(theme);
-      });
-    });
-
-    function updateThemeDots() {
-      document.querySelectorAll('.index-theme-dot').forEach(function(d) {
-        d.classList.toggle('active', d.getAttribute('data-theme') === currentTheme);
-      });
-    }
-
-    /* ═══ CURSOR GLOW ═══ */
-    var cursorGlow = document.getElementById('cursorGlow');
-    var glowTimeout;
-    document.addEventListener('mousemove', function(e) {
-      if (!cursorGlow) return;
-      cursorGlow.style.left = e.clientX + 'px';
-      cursorGlow.style.top = e.clientY + 'px';
-      cursorGlow.classList.add('active');
-      clearTimeout(glowTimeout);
-      glowTimeout = setTimeout(function() { cursorGlow.classList.remove('active'); }, 1500);
-    });
-
-    /* ═══ PARALLAX ═══ */
-    var parallaxBg = document.getElementById('parallaxBg');
-    if (parallaxBg) {
-      document.addEventListener('mousemove', function(e) {
-        var x = (e.clientX / window.innerWidth - 0.5) * 10;
-        var y = (e.clientY / window.innerHeight - 0.5) * 10;
-        parallaxBg.style.transform = 'scale(1.1) translate(' + x + 'px, ' + y + 'px)';
-      });
-    }
-
-    /* ═══ TYPEWRITER ═══ */
-    var typewriterEl = document.getElementById('typewriter');
-    var typewriterTexts = [
-      'Offbrand. Hyper-intelligent. No subscription.',
-      'The chrome demon that codes, creates, and doesn\'t hold back.',
-      '429 commits. 8 themes. One copilot.',
-      'Built by a dev who refuses to sleep.',
-      'AI that roasts you while writing your code.'
-    ];
-    var typeIdx = 0, charIdx = 0, isDeleting = false;
-    function typewriterTick() {
-      if (!typewriterEl) return;
-      var current = typewriterTexts[typeIdx];
-      if (isDeleting) {
-        typewriterEl.innerHTML = current.substring(0, charIdx) + '<span class="cursor">|</span>';
-        charIdx--;
-        if (charIdx < 0) { isDeleting = false; typeIdx = (typeIdx + 1) % typewriterTexts.length; setTimeout(typewriterTick, 400); return; }
-        setTimeout(typewriterTick, 25);
-      } else {
-        typewriterEl.innerHTML = current.substring(0, charIdx) + '<span class="cursor">|</span>';
-        charIdx++;
-        if (charIdx > current.length) { isDeleting = true; setTimeout(typewriterTick, 1800); return; }
-        setTimeout(typewriterTick, 50);
-      }
-    }
-    typewriterTick();
-
-    /* ═══ SCROLL REVEAL ═══ */
-    var observerOptions = { threshold: 0.15, rootMargin: '0px 0px -40px 0px' };
-    var revealObserver = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    }, observerOptions);
-
-    document.querySelectorAll('.index-feature-card, .index-stat-card, .index-review-card').forEach(function(el, i) {
-      el.style.transitionDelay = (i % 3) * 0.1 + 's';
-      revealObserver.observe(el);
+    /* ═══ NAV SCROLL EFFECT ═══ */
+    window.addEventListener('scroll', function() {
+      var nav = document.getElementById('navbar');
+      if (nav) nav.classList.toggle('scrolled', window.scrollY > 10);
     });
 
     /* ═══ 3D MESH ═══ */
     var heroMesh, heroScene, heroRenderer, heroCam;
     function initHeroMesh() {
       var canvas = document.getElementById('heroMeshCanvas');
-      var wrap = document.getElementById('heroMesh');
-      if (!canvas || !wrap || typeof THREE === 'undefined') return;
+      if (!canvas || typeof THREE === 'undefined') return;
       try {
-        var S = 120;
+        var S = 280;
         heroScene = new THREE.Scene();
         heroCam = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
         heroCam.position.z = 3.5;
@@ -523,50 +458,36 @@
         heroRenderer.setClearColor(0, 0);
         var geo = new THREE.IcosahedronGeometry(1.1, 3);
         var edges = new THREE.EdgesGeometry(geo);
-        var mat = new THREE.LineBasicMaterial({ color: THEME_COLORS[currentTheme] || 0xd4a574, transparent: true, opacity: 0.6 });
+        var mat = new THREE.LineBasicMaterial({ color: 0xd4a574, transparent: true, opacity: 0.5 });
         heroMesh = new THREE.LineSegments(edges, mat);
         heroScene.add(heroMesh);
-        var core = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: THEME_COLORS[currentTheme] || 0xd4a574, transparent: true, opacity: 0.05 }));
+        var core = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xd4a574, transparent: true, opacity: 0.04 }));
         heroScene.add(core);
         (function anim() {
           requestAnimationFrame(anim);
-          heroMesh.rotation.y += 0.004;
-          heroMesh.rotation.x += 0.0012;
+          heroMesh.rotation.y += 0.003;
+          heroMesh.rotation.x += 0.001;
           core.rotation.y = heroMesh.rotation.y;
           core.rotation.x = heroMesh.rotation.x;
           heroRenderer.render(heroScene, heroCam);
         })();
       } catch(e) {}
     }
-    function updateMeshColor(t) {
-      if (!heroMesh) return;
-      heroMesh.material.color.setHex(THEME_COLORS[t] || 0xd4a574);
-    }
     setTimeout(initHeroMesh, 300);
-
-    /* ═══ VISITOR COUNT ═══ */
-    (function() {
-      var count = Math.floor(Math.random() * 30) + 5;
-      var el = document.getElementById('visitorCount');
-      if (el) el.textContent = count;
-      setInterval(function() {
-        count = Math.max(1, count + Math.floor(Math.random() * 5) - 2);
-        if (el) el.textContent = count;
-      }, 15000);
-    })();
 
     /* ═══ EXISTING USER DETECTION ═══ */
     (function() {
       var existingUser = null;
       try { existingUser = JSON.parse(localStorage.getItem('chrxmaticc_user')); } catch(e) {}
-      var btn = document.getElementById('heroSignIn');
-      if (existingUser && existingUser.email && btn) {
-        btn.textContent = 'Continue as ' + (existingUser.displayName || existingUser.email);
-        btn.href = 'app.html';
+      var btns = document.querySelectorAll('.index-btn.primary[href="app.html"]');
+      if (existingUser && existingUser.displayName && btns.length) {
+        btns.forEach(function(btn) {
+          btn.textContent = 'Continue as ' + existingUser.displayName;
+        });
       }
     })();
 
-    /* ═══ SMOOTH SCROLL FOR NAV LINKS ═══ */
+    /* ═══ SMOOTH SCROLL ═══ */
     document.querySelectorAll('a[href^="#"]').forEach(function(link) {
       link.addEventListener('click', function(e) {
         var target = document.querySelector(this.getAttribute('href'));
