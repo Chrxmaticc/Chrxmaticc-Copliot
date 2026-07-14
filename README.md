@@ -15,7 +15,7 @@
 ---
 ## Star History
 
-<a href="https://www.star-history.com/?repos=Chrxmee-Bits%2FChrxmaticc-Copliot&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=Chrxmaticc%2FChrxmaticc-Copliot&type=date&legend=top-left">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Chrxmee-Bits/Chrxmaticc-Copliot&type=date&theme=dark&legend=top-left" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Chrxmee-Bits/Chrxmaticc-Copliot&type=date&legend=top-left" />
