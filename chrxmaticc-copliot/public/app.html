@@ -15,7 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     /* ═══════════════════════════════════════════════════════════
-       APP.HTML — INSANE VISUALS • v8.0 • ALL 8 THEMES • CUSTOM EMOJI
+       APP.HTML — v8.0 FULL ENGINE + ALL VISUALS
        ═══════════════════════════════════════════════════════════ */
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
     html{height:100%;width:100%;overflow:clip;position:fixed;inset:0}
@@ -190,7 +190,7 @@
     .bubble{padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.65;word-break:break-word;white-space:pre-wrap}
     .bubble-row.user .bubble{border-bottom-right-radius:4px}
     .bubble-row.ai .bubble{border-bottom-left-radius:4px}
-    /* theme bubbles use style.css */
+    /* Theme bubbles are handled by style.css */
     .msg-actions{display:flex;gap:4px;margin-top:4px;opacity:0;transition:opacity .15s}
     .bubble-row:hover .msg-actions{opacity:1}
     .msg-act-btn{background:rgba(255,255,255,.04);border:1px solid var(--brd);color:var(--mut);padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s}
@@ -392,7 +392,6 @@
 
   <button onclick="toggleSidebar()" class="mobile-menu-btn" style="position:fixed;top:14px;left:14px;z-index:200;width:36px;height:36px;border-radius:10px;border:1px solid var(--brd);background:var(--surf);color:var(--mut);cursor:pointer;align-items:center;justify-content:center;font-size:20px;backdrop-filter:blur(12px);display:none">☰</button>
 
-  <!-- ═══ LANDING ═══ -->
   <div class="land" id="landEl">
     <div class="land-inner">
       <div class="mesh-wrap" id="meshWrap"><div class="mesh-glow"></div><canvas id="meshCanvas"></canvas></div>
@@ -429,7 +428,6 @@
     </div>
   </div>
 
-  <!-- ═══ CHAT ═══ -->
   <div class="chat-wrap" id="chatWrap">
     <div id="app">
       <div class="sidebar" id="sidebar">
@@ -469,7 +467,7 @@
             <button class="mic-btn" onclick="document.getElementById('fileInput').click()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
             <input type="file" id="fileInput" style="display:none" accept="image/*,.js,.json,.html,.css,.md,.txt,.py,.glsl,.yml,.yaml,.xml,.svg" onchange="handleFileUpload(event)">
             <button class="model-pill" id="modelPill" onclick="openModelPop()"><span id="modelLabel">Sonnet 2.3</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
-            <button class="gh-pill" id="ghPill" onclick="openSettings()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg><span class="gh-dot"></span><span id="ghLabel">GitHub</span></button>
+            <button class="gh-pill" id="ghPill" onclick="openGitHubSection()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg><span class="gh-dot"></span><span id="ghLabel">GitHub</span></button>
             <div class="tb-spacer"></div>
             <button class="commit-btn" id="commitBtn" onclick="commitToRepo()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>Commit</button>
           </div>
@@ -515,7 +513,7 @@
 
   <script>
     /* ═══════════════════════════════════════════════════════════
-       INLINE ENGINE — All landing + chat logic • v8.0
+       INLINE ENGINE — v7.0 preserved + v8.0 extensions
        ═══════════════════════════════════════════════════════════ */
     (function(){
       var m=document.getElementById('messages');if(m){m.addEventListener('touchstart',function(){},{passive:true});m.addEventListener('touchmove',function(){},{passive:true});var app=document.getElementById('app');if(app){app.addEventListener('touchstart',function(e){if(e.target.closest('#messages'))return},{passive:true});app.addEventListener('touchmove',function(e){if(e.target.closest('#messages'))e.stopPropagation()},{passive:false})}m.style.overflowY='scroll';m.style.webkitOverflowScrolling='touch'}
@@ -581,8 +579,17 @@
     }
     window.goToLanding=goToLanding;
 
+    function openGitHubSection(){
+      // Open settings and scroll to GitHub section
+      openSettings();
+      setTimeout(function(){
+        var ghSection = document.getElementById('ghSection');
+        if(ghSection) ghSection.scrollIntoView({behavior:'smooth',block:'start'});
+      }, 100);
+    }
+
     function openPop(id,anchor){closePop('settingsPop');closePop('modelPop');var p=document.getElementById(id);if(!p)return;p.classList.add('on');if(anchor){var r=anchor.getBoundingClientRect(),top=r.top-p.offsetHeight-10;if(top<10)top=r.bottom+10;var left=Math.max(10,Math.min(r.left,window.innerWidth-p.offsetWidth-10));p.style.top=top+'px';p.style.left=left+'px'}setTimeout(function(){document.addEventListener('click',po,{once:true,capture:true})},10)}
-    function po(e){if(!e.target.closest('.popover')&&!e.target.closest('#settingsBtn')&&!e.target.closest('#wfPill')&&!e.target.closest('#modelPill')){closePop('settingsPop');closePop('modelPop')}}
+    function po(e){if(!e.target.closest('.popover')&&!e.target.closest('#settingsBtn')&&!e.target.closest('#wfPill')&&!e.target.closest('#modelPill')&&!e.target.closest('.gh-pill')){closePop('settingsPop');closePop('modelPop')}}
     function closePop(id){var p=document.getElementById(id);if(p)p.classList.remove('on')}
     function openSettings(){renderBpChips();openPop('settingsPop',document.getElementById('settingsBtn'))}
     function openModelPop(){renderModelOptions();openPop('modelPop',document.getElementById('modelPill'))}
