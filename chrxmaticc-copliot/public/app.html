@@ -625,7 +625,33 @@ function openPop(id,anchor){closePop('settingsPop');closePop('modelPop');var p=d
 function po(e){if(!e.target.closest('.popover')&&!e.target.closest('#settingsBtn')&&!e.target.closest('#wfPill')&&!e.target.closest('#modelPill')&&!e.target.closest('.gh-pill')){closePop('settingsPop');closePop('modelPop')}}
 function closePop(id){var p=document.getElementById(id);if(p)p.classList.remove('on')}
 function openSettings(){renderBpChips();openPop('settingsPop',document.getElementById('settingsBtn'))}
-function openModelPop(){renderModelOptions();openPop('modelPop',document.getElementById('modelPill'))}
+function openModelPop() {
+  renderModelOptions();
+  openPop('modelPop', document.getElementById('modelPill'));
+}
+
+function renderModelOptions() {
+  var e = document.getElementById('modelOptions');
+  if (!e) return;
+  e.innerHTML = MODELS.map(function(m) {
+    return '<div class="model-opt' + (m.key === _model ? ' active' : '') +
+      '" onclick="selectModel(\'' + m.key + '\')"><div class="model-opt-name">Chrxmaticc ' +
+      m.label + '</div><div class="model-opt-desc">' + m.desc + '</div></div>';
+  }).join('');
+}
+
+function selectModel(key) {
+  _model = key;
+  var m = MODELS.find(function(x) { return x.key === key; }),
+      p = document.getElementById('modelPill'),
+      l = document.getElementById('modelLabel'),
+      b = document.getElementById('lModelBadge');
+  if (l) l.textContent = m ? m.short : key;
+  if (b) b.textContent = 'Chrxmaticc ' + (m ? m.label : key);
+  renderModelOptions();
+  renderBpChips();
+  closePop('modelPop');
+}
 
 var _wfIdx=0;
 function cycleWorkflow(){_wfIdx=(_wfIdx+1)%WORKFLOWS.length;applyWorkflow(_wfIdx);openSettings()}
