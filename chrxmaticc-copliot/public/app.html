@@ -15,7 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     /* ═══════════════════════════════════════════════════════════
-       APP.HTML — v8.0 FULL ENGINE + ALL VISUALS
+       APP.HTML — INSANE VISUALS • v8.0 • ALL 8 THEMES • CUSTOM EMOJI
        ═══════════════════════════════════════════════════════════ */
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
     html{height:100%;width:100%;overflow:clip;position:fixed;inset:0}
@@ -70,19 +70,16 @@
     .greet{font-size:clamp(20px,4vw,30px);font-weight:700;letter-spacing:-.5px;text-align:center;margin-bottom:7px;background:linear-gradient(135deg,var(--a2),var(--a),var(--a2));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s ease-in-out infinite}
     @keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
     .greet-sub{font-size:13px;color:var(--mut);text-align:center;margin-bottom:26px;opacity:.8}
-    .lbox{width:100%;background:var(--surf);border:1px solid var(--brd);border-radius:20px;padding:4px 4px 4px 14px;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);box-shadow:0 8px 40px rgba(0,0,0,.4),0 0 80px var(--glow);transition:border-color .3s,box-shadow .3s,transform .2s;position:relative;overflow:hidden}
-    .lbox::before{content:'';position:absolute;top:-1px;left:20%;right:20%;height:2px;background:linear-gradient(90deg,transparent,var(--a),transparent);opacity:.4;transition:opacity .3s}
-    .lbox:focus-within{border-color:var(--a);box-shadow:0 8px 48px rgba(0,0,0,.5),0 0 0 3px var(--glow),0 0 80px var(--glow);transform:translateY(-2px)}
-    .lbox:focus-within::before{opacity:1}
+    .lbox{width:100%;background:var(--surf);border:1px solid var(--brd);border-radius:20px;padding:4px 4px 4px 14px;backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);box-shadow:0 8px 40px rgba(0,0,0,.4);transition:border-color .3s,box-shadow .3s,transform .2s}
+    .lbox:focus-within{border-color:var(--a);box-shadow:0 8px 48px rgba(0,0,0,.5),0 0 0 3px var(--glow);transform:translateY(-2px)}
     .ltextarea{flex:1;background:transparent;border:none;outline:none;color:var(--txt);font-size:15px;font-family:inherit;resize:none;max-height:130px;min-height:46px;width:100%;padding:11px 8px 6px 0;line-height:1.5}
     .ltextarea::placeholder{color:var(--mut);opacity:.55}
     .lbox-bottom{display:flex;align-items:center;justify-content:space-between;padding:5px 2px 2px}
     .lbox-left{display:flex;align-items:center;gap:8px}
     .lbox-right{display:flex;align-items:center;gap:8px}
-    .lmodel-badge{font-size:11px;color:var(--mut);background:rgba(255,255,255,.04);border:1px solid var(--brd);border-radius:8px;padding:4px 9px;white-space:nowrap;display:flex;align-items:center;gap:4px}
+    .lmodel-badge{font-size:11px;color:var(--mut);background:rgba(255,255,255,.04);border:1px solid var(--brd);border-radius:8px;padding:4px 9px;white-space:nowrap}
     .lsend{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--a2),var(--a));transition:transform .2s,box-shadow .2s,opacity .2s;position:relative;overflow:hidden;opacity:.35}
-    .lsend.active{opacity:1;animation:sendPulse 2s ease-in-out infinite}
-    @keyframes sendPulse{0%,100%{box-shadow:0 0 20px var(--glow)}50%{box-shadow:0 0 40px var(--glow),0 0 60px var(--a)}}
+    .lsend.active{opacity:1}
     .lsend:hover{transform:scale(1.08);box-shadow:0 0 28px var(--glow)}
     .lsend:active{transform:scale(.94)}
     .lsend svg{width:16px;height:16px;fill:var(--bg)}
@@ -90,12 +87,12 @@
     .lattach:hover{color:var(--a);background:var(--glow)}
     .l-effort-wrap{display:flex;align-items:center;gap:7px}
     .effort-track{position:relative;width:100px;height:5px;background:rgba(255,255,255,.08);border-radius:4px;cursor:pointer}
-    .effort-fill{position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--a2),var(--a));pointer-events:none;transition:width .2s}
-    .effort-thumb{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--a);border:2px solid var(--bg);transform:translateY(-50%);box-shadow:0 0 8px var(--glow);cursor:grab;transition:left .2s}
+    .effort-fill{position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--a2),var(--a));pointer-events:none}
+    .effort-thumb{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--a);border:2px solid var(--bg);transform:translateY(-50%);box-shadow:0 0 8px var(--glow);cursor:grab}
     .effort-thumb:active{cursor:grabbing}
     .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;padding:20px 0 0}
     .chip{background:rgba(255,255,255,.04);border:1px solid var(--brd);color:var(--mut);padding:8px 16px;border-radius:22px;font-size:12px;cursor:pointer;font-family:inherit;transition:all .22s;white-space:nowrap;backdrop-filter:blur(12px);display:flex;align-items:center;gap:6px}
-    .chip:hover{border-color:var(--a);background:var(--glow);color:var(--txt);transform:translateY(-2px);box-shadow:0 4px 16px var(--glow)}
+    .chip:hover{border-color:var(--a);background:var(--glow);color:var(--txt);transform:translateY(-2px)}
     .chip svg{width:14px;height:14px;flex-shrink:0}
     .lthemes{display:flex;gap:9px;justify-content:center;padding:20px 0 0;flex-wrap:wrap}
     .ldot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .22s;position:relative}
@@ -190,7 +187,7 @@
     .bubble{padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.65;word-break:break-word;white-space:pre-wrap}
     .bubble-row.user .bubble{border-bottom-right-radius:4px}
     .bubble-row.ai .bubble{border-bottom-left-radius:4px}
-    /* Theme bubbles are handled by style.css */
+    /* theme bubbles are handled by style.css — keep the original selectors */
     .msg-actions{display:flex;gap:4px;margin-top:4px;opacity:0;transition:opacity .15s}
     .bubble-row:hover .msg-actions{opacity:1}
     .msg-act-btn{background:rgba(255,255,255,.04);border:1px solid var(--brd);color:var(--mut);padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s}
@@ -392,6 +389,7 @@
 
   <button onclick="toggleSidebar()" class="mobile-menu-btn" style="position:fixed;top:14px;left:14px;z-index:200;width:36px;height:36px;border-radius:10px;border:1px solid var(--brd);background:var(--surf);color:var(--mut);cursor:pointer;align-items:center;justify-content:center;font-size:20px;backdrop-filter:blur(12px);display:none">☰</button>
 
+  <!-- ═══ LANDING ═══ -->
   <div class="land" id="landEl">
     <div class="land-inner">
       <div class="mesh-wrap" id="meshWrap"><div class="mesh-glow"></div><canvas id="meshCanvas"></canvas></div>
@@ -428,6 +426,7 @@
     </div>
   </div>
 
+  <!-- ═══ CHAT ═══ -->
   <div class="chat-wrap" id="chatWrap">
     <div id="app">
       <div class="sidebar" id="sidebar">
@@ -475,6 +474,7 @@
       </div>
     </div>
 
+    <!-- SETTINGS POPOVER -->
     <div class="popover" id="settingsPop">
       <div class="pop-hdr"><div class="pop-title">Workflow Settings</div><button class="pop-close" onclick="closePop('settingsPop')">✕</button></div>
       <div class="pop-body">
@@ -486,11 +486,13 @@
       </div>
     </div>
 
+    <!-- MODEL POPOVER -->
     <div class="popover" id="modelPop">
       <div class="pop-hdr"><div class="pop-title">Select Model</div><button class="pop-close" onclick="closePop('modelPop')">✕</button></div>
       <div class="pop-body"><div class="model-options" id="modelOptions"></div></div>
     </div>
 
+    <!-- GETO DEBUG PANEL -->
     <div class="geto-debug-panel" id="getoDebugPanel">
       <div style="display:flex;align-items:center;gap:12px"><img id="getoDebugImg" src="1525658200622239756.webp" alt="geto" style="width:48px;height:48px;border-radius:12px;transition:all .3s"><div><div style="font-size:14px;font-weight:700;color:var(--txt)">Explain It To Geto</div><div id="getoDebugLabel" style="font-size:11px;color:var(--mut)">geto is listening...</div></div><button onclick="toggleGetoDebug()" style="margin-left:auto;background:none;border:none;color:var(--mut);cursor:pointer;font-size:18px">✕</button></div>
       <textarea class="geto-debug-input" id="getoDebugInput" placeholder="Explain your problem to geto..." oninput="onGetoDebugInput()"></textarea>
@@ -513,7 +515,7 @@
 
   <script>
     /* ═══════════════════════════════════════════════════════════
-       INLINE ENGINE — v7.0 preserved + v8.0 extensions
+       INLINE ENGINE — FULL v7.0 + FIXES + EXTENSIONS
        ═══════════════════════════════════════════════════════════ */
     (function(){
       var m=document.getElementById('messages');if(m){m.addEventListener('touchstart',function(){},{passive:true});m.addEventListener('touchmove',function(){},{passive:true});var app=document.getElementById('app');if(app){app.addEventListener('touchstart',function(e){if(e.target.closest('#messages'))return},{passive:true});app.addEventListener('touchmove',function(e){if(e.target.closest('#messages'))e.stopPropagation()},{passive:false})}m.style.overflowY='scroll';m.style.webkitOverflowScrolling='touch'}
@@ -579,8 +581,8 @@
     }
     window.goToLanding=goToLanding;
 
+    /* ═══ FIXED: GitHub pill opens GitHub section ═══ */
     function openGitHubSection(){
-      // Open settings and scroll to GitHub section
       openSettings();
       setTimeout(function(){
         var ghSection = document.getElementById('ghSection');
@@ -759,13 +761,6 @@
     document.head.appendChild(rainbowKonamiStyle);
   </script>
 
-  <script src="chrx-emoji.js"></script>
-  <script src="chrx-memory.js"></script>
-  <script src="chrx-markdown.js"></script>
-  <script src="chrx-cursor.js"></script>
-  <script src="chrx-impact.js"></script>
-  <script src="chrx-unhinged.js"></script>
-  <script src="chrx-toolbox.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
