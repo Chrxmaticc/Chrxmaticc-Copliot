@@ -1,6 +1,6 @@
 // ╔══════════════════════════════════════════╗
 // ║  Chrxmaticc Copilot — Engine v7.0       ║
-// ║  Scroll fixed • Roast wired • Clean     ║
+// ║  + Web Search + Image Support           ║
 // ╚══════════════════════════════════════════╝
 
 var messagesEl, inputEl, sendBtn, typingEl, statusDot, statusText, micBtn;
@@ -90,12 +90,6 @@ function init() {
       window.history.replaceState({}, document.title, '/app.html');
     } catch(e) {}
   }
-
-  /* NEW: Initialize all new systems */
-  if (typeof initUnhinged === 'function') initUnhinged();       // geto, bee, touch grass, fortune cookie, konami variants
-  if (typeof initCursor === 'function') initCursor();           // personality-synced cursor
-  if (typeof initProcrastinationDetector === 'function') initProcrastinationDetector(); // procrastination detector
-  /* END NEW */
 }
 
 /* ═══ SIDEBAR ═══ */
@@ -207,13 +201,8 @@ async function sendMessage() {
   if (!text && !pendingFile) return;
 
   var displayText = text || (pendingFile ? pendingFile.name : '');
-
-  /* NEW: Apply custom emoji parser to outgoing message (visual only, actual message sent is plain text) */
-  var parsedDisplay = (typeof parseCustomEmojis === 'function') ? parseCustomEmojis(displayText) : displayText;
-  addBubble(parsedDisplay, 'user');
+  addBubble(displayText, 'user');
   conversation.push({ role: 'user', content: displayText });
-  /* END NEW */
-
   inputEl.value = '';
   inputEl.style.height = 'auto';
   if (sendBtn) sendBtn.disabled = true;
@@ -239,16 +228,17 @@ async function sendMessage() {
     if (tt) tt.textContent = 'analyzing: "' + displayText.slice(0, 80) + '"…';
   }
 
-  try 
-  var body = {
-  message: text,
-  model: model,
-  workflow: workflow,
-  effort: effort,
-  buttons: buttons,
-  roastLevel: roastLevel,
-  webSearch: true
-};
+  try {
+    var body = {
+      message: text,
+      model: model,
+      workflow: workflow,
+      effort: effort,
+      buttons: buttons,
+      roastLevel: roastLevel,
+      webSearch: true   // ← Always on
+    };
+
     // File upload
     if (pendingFile) {
       body.fileName = pendingFile.name;
@@ -276,13 +266,6 @@ async function sendMessage() {
       body.personalInfo = (body.personalInfo || '') + '\nConnected GitHub repository: ' + repo;
     }
 
-    /* NEW: Inject memory context into the API call */
-    if (typeof getMemoryContext === 'function') {
-      var memoryCtx = getMemoryContext();
-      if (memoryCtx) body.memory = memoryCtx;
-    }
-    /* END NEW */
-
     var endpoint = (workflow === 'cancel') ? '/api/chat' : '/api/agent';
     var res = await fetch(endpoint, {
       method: 'POST',
@@ -309,83 +292,20 @@ async function sendMessage() {
         addTodoBlock(data.todo);
       }
       if (data.response) {
-        /* NEW: Process markdown blocks from AI response (:::css, :::html, :::js, :::theme) */
-        var finalResponse = data.response;
-        if (typeof parseChrxMarkdown === 'function') {
-          var parsed = parseChrxMarkdown(data.response);
-          finalResponse = parsed.cleanText || data.response;  // cleaned text for display
-          parsed.blocks.forEach(function(block) {
-            if (typeof executeChrxBlock === 'function') {
-              var blockResult = executeChrxBlock(block);
-              if (blockResult && blockResult.html) {
-                // Show execution result in a small system bubble
-                if (typeof addBubble === 'function') {
-                  addBubble(blockResult.html, 'ai');
-                }
-              }
-            }
-          });
-        }
-
-        // Apply custom emojis to final display text
-        if (typeof parseCustomEmojis === 'function') {
-          finalResponse = parseCustomEmojis(finalResponse);
-        }
-
-        /* NEW: Trigger screen shake/mood ring based on message impact */
-        if (typeof onMessageImpact === 'function') {
-          onMessageImpact(displayText, finalResponse);
-        }
-
         setPresence('online');
-        lastAIResponse = finalResponse;
-        typeBubble(finalResponse, 'ai', data.provider, data.codePreview);
-        conversation.push({ role: 'assistant', content: finalResponse });
-        if (ttsEnabled) speakText(finalResponse);
+        lastAIResponse = data.response;
+        typeBubble(data.response, 'ai', data.provider, data.codePreview);
+        conversation.push({ role: 'assistant', content: data.response });
+        if (ttsEnabled) speakText(data.response);
         saveCurrentChat();
-
-        /* NEW: Update memory with this exchange */
-        if (typeof updateMemory === 'function') {
-          updateMemory(displayText, finalResponse, workflow, model);
-        }
-        /* END NEW */
       }
     } else if (data.response) {
-      /* NEW: Same markdown and emoji processing for plain response */
-      var finalResponse2 = data.response;
-      if (typeof parseChrxMarkdown === 'function') {
-        var parsed2 = parseChrxMarkdown(data.response);
-        finalResponse2 = parsed2.cleanText || data.response;
-        parsed2.blocks.forEach(function(block) {
-          if (typeof executeChrxBlock === 'function') {
-            var blockResult = executeChrxBlock(block);
-            if (blockResult && blockResult.html) {
-              if (typeof addBubble === 'function') {
-                addBubble(blockResult.html, 'ai');
-              }
-            }
-          }
-        });
-      }
-      if (typeof parseCustomEmojis === 'function') {
-        finalResponse2 = parseCustomEmojis(finalResponse2);
-      }
-
-      if (typeof onMessageImpact === 'function') {
-        onMessageImpact(displayText, finalResponse2);
-      }
-
       setPresence('online');
-      lastAIResponse = finalResponse2;
-      typeBubble(finalResponse2, 'ai', data.provider, data.codePreview);
-      conversation.push({ role: 'assistant', content: finalResponse2 });
-      if (ttsEnabled) speakText(finalResponse2);
+      lastAIResponse = data.response;
+      typeBubble(data.response, 'ai', data.provider, data.codePreview);
+      conversation.push({ role: 'assistant', content: data.response });
+      if (ttsEnabled) speakText(data.response);
       saveCurrentChat();
-
-      if (typeof updateMemory === 'function') {
-        updateMemory(displayText, finalResponse2, workflow, model);
-      }
-      /* END NEW */
     } else {
       setPresence('online');
       addError(data.error || 'Something went wrong.');
@@ -409,12 +329,6 @@ async function sendMessage() {
 function addBubble(text, who) {
   if (!messagesEl) return;
   if (typingEl?.parentNode) typingEl.remove();
-
-  /* NEW: Apply custom emojis if not already done (safety) */
-  if (typeof parseCustomEmojis === 'function') {
-    text = parseCustomEmojis(text);
-  }
-
   var row = document.createElement('div');
   row.className = 'bubble-row ' + who;
   var b = document.createElement('div');
@@ -464,10 +378,6 @@ function addBubble(text, who) {
 
 function addBubbleNoSave(text, who) {
   if (!messagesEl) return;
-  /* NEW: Apply custom emojis */
-  if (typeof parseCustomEmojis === 'function') {
-    text = parseCustomEmojis(text);
-  }
   var row = document.createElement('div');
   row.className = 'bubble-row ' + who;
   var b = document.createElement('div');
@@ -525,12 +435,6 @@ function editBubble(btn) {
 function typeBubble(text, who, provider, isCode) {
   if (!messagesEl) return;
   if (typingEl?.parentNode) typingEl.remove();
-
-  /* NEW: Apply custom emojis */
-  if (typeof parseCustomEmojis === 'function') {
-    text = parseCustomEmojis(text);
-  }
-
   var row = document.createElement('div');
   row.className = 'bubble-row ' + who;
   var b = document.createElement('div');
