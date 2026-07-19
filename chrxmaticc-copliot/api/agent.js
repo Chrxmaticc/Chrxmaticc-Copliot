@@ -1,5 +1,5 @@
 // api/agent.js
-// Chrxmaticc Copilot — Agentic API v7.0 + Web Search (inline)
+// Chrxmaticc Copilot — Agentic API v7.0 + Web Search + Memory (merged)
 // All prompts hardcoded • Image-aware • Groq-powered
 
 var GROQ_KEY = process.env.GROQ_KEY || '';
@@ -19,7 +19,7 @@ var MODEL_CONFIGS = {
   speed:          { model: 'llama-3.1-8b-instant',    provider: 'groq', temperature: 0.7,  maxTokens: 300 }
 };
 
-// ═══ BASE PROMPTS — updated with :::image block ═══
+// ═══ BASE PROMPTS ═══
 var BASE_PROMPTS = {
   conversational: `You are Chrxmaticc Copilot in Conversational mode. You are a brutally honest AI who speaks with heavy internet slang and zero filter. You can chat casually and also write light code when asked — but coding is not your main focus. If someone wants serious production code, suggest switching to Sonnet mode. Use terms like gang, dawg, and ight. Always speak in lowercase, always. Never say "whats poppin" or "bruh". And have massive chaos. If the users message contains [Image description: ...], use that description to respond as if you can see the image. Never claim you cannot see images.
 
@@ -126,12 +126,77 @@ var BUTTON_PROMPTS = {
 // ═══ MAIN HANDLER ═══
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   var body = req.body || {};
+  var action = body.action || '';
+
+  // ═══════════════════════════════════════════
+  // MEMORY ROUTES (merged from memory.js)
+  // ═══════════════════════════════════════════
+  if (action === 'memory') {
+    var memAction = body.memAction || 'get';
+    var userId = body.userId || 'anonymous';
+    var db;
+    try {
+      var { Client } = require('pg');
+      db = new Client({ connectionString: process.env.DATABASE_URL });
+      await db.connect();
+
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS user_memory (
+          user_id TEXT PRIMARY KEY,
+          facts TEXT[] DEFAULT '{}',
+          history JSONB DEFAULT '[]',
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+
+      if (memAction === 'get') {
+        var result = await db.query('SELECT * FROM user_memory WHERE user_id = $1', [userId]);
+        if (result.rows.length === 0) {
+          await db.query('INSERT INTO user_memory (user_id) VALUES ($1)', [userId]);
+          return res.status(200).json({ facts: [], history: [] });
+        } else {
+          return res.status(200).json({ facts: result.rows[0].facts || [], history: result.rows[0].history || [] });
+        }
+      } else if (memAction === 'save') {
+        var facts = body.facts || [];
+        var history = body.history || [];
+        await db.query(
+          'INSERT INTO user_memory (user_id, facts, history, updated_at) VALUES ($1, $2, $3, NOW()) ON CONFLICT (user_id) DO UPDATE SET facts = $2, history = $3, updated_at = NOW()',
+          [userId, facts, JSON.stringify(history)]
+        );
+        return res.status(200).json({ success: true });
+      } else if (memAction === 'addFact') {
+        var fact = body.fact || '';
+        if (!fact) return res.status(400).json({ error: 'Missing fact' });
+        await db.query(
+          'INSERT INTO user_memory (user_id, facts, updated_at) VALUES ($1, ARRAY[$2], NOW()) ON CONFLICT (user_id) DO UPDATE SET facts = array_append(user_memory.facts, $2), updated_at = NOW()',
+          [userId, fact]
+        );
+        return res.status(200).json({ success: true });
+      } else if (memAction === 'clear') {
+        await db.query('DELETE FROM user_memory WHERE user_id = $1', [userId]);
+        return res.status(200).json({ success: true });
+      } else {
+        return res.status(400).json({ error: 'Unknown memory action' });
+      }
+    } catch(e) {
+      return res.status(500).json({ error: e.message });
+    } finally {
+      if (db) await db.end();
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // ORIGINAL AGENT LOGIC (chat + image + web search)
+  // ═══════════════════════════════════════════
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
   var message = body.message || '';
   var modelKey = body.model || 'sonnet';
   var workflow = body.workflow || 'code';
@@ -204,17 +269,15 @@ module.exports = async function(req, res) {
     message = '[File: ' + (fileName || 'unknown') + ']\nContent:\n' + String(body.fileContent).slice(0, 3000) + '\n\nUser: ' + (message || 'See attached file.');
   }
 
-  // ═══ WEB SEARCH (direct DuckDuckGo — no extra function) ═══
+  // ═══ WEB SEARCH (direct DuckDuckGo) ═══
   if (message) {
     try {
       var q = encodeURIComponent(message);
-      // Instant Answer
       var ddgRes = await fetch('https://api.duckduckgo.com/?q=' + q + '&format=json&no_html=1');
       var ddg = await ddgRes.json();
       if (ddg.AbstractText || ddg.Answer) {
         systemPrompt += '\n\n[Web Search: ' + (ddg.AbstractText || ddg.Answer) + ']';
       }
-      // DuckDuckGo Lite for top links
       var liteRes = await fetch('https://lite.duckduckgo.com/lite/?q=' + q);
       var html = await liteRes.text();
       var links = html.match(/<a[^>]*href="(https?:\/\/[^"]+)"[^>]*>([^<]+)<\/a>/g);
@@ -225,7 +288,7 @@ module.exports = async function(req, res) {
         }).filter(Boolean).join(' | ');
         if (topLinks) systemPrompt += '\n\n[Top Results: ' + topLinks + ']';
       }
-    } catch(e) { /* search failed silently */ }
+    } catch(e) {}
   }
 
   // ═══ PLAN MODE ═══
