@@ -239,16 +239,16 @@ async function sendMessage() {
     if (tt) tt.textContent = 'analyzing: "' + displayText.slice(0, 80) + '"…';
   }
 
-  try {
-    var body = {
-      message: text,
-      model: model,
-      workflow: workflow,
-      effort: effort,
-      buttons: buttons,
-      roastLevel: roastLevel
-    };
-
+  try 
+  var body = {
+  message: text,
+  model: model,
+  workflow: workflow,
+  effort: effort,
+  buttons: buttons,
+  roastLevel: roastLevel,
+  webSearch: settings.webSearch || false
+};
     // File upload
     if (pendingFile) {
       body.fileName = pendingFile.name;
