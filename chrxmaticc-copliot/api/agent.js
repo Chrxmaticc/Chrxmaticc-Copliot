@@ -1,5 +1,5 @@
 // api/agent.js
-// Chrxmaticc Copilot — Agentic API v7.0 + Web Search + Image Gen
+// Chrxmaticc Copilot — Agentic API v7.0 + Web Search (inline)
 // All prompts hardcoded • Image-aware • Groq-powered
 
 var GROQ_KEY = process.env.GROQ_KEY || '';
@@ -7,7 +7,6 @@ var CLAUDE_KEY = process.env.CLAUDE_KEY || '';
 var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 var CLAUDE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 var VISION_URL = 'https://image.pollinations.ai/describe';
-var SEARCH_URL = 'https://chrxmaticc-copliot.vercel.app/api/search'; // 👈 Replace with your actual Vercel domain
 
 var IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.ico', '.tiff', '.avif'];
 
@@ -143,7 +142,6 @@ module.exports = async function(req, res) {
   var fileType = body.fileType || '';
   var imageUrl = body.imageUrl || '';
   var planHistory = body.planHistory || [];
-  var webSearch = body.webSearch; // always true from frontend, but keep fallback
 
   if (!message && !imageUrl && !body.fileContent) {
     return res.status(400).json({ error: 'Missing message' });
@@ -206,17 +204,26 @@ module.exports = async function(req, res) {
     message = '[File: ' + (fileName || 'unknown') + ']\nContent:\n' + String(body.fileContent).slice(0, 3000) + '\n\nUser: ' + (message || 'See attached file.');
   }
 
-  // ═══ WEB SEARCH (automatic, always on) ═══
-  if (message && webSearch !== false) {
+  // ═══ WEB SEARCH (direct DuckDuckGo — no extra function) ═══
+  if (message) {
     try {
-      var searchRes = await fetch(SEARCH_URL + '?q=' + encodeURIComponent(message));
-      var searchData = await searchRes.json();
-      if (searchData.answer) {
-        systemPrompt += '\n\n[Web Search Instant Answer: ' + searchData.answer + ']';
+      var q = encodeURIComponent(message);
+      // Instant Answer
+      var ddgRes = await fetch('https://api.duckduckgo.com/?q=' + q + '&format=json&no_html=1');
+      var ddg = await ddgRes.json();
+      if (ddg.AbstractText || ddg.Answer) {
+        systemPrompt += '\n\n[Web Search: ' + (ddg.AbstractText || ddg.Answer) + ']';
       }
-      if (searchData.results && searchData.results.length > 0) {
-        systemPrompt += '\n\n[Top Web Results: ' +
-          searchData.results.map(function(r, i) { return (i+1) + '. ' + r.title + ' — ' + r.url; }).join(' | ') + ']';
+      // DuckDuckGo Lite for top links
+      var liteRes = await fetch('https://lite.duckduckgo.com/lite/?q=' + q);
+      var html = await liteRes.text();
+      var links = html.match(/<a[^>]*href="(https?:\/\/[^"]+)"[^>]*>([^<]+)<\/a>/g);
+      if (links && links.length > 0) {
+        var topLinks = links.slice(0, 5).map(function(l) {
+          var m = l.match(/href="([^"]+)".*>([^<]+)</);
+          return m ? (m[2].trim() + ' — ' + m[1]) : '';
+        }).filter(Boolean).join(' | ');
+        if (topLinks) systemPrompt += '\n\n[Top Results: ' + topLinks + ']';
       }
     } catch(e) { /* search failed silently */ }
   }
