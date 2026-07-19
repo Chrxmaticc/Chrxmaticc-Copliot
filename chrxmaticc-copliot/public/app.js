@@ -1,6 +1,8 @@
 // ╔══════════════════════════════════════════╗
-// ║  Chrxmaticc Copilot — Engine v7.0       ║
-// ║  + Web Search + Image Support           ║
+// ║  Chrxmaticc Copilot — Engine v8.0       ║
+// ║  v7.0 base + Web Search + Image         ║
+// ║  + Emoji, Memory, Markdown, Cursor,     ║
+// ║    Impact, Unhinged, Toolbox (guarded)  ║
 // ╚══════════════════════════════════════════╝
 
 var messagesEl, inputEl, sendBtn, typingEl, statusDot, statusText, micBtn;
@@ -90,6 +92,11 @@ function init() {
       window.history.replaceState({}, document.title, '/app.html');
     } catch(e) {}
   }
+
+  // ── NEW: initialise extra systems (if their scripts are loaded) ──
+  if (typeof initUnhinged === 'function') initUnhinged();
+  if (typeof initCursor === 'function') initCursor();
+  if (typeof initProcrastinationDetector === 'function') initProcrastinationDetector();
 }
 
 /* ═══ SIDEBAR ═══ */
@@ -201,8 +208,12 @@ async function sendMessage() {
   if (!text && !pendingFile) return;
 
   var displayText = text || (pendingFile ? pendingFile.name : '');
-  addBubble(displayText, 'user');
-  conversation.push({ role: 'user', content: displayText });
+
+  // ── NEW: apply custom emoji to displayed message (if emoji module is loaded) ──
+  var parsedDisplay = (typeof parseCustomEmojis === 'function') ? parseCustomEmojis(displayText) : displayText;
+  addBubble(parsedDisplay, 'user');
+  conversation.push({ role: 'user', content: displayText });  // store original text
+
   inputEl.value = '';
   inputEl.style.height = 'auto';
   if (sendBtn) sendBtn.disabled = true;
@@ -236,7 +247,7 @@ async function sendMessage() {
       effort: effort,
       buttons: buttons,
       roastLevel: roastLevel,
-      webSearch: true   // ← Always on
+      webSearch: true   // ← always on
     };
 
     // File upload
@@ -266,6 +277,12 @@ async function sendMessage() {
       body.personalInfo = (body.personalInfo || '') + '\nConnected GitHub repository: ' + repo;
     }
 
+    // ── NEW: inject memory context into the API call (if memory module is loaded) ──
+    if (typeof getMemoryContext === 'function') {
+      var memoryCtx = getMemoryContext();
+      if (memoryCtx) body.memory = memoryCtx;
+    }
+
     var endpoint = (workflow === 'cancel') ? '/api/chat' : '/api/agent';
     var res = await fetch(endpoint, {
       method: 'POST',
@@ -292,20 +309,79 @@ async function sendMessage() {
         addTodoBlock(data.todo);
       }
       if (data.response) {
+        var finalResponse = data.response;
+
+        // ── NEW: process markdown blocks (if markdown module is loaded) ──
+        if (typeof parseChrxMarkdown === 'function') {
+          var parsed = parseChrxMarkdown(finalResponse);
+          finalResponse = parsed.cleanText || finalResponse;
+          parsed.blocks.forEach(function(block) {
+            if (typeof executeChrxBlock === 'function') {
+              var blockResult = executeChrxBlock(block);
+              if (blockResult && blockResult.html) {
+                addBubble(blockResult.html, 'ai');
+              }
+            }
+          });
+        }
+
+        // ── NEW: apply custom emojis to AI response (if emoji module is loaded) ──
+        if (typeof parseCustomEmojis === 'function') {
+          finalResponse = parseCustomEmojis(finalResponse);
+        }
+
+        // ── NEW: screen shake / mood ring (if impact module is loaded) ──
+        if (typeof onMessageImpact === 'function') {
+          onMessageImpact(displayText, finalResponse);
+        }
+
         setPresence('online');
-        lastAIResponse = data.response;
-        typeBubble(data.response, 'ai', data.provider, data.codePreview);
-        conversation.push({ role: 'assistant', content: data.response });
-        if (ttsEnabled) speakText(data.response);
+        lastAIResponse = finalResponse;
+        typeBubble(finalResponse, 'ai', data.provider, data.codePreview);
+        conversation.push({ role: 'assistant', content: finalResponse });
+        if (ttsEnabled) speakText(finalResponse);
         saveCurrentChat();
+
+        // ── NEW: update memory with this exchange (if memory module is loaded) ──
+        if (typeof updateMemory === 'function') {
+          updateMemory(displayText, finalResponse, workflow, model);
+        }
       }
     } else if (data.response) {
+      var finalResponse2 = data.response;
+
+      // ── NEW: same processing for plain response ──
+      if (typeof parseChrxMarkdown === 'function') {
+        var parsed2 = parseChrxMarkdown(finalResponse2);
+        finalResponse2 = parsed2.cleanText || finalResponse2;
+        parsed2.blocks.forEach(function(block) {
+          if (typeof executeChrxBlock === 'function') {
+            var blockResult = executeChrxBlock(block);
+            if (blockResult && blockResult.html) {
+              addBubble(blockResult.html, 'ai');
+            }
+          }
+        });
+      }
+
+      if (typeof parseCustomEmojis === 'function') {
+        finalResponse2 = parseCustomEmojis(finalResponse2);
+      }
+
+      if (typeof onMessageImpact === 'function') {
+        onMessageImpact(displayText, finalResponse2);
+      }
+
       setPresence('online');
-      lastAIResponse = data.response;
-      typeBubble(data.response, 'ai', data.provider, data.codePreview);
-      conversation.push({ role: 'assistant', content: data.response });
-      if (ttsEnabled) speakText(data.response);
+      lastAIResponse = finalResponse2;
+      typeBubble(finalResponse2, 'ai', data.provider, data.codePreview);
+      conversation.push({ role: 'assistant', content: finalResponse2 });
+      if (ttsEnabled) speakText(finalResponse2);
       saveCurrentChat();
+
+      if (typeof updateMemory === 'function') {
+        updateMemory(displayText, finalResponse2, workflow, model);
+      }
     } else {
       setPresence('online');
       addError(data.error || 'Something went wrong.');
@@ -329,6 +405,12 @@ async function sendMessage() {
 function addBubble(text, who) {
   if (!messagesEl) return;
   if (typingEl?.parentNode) typingEl.remove();
+
+  // ── NEW: apply custom emojis if not already done (safety) ──
+  if (typeof parseCustomEmojis === 'function') {
+    text = parseCustomEmojis(text);
+  }
+
   var row = document.createElement('div');
   row.className = 'bubble-row ' + who;
   var b = document.createElement('div');
@@ -378,6 +460,10 @@ function addBubble(text, who) {
 
 function addBubbleNoSave(text, who) {
   if (!messagesEl) return;
+  // ── NEW: apply custom emojis ──
+  if (typeof parseCustomEmojis === 'function') {
+    text = parseCustomEmojis(text);
+  }
   var row = document.createElement('div');
   row.className = 'bubble-row ' + who;
   var b = document.createElement('div');
@@ -435,6 +521,12 @@ function editBubble(btn) {
 function typeBubble(text, who, provider, isCode) {
   if (!messagesEl) return;
   if (typingEl?.parentNode) typingEl.remove();
+
+  // ── NEW: apply custom emojis ──
+  if (typeof parseCustomEmojis === 'function') {
+    text = parseCustomEmojis(text);
+  }
+
   var row = document.createElement('div');
   row.className = 'bubble-row ' + who;
   var b = document.createElement('div');
