@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════
    chrx-markdown.js — Live Code Execution v1.0
-   :::css :::html :::js :::theme :::preset :::reset
+   :::css :::html :::js :::theme :::preset :::reset :::image
    ═══════════════════════════════════════════ */
 
 var CHRX_PRESETS = {};
@@ -70,6 +70,32 @@ function executeChrxBlock(block) {
       return { html: '❌ Usage: :::preset save|load|delete|list [name]', type: 'error' };
     
     case 'reset':
+      resetAllInjections();
+      return { html: '🔄 All customizations cleared ' + (typeof getEmojiHTML === 'function' ? getEmojiHTML(':geto:') : ''), type: 'system' };
+
+    case 'image':
+      var prompt = (block.param ? block.param + ' ' : '') + block.content;
+      var imgUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt.trim());
+      return { html: '<img src="' + imgUrl + '" alt="' + prompt + '" style="width:100%;max-width:512px;border-radius:16px;margin:8px 0;" loading="lazy">', type: 'html' };
+    
+    default:
+      return null;
+  }
+}
+
+function injectCSS(css) {
+  var styleEl = document.getElementById(INJECTED_CSS_ID);
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = INJECTED_CSS_ID;
+    document.head.appendChild(styleEl);
+  }
+  INJECTED_STYLES.push(css);
+  styleEl.textContent = INJECTED_STYLES.join('\n');
+  try { localStorage.setItem('chrx_injected_styles', JSON.stringify(INJECTED_STYLES)); } catch(e) {}
+}
+
+/* ═══ THE FIXED RESET — removes fonts, HTML blocks, resets font ═══ */
 function resetAllInjections() {
   // Remove the injected style element
   var styleEl = document.getElementById(INJECTED_CSS_ID);
@@ -96,30 +122,6 @@ function resetAllInjections() {
   // Clear all saved presets
   CHRX_PRESETS = {};
   localStorage.removeItem('chrx_presets');
-}
-    
-    default:
-      return null;
-  }
-}
-
-function injectCSS(css) {
-  var styleEl = document.getElementById(INJECTED_CSS_ID);
-  if (!styleEl) {
-    styleEl = document.createElement('style');
-    styleEl.id = INJECTED_CSS_ID;
-    document.head.appendChild(styleEl);
-  }
-  INJECTED_STYLES.push(css);
-  styleEl.textContent = INJECTED_STYLES.join('\n');
-  try { localStorage.setItem('chrx_injected_styles', JSON.stringify(INJECTED_STYLES)); } catch(e) {}
-}
-
-function resetAllInjections() {
-  INJECTED_STYLES = [];
-  var styleEl = document.getElementById(INJECTED_CSS_ID);
-  if (styleEl) styleEl.remove();
-  try { localStorage.removeItem('chrx_injected_styles'); } catch(e) {}
 }
 
 console.log(':fire: chrx-markdown.js loaded — live code execution ready');
