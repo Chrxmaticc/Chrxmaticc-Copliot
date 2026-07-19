@@ -70,27 +70,32 @@ function executeChrxBlock(block) {
       return { html: '❌ Usage: :::preset save|load|delete|list [name]', type: 'error' };
     
     case 'reset':
-    function resetAllInjections() {
-  // Remove injected style element
+function resetAllInjections() {
+  // Remove the injected style element
   var styleEl = document.getElementById(INJECTED_CSS_ID);
   if (styleEl) styleEl.remove();
   INJECTED_STYLES = [];
   localStorage.removeItem('chrx_injected_styles');
 
-  // Remove any custom font links added by :::html or :::css
-  var fontLinks = document.querySelectorAll('link[data-chrx-font]');
-  fontLinks.forEach(function(link) { link.remove(); });
+  // Remove any external font links added via :::html or :::css
+  var links = document.querySelectorAll('link[rel="stylesheet"]');
+  links.forEach(function(link) {
+    // Keep your original style.css, remove everything else
+    if (link.href && !link.href.includes('style.css') && !link.href.includes('app.css')) {
+      link.remove();
+    }
+  });
 
   // Remove any HTML blocks rendered by :::html
   var htmlBlocks = document.querySelectorAll('.chrx-html-block');
   htmlBlocks.forEach(function(block) { block.remove(); });
 
-  // Restore default font (the one set by your style.css)
-  document.body.style.fontFamily = '';
+  // Hard‑reset the font to your original default
+  document.body.style.fontFamily = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 
-  // Clear all preset storage (optional, remove if you want presets to persist)
-  // CHRX_PRESETS = {};
-  // localStorage.removeItem('chrx_presets');
+  // Clear all saved presets
+  CHRX_PRESETS = {};
+  localStorage.removeItem('chrx_presets');
 }
     
     default:
