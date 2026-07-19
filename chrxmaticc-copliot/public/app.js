@@ -247,7 +247,7 @@ async function sendMessage() {
   effort: effort,
   buttons: buttons,
   roastLevel: roastLevel,
-  webSearch: settings.webSearch || false
+  webSearch: true
 };
     // File upload
     if (pendingFile) {
