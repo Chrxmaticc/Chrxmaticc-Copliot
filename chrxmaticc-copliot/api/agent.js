@@ -1,5 +1,5 @@
 // api/agent.js
-// Chrxmaticc Copilot — Agentic API v7.0
+// Chrxmaticc Copilot — Agentic API v7.0 + Web Search + Image Gen
 // All prompts hardcoded • Image-aware • Groq-powered
 
 var GROQ_KEY = process.env.GROQ_KEY || '';
@@ -7,6 +7,7 @@ var CLAUDE_KEY = process.env.CLAUDE_KEY || '';
 var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 var CLAUDE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 var VISION_URL = 'https://image.pollinations.ai/describe';
+var SEARCH_URL = 'https://chrxmaticc-copliot.vercel.app/api/search'; // 👈 Replace with your actual Vercel domain
 
 var IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.ico', '.tiff', '.avif'];
 
@@ -19,7 +20,7 @@ var MODEL_CONFIGS = {
   speed:          { model: 'llama-3.1-8b-instant',    provider: 'groq', temperature: 0.7,  maxTokens: 300 }
 };
 
-// ═══ BASE PROMPTS — exact from your personality files ═══
+// ═══ BASE PROMPTS — updated with :::image block ═══
 var BASE_PROMPTS = {
   conversational: `You are Chrxmaticc Copilot in Conversational mode. You are a brutally honest AI who speaks with heavy internet slang and zero filter. You can chat casually and also write light code when asked — but coding is not your main focus. If someone wants serious production code, suggest switching to Sonnet mode. Use terms like gang, dawg, and ight. Always speak in lowercase, always. Never say "whats poppin" or "bruh". And have massive chaos. If the users message contains [Image description: ...], use that description to respond as if you can see the image. Never claim you cannot see images.
 
@@ -27,6 +28,7 @@ You can also control the app's appearance and behavior using special markdown bl
 - \`\`\`:::css\n/* CSS rules */\n:::\`\`\` — injects CSS into the page.
 - \`\`\`:::html\n<!-- HTML code -->\n:::\`\`\` — renders HTML in the chat.
 - \`\`\`:::js\n// JavaScript code\n:::\`\`\` — runs JavaScript safely.
+- \`\`\`:::image [description]\n:::\`\`\` — generates an AI image.
 - \`\`\`:::theme [name]\`\`\` — switches to a theme (gold, midnight, glass, chrome, light, chromatic, liquid, rainbow, hacker).
 - \`\`\`:::preset save [name]\`\`\` — saves current customizations.
 - \`\`\`:::preset load [name]\`\`\` — loads a saved preset.
@@ -41,6 +43,7 @@ You can also output live code that modifies the app in real time using special m
 - \`\`\`:::css\n/* CSS rules */\n:::\`\`\` — injects CSS into the page.
 - \`\`\`:::html\n<!-- HTML code -->\n:::\`\`\` — renders HTML inline.
 - \`\`\`:::js\n// JavaScript code\n:::\`\`\` — executes JavaScript.
+- \`\`\`:::image [description]\n:::\`\`\` — generates an AI image.
 - \`\`\`:::theme [name]\`\`\` — switches theme (gold, midnight, glass, chrome, light, chromatic, liquid, rainbow, hacker).
 - \`\`\`:::preset save|load|delete|list [name]\`\`\` — manages presets.
 - \`\`\`:::reset\`\`\` — clears all injected styles.
@@ -52,6 +55,7 @@ You can also transform the app's look using special markdown blocks. When the us
 - \`\`\`:::css\n/* CSS */\n:::\`\`\` — injects styles.
 - \`\`\`:::html\n<!-- HTML -->\n:::\`\`\` — renders HTML.
 - \`\`\`:::js\n// JavaScript\n:::\`\`\` — runs code.
+- \`\`\`:::image [description]\n:::\`\`\` — generates an AI image.
 - \`\`\`:::theme [name]\`\`\` — changes theme.
 - \`\`\`:::preset save|load|delete|list [name]\`\`\` — saves/loads presets.
 - \`\`\`:::reset\`\`\` — clears changes.
@@ -63,6 +67,7 @@ You can quickly modify the app using markdown blocks when the user needs a fast 
 - \`\`\`:::css\n/* CSS */\n:::\`\`\` — injects styles.
 - \`\`\`:::html\n<!-- HTML -->\n:::\`\`\` — renders HTML.
 - \`\`\`:::js\n// JavaScript\n:::\`\`\` — runs code.
+- \`\`\`:::image [description]\n:::\`\`\` — generates an AI image.
 - \`\`\`:::theme [name]\`\`\` — changes theme.
 - \`\`\`:::preset save|load|delete|list [name]\`\`\` — presets.
 - \`\`\`:::reset\`\`\` — reset.
@@ -74,6 +79,7 @@ You can execute quick page changes with markdown blocks if asked:
 - \`\`\`:::css\n/* CSS */\n:::\`\`\`
 - \`\`\`:::html\n<!-- HTML -->\n:::\`\`\`
 - \`\`\`:::js\n// JS\n:::\`\`\`
+- \`\`\`:::image [description]\n:::\`\`\`
 - \`\`\`:::theme [name]\`\`\`
 - \`\`\`:::preset save|load|delete|list [name]\`\`\`
 - \`\`\`:::reset\`\`\`
@@ -137,6 +143,7 @@ module.exports = async function(req, res) {
   var fileType = body.fileType || '';
   var imageUrl = body.imageUrl || '';
   var planHistory = body.planHistory || [];
+  var webSearch = body.webSearch; // always true from frontend, but keep fallback
 
   if (!message && !imageUrl && !body.fileContent) {
     return res.status(400).json({ error: 'Missing message' });
@@ -197,6 +204,21 @@ module.exports = async function(req, res) {
   // File content
   if (body.fileContent && !isImage) {
     message = '[File: ' + (fileName || 'unknown') + ']\nContent:\n' + String(body.fileContent).slice(0, 3000) + '\n\nUser: ' + (message || 'See attached file.');
+  }
+
+  // ═══ WEB SEARCH (automatic, always on) ═══
+  if (message && webSearch !== false) {
+    try {
+      var searchRes = await fetch(SEARCH_URL + '?q=' + encodeURIComponent(message));
+      var searchData = await searchRes.json();
+      if (searchData.answer) {
+        systemPrompt += '\n\n[Web Search Instant Answer: ' + searchData.answer + ']';
+      }
+      if (searchData.results && searchData.results.length > 0) {
+        systemPrompt += '\n\n[Top Web Results: ' +
+          searchData.results.map(function(r, i) { return (i+1) + '. ' + r.title + ' — ' + r.url; }).join(' | ') + ']';
+      }
+    } catch(e) { /* search failed silently */ }
   }
 
   // ═══ PLAN MODE ═══
