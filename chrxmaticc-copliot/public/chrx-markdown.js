@@ -70,8 +70,28 @@ function executeChrxBlock(block) {
       return { html: '❌ Usage: :::preset save|load|delete|list [name]', type: 'error' };
     
     case 'reset':
-      resetAllInjections();
-      return { html: '🔄 All customizations cleared ' + getEmojiHTML(':geto:'), type: 'system' };
+    function resetAllInjections() {
+  // Remove injected style element
+  var styleEl = document.getElementById(INJECTED_CSS_ID);
+  if (styleEl) styleEl.remove();
+  INJECTED_STYLES = [];
+  localStorage.removeItem('chrx_injected_styles');
+
+  // Remove any custom font links added by :::html or :::css
+  var fontLinks = document.querySelectorAll('link[data-chrx-font]');
+  fontLinks.forEach(function(link) { link.remove(); });
+
+  // Remove any HTML blocks rendered by :::html
+  var htmlBlocks = document.querySelectorAll('.chrx-html-block');
+  htmlBlocks.forEach(function(block) { block.remove(); });
+
+  // Restore default font (the one set by your style.css)
+  document.body.style.fontFamily = '';
+
+  // Clear all preset storage (optional, remove if you want presets to persist)
+  // CHRX_PRESETS = {};
+  // localStorage.removeItem('chrx_presets');
+}
     
     default:
       return null;
