@@ -17,6 +17,7 @@
     { "source": "/api/github/files", "destination": "/api/auth/github/files.js" },
     { "source": "/api/github/read-file", "destination": "/api/auth/github/read-file.js" },
     { "source": "/api/blend", "destination": "/api/blend.js" },
+    { "source": "/blend", "destination": "/public/app.html" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [
