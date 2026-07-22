@@ -29,7 +29,7 @@ module.exports = async function(req, res) {
         var code = generateCode();
         var result = await db.query('INSERT INTO blend_rooms (name, invite_code) VALUES ($1, $2) RETURNING id, invite_code', [name, code]);
         var room = result.rows[0];
-        res.status(200).json({ room_id: room.id, invite_code: room.invite_code, invite_link: 'https://YOUR_DOMAIN.vercel.app/blend?join=' + room.invite_code });
+        res.status(200).json({ room_id: room.id, invite_code: room.invite_code, invite_link: 'https://chrxmaticc-copliot.vercel.app/blend?join=' + room.invite_code });
       } finally { await db.end(); }
     }
 
